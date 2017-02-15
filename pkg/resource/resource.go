@@ -67,7 +67,7 @@ type DevVolume struct {
 	readKiB              int
 	writtenKiB           int
 	activityLogWritesKiB int
-	bmWritesKib          int
+	bitMapWritesKib      int
 	upperPending         int
 	lowerPending         int
 	activityLogSuspended string
@@ -87,9 +87,9 @@ type DevVolume struct {
 	totalALWritesKiB   int
 	alWritesPerSecond  float32
 
-	initialBMWritesKiB int
-	totalBMWritesKiB   int
-	bmWritesPerSecond  float32
+	initialBitMapWritesKiB int
+	totalBitMapWritesKiB   int
+	bitMapWritesPerSecond  float32
 
 	maxUpperPending   int
 	minUpperPending   int

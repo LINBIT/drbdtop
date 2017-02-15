@@ -127,7 +127,7 @@ type PeerDevVol struct {
 	resyncSuspended   string
 	receivedKiB       int
 	sentKiB           int
-	outOfSyncBlocks   int
+	outOfSyncKiB      int
 	pendingWrites     int
 	unackedWrites     int
 	startTime         time.Time
@@ -137,10 +137,10 @@ type PeerDevVol struct {
 	uptime      time.Time
 	updateCount int
 
-	maxOutOfSyncBlocks   int
-	minOutOfSyncBlocks   int
-	avgOutOfSyncBlocks   float32
-	totalOutOfSyncBlocks int
+	maxOutOfSyncKiB   int
+	minOutOfSyncKiB   int
+	avgOutOfSyncKiB   float32
+	totalOutOfSyncKiB int
 
 	maxPendingWrites   int
 	minPendingWrites   int

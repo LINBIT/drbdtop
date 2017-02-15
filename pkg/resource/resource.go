@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-type Resource struct {
+type Status struct {
 	Name          string
 	Role          string
 	Suspended     string
@@ -32,6 +32,14 @@ type Resource struct {
 	PeerDevices   map[string]PeerDevice
 	StartTime     time.Time
 	CurrentTime   time.Time
+
+	// Calulated Values
+	uptime   time.Time
+	refCount int
+
+	numPeerDevs    int
+	numDevs        int
+	numConnections int
 }
 
 type Connection struct {
@@ -42,10 +50,17 @@ type Connection struct {
 	congested        string
 	startTime        time.Time
 	currentTime      time.Time
+	// Calculated Values
+
+	uptime   time.Time
+	refCount int
 }
 
 type Device struct {
-	volume               string
+	volumes map[string]DevVolume
+}
+
+type DevVolume struct {
 	minor                string
 	diskState            string
 	size                 int
@@ -59,20 +74,76 @@ type Device struct {
 	blocked              string
 	startTime            time.Time
 	currentTime          time.Time
+
+	// Calculated Values
+	uptime   time.Time
+	refCount int
+
+	initialReadKiB   int
+	totalReadKiB     int
+	readKiBPerSecond float32
+
+	initialALWritesKiB int
+	totalALWritesKiB   int
+	alWritesPerSecond  float32
+
+	initialBMWritesKiB int
+	totalBMWritesKiB   int
+	bmWritesPerSecond  float32
+
+	maxUpperPending   int
+	minUpperPending   int
+	avgUpperPending   float32
+	totalUpperPending int
+
+	maxLowerPending   int
+	minLowerPending   int
+	avgLowerPending   float32
+	totalLowerPending int
 }
 
 type PeerDevice struct {
-	peerNodeID        string
-	connectionName    string
-	volume            string
+	peerNodeID     string
+	connectionName string
+	volumes        map[string]PeerDevVol
+}
+
+type PeerDevVol struct {
 	replicationStatus string
 	diskState         string
 	resyncSuspended   string
-	received          int //received what?
-	sent              int // sent what?
+	receivedKiB       int
+	sentKiB           int
 	outOfSyncBlocks   int
 	pendingWrites     int
 	unackedWrites     int
 	startTime         time.Time
 	currentTime       time.Time
+
+	// Calulated Values
+	uptime   time.Time
+	refCount int
+
+	maxOutOfSyncBlocks   int
+	minOutOfSyncBlocks   int
+	avgOutOfSyncBlocks   float32
+	totalOutOfSyncBlocks int
+
+	maxPendingWrites   int
+	minPendingWrites   int
+	avgPendingWrites   float32
+	totalPendingWrites int
+
+	maxUnackedWrites   int
+	minUnackedWrites   int
+	avgUnackedWrites   float32
+	totalUnackedWrites int
+
+	initialReceivedKiB int
+	totalReceivedKiB   int
+	receivedKiBSecond  float32
+
+	initialSentKiB int
+	totalSentKiB   int
+	sentKiBSecond  float32
 }

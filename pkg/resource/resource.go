@@ -34,8 +34,8 @@ type Status struct {
 	CurrentTime   time.Time
 
 	// Calulated Values
-	uptime   time.Time
-	refCount int
+	uptime      time.Time
+	updateCount int
 
 	numPeerDevs    int
 	numDevs        int
@@ -52,8 +52,8 @@ type Connection struct {
 	currentTime      time.Time
 	// Calculated Values
 
-	uptime   time.Time
-	refCount int
+	uptime      time.Time
+	updateCount int
 }
 
 type Device struct {
@@ -76,8 +76,8 @@ type DevVolume struct {
 	currentTime          time.Time
 
 	// Calculated Values
-	uptime   time.Time
-	refCount int
+	uptime      time.Time
+	updateCount int
 
 	initialReadKiB   int
 	totalReadKiB     int
@@ -121,8 +121,8 @@ type PeerDevVol struct {
 	currentTime       time.Time
 
 	// Calulated Values
-	uptime   time.Time
-	refCount int
+	uptime      time.Time
+	updateCount int
 
 	maxOutOfSyncBlocks   int
 	minOutOfSyncBlocks   int

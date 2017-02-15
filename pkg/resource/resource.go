@@ -22,6 +22,19 @@ import (
 	"time"
 )
 
+const timeFormat = "2006-01-02T15:04:05.000000-0700"
+
+var resourceFieldKeys = []string{"name", "role", "suspended", "write-ordering"}
+var connectionFieldKeys = []string{"name", "peer-node-id", "conn-name", "connection", "role", "congested"}
+var deviceFieldKeys = []string{"name", "volume", "minor", "disk", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
+var peerDeviceFieldKeys = []string{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
+
+type Event struct {
+	timeStamp time.Time
+	target    string
+	fields    map[string]string
+}
+
 type Status struct {
 	Name          string
 	Role          string

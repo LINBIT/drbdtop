@@ -238,15 +238,8 @@ type DevVolume struct {
 	totalBitMapUpdates     uint64
 	bitMapUpdatesPerSecond float64
 
-	maxUpperPending   uint64
-	minUpperPending   uint64
-	avgUpperPending   float64
-	totalUpperPending uint64
-
-	maxLowerPending   uint64
-	minLowerPending   uint64
-	avgLowerPending   float64
-	totalLowerPending uint64
+	UpperPending minMaxAvgCurrent
+	Pending      minMaxAvgCurrent
 }
 
 type PeerDevice struct {
@@ -269,20 +262,9 @@ type PeerDevVol struct {
 	// Calulated Values
 	updateCount int
 
-	maxOutOfSyncKiB   uint64
-	minOutOfSyncKiB   uint64
-	avgOutOfSyncKiB   float64
-	totalOutOfSyncKiB uint64
-
-	maxPendingWrites   uint64
-	minPendingWrites   uint64
-	avgPendingWrites   float64
-	totalPendingWrites uint64
-
-	maxUnackedWrites   uint64
-	minUnackedWrites   uint64
-	avgUnackedWrites   float64
-	totalUnackedWrites uint64
+	OutOfSyncKiB  minMaxAvgCurrent
+	PendingWrites minMaxAvgCurrent
+	UnackedWrites minMaxAvgCurrent
 
 	initialReceivedKiB uint64
 	totalReceivedKiB   uint64

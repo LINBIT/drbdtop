@@ -44,16 +44,16 @@ func TestResourceUpdate(t *testing.T) {
 	// Update should populate an empty Status.
 	status.Update(event)
 
-	if status.Name != event.fields[resourceFieldKeys[resourceName]] {
+	if status.Name != event.fields[resKeys[resName]] {
 		t.Errorf("Expected status.Name to be %q, got %q", event.fields["name"], status.Name)
 	}
-	if status.Role != event.fields[resourceFieldKeys[resourceRole]] {
+	if status.Role != event.fields[resKeys[resRole]] {
 		t.Errorf("Expected status.Role to be %q, got %q", event.fields["role"], status.Role)
 	}
-	if status.Suspended != event.fields[resourceFieldKeys[resourceSuspended]] {
+	if status.Suspended != event.fields[resKeys[resSuspended]] {
 		t.Errorf("Expected status.Suspended to be %q, got %q", event.fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.fields[resourceFieldKeys[resourceWriteOrdering]] {
+	if status.WriteOrdering != event.fields[resKeys[resWriteOrdering]] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.fields["write-ordering"], status.WriteOrdering)
 	}
 	if status.StartTime != event.timeStamp {
@@ -78,16 +78,16 @@ func TestResourceUpdate(t *testing.T) {
 
 	status.Update(event)
 
-	if status.Name != event.fields[resourceFieldKeys[resourceName]] {
+	if status.Name != event.fields[resKeys[resName]] {
 		t.Errorf("Expected status.Name to be %q, got %q", event.fields["name"], status.Name)
 	}
-	if status.Role != event.fields[resourceFieldKeys[resourceRole]] {
+	if status.Role != event.fields[resKeys[resRole]] {
 		t.Errorf("Expected status.Role to be %q, got %q", event.fields["role"], status.Role)
 	}
-	if status.Suspended != event.fields[resourceFieldKeys[resourceSuspended]] {
+	if status.Suspended != event.fields[resKeys[resSuspended]] {
 		t.Errorf("Expected status.Suspended to be %q, got %q", event.fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.fields[resourceFieldKeys[resourceWriteOrdering]] {
+	if status.WriteOrdering != event.fields[resKeys[resWriteOrdering]] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.fields["write-ordering"], status.WriteOrdering)
 	}
 	if status.StartTime != timeStamp {
@@ -99,5 +99,53 @@ func TestResourceUpdate(t *testing.T) {
 	// Start and current time should match when first created.
 	if status.CurrentTime == status.StartTime {
 		t.Errorf("Expected status.CurrentTime %q, and status.startTime %q to differ.", status.CurrentTime, status.StartTime)
+	}
+}
+
+func TestConnectionUpdate(t *testing.T) {
+	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	if err != nil {
+		t.Error(err)
+	}
+
+	status := Status{
+		Connections: make(map[string]*Connection),
+	}
+	event := Event{
+		timeStamp: timeStamp,
+		target:    "connection",
+		fields: map[string]string{
+			connKeys[connName]:       "test0",
+			connKeys[connPeerNodeID]: "1",
+			connKeys[connConnName]:   "bob",
+			connKeys[connConnection]: "connected",
+			connKeys[connRole]:       "secondary",
+			connKeys[connCongested]:  "no",
+		},
+	}
+
+	// Update should create a new connection if there isn't one.
+	status.Update(event)
+
+	name := event.fields[connKeys[connConnName]]
+	conn := status.Connections[name]
+
+	if conn.connectionName != event.fields[connKeys[connConnName]] {
+		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.connectionName)
+	}
+	if conn.peerNodeID != event.fields[connKeys[connPeerNodeID]] {
+		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.fields[connKeys[connPeerNodeID]], conn.peerNodeID)
+	}
+	if conn.connectionStatus != event.fields[connKeys[connConnection]] {
+		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.fields[connKeys[connConnection]], conn.connectionStatus)
+	}
+	if conn.role != event.fields[connKeys[connRole]] {
+		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.fields[connKeys[connRole]], conn.role)
+	}
+	if conn.congested != event.fields[connKeys[connCongested]] {
+		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.fields[connKeys[connCongested]], conn.congested)
+	}
+	if conn.updateCount != 1 {
+		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
 	}
 }

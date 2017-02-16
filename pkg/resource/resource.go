@@ -25,60 +25,77 @@ import (
 
 const timeFormat = "2006-01-02T15:04:05.000000-07:00"
 
-var resourceFieldKeys = []string{"name", "role", "suspended", "write-ordering"}
+var resKeys = []string{"name", "role", "suspended", "write-ordering"}
 
 const (
-	resourceName = iota
-	resourceRole
-	resourceSuspended
-	resourceWriteOrdering
+	resName = iota
+	resRole
+	resSuspended
+	resWriteOrdering
 )
 
-var connectionFieldKeys = []string{"name", "peer-node-id", "conn-name", "connection", "role", "congested"}
+var connKeys = []string{"name", "peer-node-id", "conn-name", "connection", "role", "congested"}
 
 const (
-	connectionName = iota
-	connectionPeerNodeID
-	connectionConnName
-	connectionConnection
-	connectionRole
-	connectionCongested
+	connName = iota
+	connPeerNodeID
+	connConnName
+	connConnection
+	connRole
+	connCongested
 )
 
-var deviceFieldKeys = []string{"name", "volume", "minor", "disk", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
+var devKeys = []string{"name", "volume", "minor", "disk", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
 
 const (
-	deviceName = iota
-	deviceVolume
-	deviceMinor
-	deviceDisk
-	deviceSize
-	deviceRead
-	deviceWritten
-	deviceALWrites
-	deviceBMWrites
-	deviceUpperPending
-	deviceLowerPending
-	deviceALSuspended
-	deviceBlocked
+	devName = iota
+	devVolume
+	devMinor
+	devDisk
+	devSize
+	devRead
+	devWritten
+	devALWrites
+	devBMWrites
+	devUpperPending
+	devLowerPending
+	devALSuspended
+	devBlocked
 )
 
-var peerDeviceFieldKeys = []string{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
+var peerDevKeys = []string{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
 
 const (
-	peerDeviceName = iota
-	peerDeviceNodeID
-	peerDeviceConnName
-	peerDeviceVolume
-	peerDeviceReplication
-	peerDevicePeerDisk
-	peerDeviceResyncSuspended
-	peerDeviceReceived
-	peerDeviceSent
-	peerDeviceOutOfSync
-	peerDevicePending
-	peerDeviceUnacked
+	peerDevName = iota
+	peerDevNodeID
+	peerDevConnName
+	peerDevVolume
+	peerDevReplication
+	peerDevPeerDisk
+	peerDevResyncSuspended
+	peerDevReceived
+	peerDevSent
+	peerDevOutOfSync
+	peerDevPending
+	peerDevUnacked
 )
+
+type uptimer struct {
+	StartTime   time.Time
+	CurrentTime time.Time
+	Uptime      time.Time
+}
+
+func (u *uptimer) updateTimes(t time.Time) {
+	u.CurrentTime = t
+	// Init timestamp for new resources.
+	if u.StartTime.IsZero() {
+		u.StartTime = u.CurrentTime
+	}
+
+	diff := u.CurrentTime.Sub(u.StartTime)
+	u.Uptime = u.StartTime.Add(diff)
+}
 
 type Event struct {
 	timeStamp time.Time
@@ -88,18 +105,16 @@ type Event struct {
 
 type Status struct {
 	sync.RWMutex
+	uptimer
 	Name          string
 	Role          string
 	Suspended     string
 	WriteOrdering string
-	Connections   map[string]Connection
-	Devices       map[string]Device
-	PeerDevices   map[string]PeerDevice
-	StartTime     time.Time
-	CurrentTime   time.Time
+	Connections   map[string]*Connection
+	Devices       map[string]*Device
+	PeerDevices   map[string]*PeerDevice
 
 	// Calulated Values
-	uptime      time.Time
 	updateCount int
 
 	numPeerDevs    int
@@ -114,37 +129,48 @@ func (s *Status) Update(e Event) bool {
 	switch e.target {
 	case "resource":
 		return s.updateResource(e)
+	case "connection":
+		connName := e.fields[connKeys[connConnName]]
+		if s.Connections[connName] == nil {
+			s.Connections[connName] = &Connection{}
+		}
+		return s.Connections[connName].update(e)
 	}
 	return true
 }
 
 func (s *Status) updateResource(e Event) bool {
-	s.Name = e.fields[resourceFieldKeys[resourceName]]
-	s.Role = e.fields[resourceFieldKeys[resourceRole]]
-	s.Suspended = e.fields[resourceFieldKeys[resourceSuspended]]
-	s.WriteOrdering = e.fields[resourceFieldKeys[resourceWriteOrdering]]
-
-	// Init timestamp for new resources.
-	if s.StartTime.IsZero() {
-		s.StartTime = e.timeStamp
-	}
-	s.CurrentTime = e.timeStamp
+	s.Name = e.fields[resKeys[resName]]
+	s.Role = e.fields[resKeys[resRole]]
+	s.Suspended = e.fields[resKeys[resSuspended]]
+	s.WriteOrdering = e.fields[resKeys[resWriteOrdering]]
+	s.updateTimes(e.timeStamp)
+	s.updateCount++
 
 	return true
 }
 
 type Connection struct {
+	uptimer
 	peerNodeID       string
 	connectionName   string
 	connectionStatus string
 	role             string
 	congested        string
-	startTime        time.Time
-	currentTime      time.Time
 	// Calculated Values
 
-	uptime      time.Time
 	updateCount int
+}
+
+func (c *Connection) update(e Event) bool {
+	c.peerNodeID = e.fields[connKeys[connPeerNodeID]]
+	c.connectionName = e.fields[connKeys[connConnName]]
+	c.connectionStatus = e.fields[connKeys[connConnection]]
+	c.role = e.fields[connKeys[connRole]]
+	c.congested = e.fields[connKeys[connCongested]]
+	c.updateTimes(e.timeStamp)
+	c.updateCount++
+	return true
 }
 
 type Device struct {
@@ -152,6 +178,7 @@ type Device struct {
 }
 
 type DevVolume struct {
+	uptimer
 	minor                string
 	diskState            string
 	size                 int
@@ -163,11 +190,8 @@ type DevVolume struct {
 	lowerPending         int
 	activityLogSuspended string
 	blocked              string
-	startTime            time.Time
-	currentTime          time.Time
 
 	// Calculated Values
-	uptime      time.Time
 	updateCount int
 
 	initialReadKiB   int
@@ -200,6 +224,7 @@ type PeerDevice struct {
 }
 
 type PeerDevVol struct {
+	uptimer
 	replicationStatus string
 	diskState         string
 	resyncSuspended   string
@@ -208,11 +233,8 @@ type PeerDevVol struct {
 	outOfSyncKiB      int
 	pendingWrites     int
 	unackedWrites     int
-	startTime         time.Time
-	currentTime       time.Time
 
 	// Calulated Values
-	uptime      time.Time
 	updateCount int
 
 	maxOutOfSyncKiB   int

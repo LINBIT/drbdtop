@@ -100,20 +100,20 @@ func (u *uptimer) updateTimes(t time.Time) {
 
 type minMaxAvgCurrent struct {
 	updateCount int
-	total       int
+	total       uint64
 
-	Min     int
-	Max     int
+	Min     uint64
+	Max     uint64
 	Avg     float64
-	Current int
+	Current uint64
 }
 
-// Set the default value of min to MaxInt64, otherwise it will always be zero.
+// Set the default value of min to MaxUint64, otherwise it will always be zero.
 func newMinMaxAvgCurrent() *minMaxAvgCurrent {
-	return &minMaxAvgCurrent{Min: math.MaxInt64}
+	return &minMaxAvgCurrent{Min: math.MaxUint64}
 }
 
-func (m *minMaxAvgCurrent) calculate(i int) {
+func (m *minMaxAvgCurrent) calculate(i uint64) {
 	m.updateCount++
 	m.total += i
 
@@ -213,40 +213,40 @@ type DevVolume struct {
 	uptimer
 	minor                string
 	diskState            string
-	size                 int
-	readKiB              int
-	writtenKiB           int
-	activityLogUpdates   int
-	bitMapUpdates        int
-	upperPending         int
-	lowerPending         int
+	size                 uint64
+	readKiB              uint64
+	writtenKiB           uint64
+	activityLogUpdates   uint64
+	bitMapUpdates        uint64
+	upperPending         uint64
+	lowerPending         uint64
 	activityLogSuspended string
 	blocked              string
 
 	// Calculated Values
 	updateCount int
 
-	initialReadKiB   int
-	totalReadKiB     int
+	initialReadKiB   uint64
+	totalReadKiB     uint64
 	readKiBPerSecond float64
 
-	initialActivityLogUpdates int
-	totalActivityLogUpdates   int
+	initialActivityLogUpdates uint64
+	totalActivityLogUpdates   uint64
 	alUpdatesPerSecond        float64
 
-	initialBitMapUpdates   int
-	totalBitMapUpdates     int
+	initialBitMapUpdates   uint64
+	totalBitMapUpdates     uint64
 	bitMapUpdatesPerSecond float64
 
-	maxUpperPending   int
-	minUpperPending   int
+	maxUpperPending   uint64
+	minUpperPending   uint64
 	avgUpperPending   float64
-	totalUpperPending int
+	totalUpperPending uint64
 
-	maxLowerPending   int
-	minLowerPending   int
+	maxLowerPending   uint64
+	minLowerPending   uint64
 	avgLowerPending   float64
-	totalLowerPending int
+	totalLowerPending uint64
 }
 
 type PeerDevice struct {
@@ -260,35 +260,35 @@ type PeerDevVol struct {
 	replicationStatus string
 	diskState         string
 	resyncSuspended   string
-	receivedKiB       int
-	sentKiB           int
-	outOfSyncKiB      int
-	pendingWrites     int
-	unackedWrites     int
+	receivedKiB       uint64
+	sentKiB           uint64
+	outOfSyncKiB      uint64
+	pendingWrites     uint64
+	unackedWrites     uint64
 
 	// Calulated Values
 	updateCount int
 
-	maxOutOfSyncKiB   int
-	minOutOfSyncKiB   int
+	maxOutOfSyncKiB   uint64
+	minOutOfSyncKiB   uint64
 	avgOutOfSyncKiB   float64
-	totalOutOfSyncKiB int
+	totalOutOfSyncKiB uint64
 
-	maxPendingWrites   int
-	minPendingWrites   int
+	maxPendingWrites   uint64
+	minPendingWrites   uint64
 	avgPendingWrites   float64
-	totalPendingWrites int
+	totalPendingWrites uint64
 
-	maxUnackedWrites   int
-	minUnackedWrites   int
+	maxUnackedWrites   uint64
+	minUnackedWrites   uint64
 	avgUnackedWrites   float64
-	totalUnackedWrites int
+	totalUnackedWrites uint64
 
-	initialReceivedKiB int
-	totalReceivedKiB   int
+	initialReceivedKiB uint64
+	totalReceivedKiB   uint64
 	receivedKiBSecond  float64
 
-	initialSentKiB int
-	totalSentKiB   int
+	initialSentKiB uint64
+	totalSentKiB   uint64
 	sentKiBSecond  float64
 }

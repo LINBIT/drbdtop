@@ -23,12 +23,62 @@ import (
 	"time"
 )
 
-const timeFormat = "2006-01-02T15:04:05.000000-0700"
+const timeFormat = "2006-01-02T15:04:05.000000-07:00"
 
 var resourceFieldKeys = []string{"name", "role", "suspended", "write-ordering"}
+
+const (
+	resourceName = iota
+	resourceRole
+	resourceSuspended
+	resourceWriteOrdering
+)
+
 var connectionFieldKeys = []string{"name", "peer-node-id", "conn-name", "connection", "role", "congested"}
+
+const (
+	connectionName = iota
+	connectionPeerNodeID
+	connectionConnName
+	connectionConnection
+	connectionRole
+	connectionCongested
+)
+
 var deviceFieldKeys = []string{"name", "volume", "minor", "disk", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
+
+const (
+	deviceName = iota
+	deviceVolume
+	deviceMinor
+	deviceDisk
+	deviceSize
+	deviceRead
+	deviceWritten
+	deviceALWrites
+	deviceBMWrites
+	deviceUpperPending
+	deviceLowerPending
+	deviceALSuspended
+	deviceBlocked
+)
+
 var peerDeviceFieldKeys = []string{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
+
+const (
+	peerDeviceName = iota
+	peerDeviceNodeID
+	peerDeviceConnName
+	peerDeviceVolume
+	peerDeviceReplication
+	peerDevicePeerDisk
+	peerDeviceResyncSuspended
+	peerDeviceReceived
+	peerDeviceSent
+	peerDeviceOutOfSync
+	peerDevicePending
+	peerDeviceUnacked
+)
 
 type Event struct {
 	timeStamp time.Time
@@ -55,6 +105,32 @@ type Status struct {
 	numPeerDevs    int
 	numDevs        int
 	numConnections int
+}
+
+func (s *Status) Update(e Event) bool {
+	s.Lock()
+	defer s.Unlock()
+
+	switch e.target {
+	case "resource":
+		return s.updateResource(e)
+	}
+	return true
+}
+
+func (s *Status) updateResource(e Event) bool {
+	s.Name = e.fields[resourceFieldKeys[resourceName]]
+	s.Role = e.fields[resourceFieldKeys[resourceRole]]
+	s.Suspended = e.fields[resourceFieldKeys[resourceSuspended]]
+	s.WriteOrdering = e.fields[resourceFieldKeys[resourceWriteOrdering]]
+
+	// Init timestamp for new resources.
+	if s.StartTime.IsZero() {
+		s.StartTime = e.timeStamp
+	}
+	s.CurrentTime = e.timeStamp
+
+	return true
 }
 
 type Connection struct {

@@ -94,24 +94,24 @@ type DevVolume struct {
 
 	initialReadKiB   int
 	totalReadKiB     int
-	readKiBPerSecond float32
+	readKiBPerSecond float64
 
 	initialActivityLogUpdates int
 	totalActivityLogUpdates   int
-	alUpdatesPerSecond        float32
+	alUpdatesPerSecond        float64
 
 	initialBitMapUpdates   int
 	totalBitMapUpdates     int
-	bitMapUpdatesPerSecond float32
+	bitMapUpdatesPerSecond float64
 
 	maxUpperPending   int
 	minUpperPending   int
-	avgUpperPending   float32
+	avgUpperPending   float64
 	totalUpperPending int
 
 	maxLowerPending   int
 	minLowerPending   int
-	avgLowerPending   float32
+	avgLowerPending   float64
 	totalLowerPending int
 }
 
@@ -139,24 +139,24 @@ type PeerDevVol struct {
 
 	maxOutOfSyncKiB   int
 	minOutOfSyncKiB   int
-	avgOutOfSyncKiB   float32
+	avgOutOfSyncKiB   float64
 	totalOutOfSyncKiB int
 
 	maxPendingWrites   int
 	minPendingWrites   int
-	avgPendingWrites   float32
+	avgPendingWrites   float64
 	totalPendingWrites int
 
 	maxUnackedWrites   int
 	minUnackedWrites   int
-	avgUnackedWrites   float32
+	avgUnackedWrites   float64
 	totalUnackedWrites int
 
 	initialReceivedKiB int
 	totalReceivedKiB   int
-	receivedKiBSecond  float32
+	receivedKiBSecond  float64
 
 	initialSentKiB int
 	totalSentKiB   int
-	sentKiBSecond  float32
+	sentKiBSecond  float64
 }

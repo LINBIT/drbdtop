@@ -19,6 +19,7 @@
 package resource
 
 import (
+	"math"
 	"sync"
 	"time"
 )
@@ -95,6 +96,37 @@ func (u *uptimer) updateTimes(t time.Time) {
 
 	diff := u.CurrentTime.Sub(u.StartTime)
 	u.Uptime = u.StartTime.Add(diff)
+}
+
+type minMaxAvgCurrent struct {
+	updateCount int
+	total       int
+
+	Min     int
+	Max     int
+	Avg     float64
+	Current int
+}
+
+// Set the default value of min to MaxInt64, otherwise it will always be zero.
+func newMinMaxAvgCurrent() *minMaxAvgCurrent {
+	return &minMaxAvgCurrent{Min: math.MaxInt64}
+}
+
+func (m *minMaxAvgCurrent) calculate(i int) {
+	m.updateCount++
+	m.total += i
+
+	if i < m.Min {
+		m.Min = i
+	}
+	if i > m.Max {
+		m.Max = i
+	}
+
+	m.Avg = float64(m.total) / float64(m.updateCount)
+
+	m.Current = i
 }
 
 type Event struct {

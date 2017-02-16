@@ -224,7 +224,6 @@ type DevVolume struct {
 	blocked              string
 
 	// Calculated Values
-	updateCount int
 
 	initialReadKiB   uint64
 	totalReadKiB     uint64
@@ -260,8 +259,6 @@ type PeerDevVol struct {
 	unackedWrites     uint64
 
 	// Calulated Values
-	updateCount int
-
 	OutOfSyncKiB  minMaxAvgCurrent
 	PendingWrites minMaxAvgCurrent
 	UnackedWrites minMaxAvgCurrent

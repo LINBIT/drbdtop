@@ -19,6 +19,7 @@
 package resource
 
 import (
+	"sync"
 	"time"
 )
 
@@ -36,6 +37,7 @@ type Event struct {
 }
 
 type Status struct {
+	sync.RWMutex
 	Name          string
 	Role          string
 	Suspended     string

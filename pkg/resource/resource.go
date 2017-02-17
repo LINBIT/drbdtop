@@ -129,6 +129,44 @@ func (m *minMaxAvgCurrent) calculate(i uint64) {
 	m.Current = i
 }
 
+type rate struct {
+	initial uint64
+	last    uint64
+
+	Previous  previousUint64
+	PerSecond float64
+	Total     uint64
+}
+
+func (r *rate) calculate(t time.Duration, i uint64) {
+	// We apparently have not been calculated before, set initial value.
+	if r.Total == 0 && r.initial == 0 && r.PerSecond == 0 {
+		r.initial = i
+	}
+	// A connection flapped and we're seeing a new dataset, reset initial to calulate rate correctly.
+	if i < r.last {
+		r.initial = i
+	}
+
+	r.Total += (i - r.initial)
+	r.Previous.Push(float64(r.Total) / t.Seconds())
+	r.PerSecond = r.Previous.Values[len(r.Previous.Values)-1]
+}
+
+// Preserve maxLen number of float64s, old values drop off from the front
+// when the maxlen as been hit.
+type previousUint64 struct {
+	maxLen int
+	Values []float64
+}
+
+func (p *previousUint64) Push(i float64) {
+	if len(p.Values) == p.maxLen {
+		p.Values = append(p.Values[1:], i)
+	}
+	p.Values = append(p.Values, i)
+}
+
 type Event struct {
 	timeStamp time.Time
 	target    string

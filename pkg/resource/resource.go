@@ -84,7 +84,7 @@ const (
 type uptimer struct {
 	StartTime   time.Time
 	CurrentTime time.Time
-	Uptime      time.Time
+	Uptime      time.Duration
 }
 
 func (u *uptimer) updateTimes(t time.Time) {
@@ -94,8 +94,7 @@ func (u *uptimer) updateTimes(t time.Time) {
 		u.StartTime = u.CurrentTime
 	}
 
-	diff := u.CurrentTime.Sub(u.StartTime)
-	u.Uptime = u.StartTime.Add(diff)
+	u.Uptime = u.CurrentTime.Sub(u.StartTime)
 }
 
 type minMaxAvgCurrent struct {

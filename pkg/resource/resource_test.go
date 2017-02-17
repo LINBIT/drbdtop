@@ -23,6 +23,40 @@ import (
 	"time"
 )
 
+func TestUpdateTime(t *testing.T) {
+	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	if err != nil {
+		t.Error(err)
+	}
+
+	up := uptimer{}
+
+	up.updateTimes(timeStamp)
+
+	if up.StartTime != timeStamp {
+		t.Errorf("Expected StartTime to be %q, got %q", timeStamp, up.StartTime)
+	}
+	if up.CurrentTime != timeStamp {
+		t.Errorf("Expected CurrentTime to be %q, got %q", timeStamp, up.CurrentTime)
+	}
+	if up.Uptime != 0 {
+		t.Errorf("Expected Uptime to be %d, got %q", 0, up.Uptime)
+	}
+
+	nextTime := timeStamp.Add(time.Second * 4)
+	up.updateTimes(nextTime)
+
+	if up.StartTime != timeStamp {
+		t.Errorf("Expected StartTime to be %q, got %q", timeStamp, up.StartTime)
+	}
+	if up.CurrentTime != nextTime {
+		t.Errorf("Expected CurrentTime to be %q, got %q", nextTime, up.CurrentTime)
+	}
+	if up.Uptime != time.Second*4 {
+		t.Errorf("Expected Uptime to be %q, got %q", time.Second*4, up.Uptime)
+	}
+}
+
 func TestResourceUpdate(t *testing.T) {
 	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
 	if err != nil {

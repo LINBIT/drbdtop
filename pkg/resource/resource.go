@@ -131,39 +131,50 @@ func (m *minMaxAvgCurrent) calculate(i uint64) {
 type rate struct {
 	initial uint64
 	last    uint64
+	new     bool
 
-	Previous  previousUint64
+	Previous  previousFloat64
 	PerSecond float64
 	Total     uint64
 }
 
 func (r *rate) calculate(t time.Duration, i uint64) {
-	// We apparently have not been calculated before, set initial value.
-	if r.Total == 0 && r.initial == 0 && r.PerSecond == 0 {
+	// We have not been calculated before, set initial value
+	// to account for the fact that we are seeing a partial dataset.
+	if r.new {
 		r.initial = i
+		r.new = false
 	}
-	// A connection flapped and we're seeing a new dataset, reset initial to calulate rate correctly.
+	// A connection flapped and we're seeing a new dataset, reset initial to 0.
 	if i < r.last {
-		r.initial = i
+		r.initial = 0
 	}
 
+	r.last = i
+
 	r.Total += (i - r.initial)
-	r.Previous.Push(float64(r.Total) / t.Seconds())
+
+	rate := float64(r.Total) / t.Seconds()
+	if math.IsNaN(rate) {
+		rate = 0
+	}
+	r.Previous.Push(rate)
 	r.PerSecond = r.Previous.Values[len(r.Previous.Values)-1]
 }
 
 // Preserve maxLen number of float64s, old values drop off from the front
 // when the maxlen as been hit.
-type previousUint64 struct {
+type previousFloat64 struct {
 	maxLen int
 	Values []float64
 }
 
-func (p *previousUint64) Push(i float64) {
+func (p *previousFloat64) Push(i float64) {
 	if len(p.Values) == p.maxLen {
 		p.Values = append(p.Values[1:], i)
+	} else {
+		p.Values = append(p.Values, i)
 	}
-	p.Values = append(p.Values, i)
 }
 
 type Event struct {

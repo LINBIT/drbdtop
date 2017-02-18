@@ -19,6 +19,7 @@
 package resource
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -54,6 +55,100 @@ func TestUpdateTime(t *testing.T) {
 	}
 	if up.Uptime != time.Second*4 {
 		t.Errorf("Expected Uptime to be %q, got %q", time.Second*4, up.Uptime)
+	}
+}
+
+func TestMinMaxAvg(t *testing.T) {
+	stats := newMinMaxAvgCurrent()
+
+	stats.calculate(5)
+
+	if stats.Min != 5 {
+		t.Errorf("Expected Min to be %d, got %d", 5, stats.Min)
+	}
+	if stats.Max != 5 {
+		t.Errorf("Expected Max to be %d, got %d", 5, stats.Max)
+	}
+	if stats.Avg != float64(5) {
+		t.Errorf("Expected Avg to be %f, got %f", float64(5), stats.Avg)
+	}
+	if stats.Current != 5 {
+		t.Errorf("Expected Current to be %d, got %d", 5, stats.Current)
+	}
+
+	stats.calculate(10)
+
+	if stats.Min != 5 {
+		t.Errorf("Expected Min to be %d, got %d", 5, stats.Min)
+	}
+	if stats.Max != 10 {
+		t.Errorf("Expected Max to be %d, got %d", 10, stats.Max)
+	}
+	if stats.Avg != float64(7.5) {
+		t.Errorf("Expected Avg to be %f, got %f", float64(7.5), stats.Avg)
+	}
+	if stats.Current != 10 {
+		t.Errorf("Expected Current to be %d, got %d", 10, stats.Current)
+	}
+}
+
+func TestRate(t *testing.T) {
+	r := &rate{Previous: previousFloat64{maxLen: 5}, new: true}
+
+	r.calculate(time.Second*0, 100)
+
+	if r.initial != 100 {
+		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
+	}
+	if r.last != 100 {
+		t.Errorf("Expected last to be %d, got %d", 100, r.last)
+	}
+	if !reflect.DeepEqual(r.Previous.Values, []float64{0}) {
+		t.Errorf("Expected Previous.Values to be %v, got %v", []float64{0}, r.Previous.Values)
+	}
+	if r.PerSecond != 0 {
+		t.Errorf("Expected PerSecond to be %d, got %f", 0, r.PerSecond)
+	}
+	if r.Total != 0 {
+		t.Errorf("Expected total to be %d, got %d", 0, r.Total)
+	}
+
+	r.calculate(time.Second*1, 200)
+
+	if r.initial != 100 {
+		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
+	}
+	if r.last != 200 {
+		t.Errorf("Expected last to be %d, got %d", 200, r.last)
+	}
+	if !reflect.DeepEqual(r.Previous.Values, []float64{0, 100}) {
+		t.Errorf("Expected Previous.Values to be %v, got %v", []float64{0, 100}, r.Previous.Values)
+	}
+	if r.PerSecond != 100 {
+		t.Errorf("Expected PerSecond to be %d, got %f", 100, r.PerSecond)
+	}
+	if r.Total != 100 {
+		t.Errorf("Expected total to be %d, got %d", 100, r.Total)
+	}
+
+	// Non-monotonic pattern, reset initial value to calulate total correctly.
+	r.calculate(time.Second*2, 50)
+	if r.Total != 150 {
+		t.Errorf("Failed to reset total value, total is %d, expected %d: %v", r.Total, 150, r)
+	}
+}
+
+func TestPreviousFloat64(t *testing.T) {
+	prev := previousFloat64{maxLen: 2}
+
+	prev.Push(10.10)
+	if !reflect.DeepEqual(prev.Values, []float64{10.10}) {
+		t.Errorf("Expected Values to be %v, got %v", []float64{10.10}, prev.Values)
+	}
+	prev.Push(15.9)
+	prev.Push(200.5)
+	if !reflect.DeepEqual(prev.Values, []float64{15.9, 200.5}) {
+		t.Errorf("Expected Values to be %v, got %v", []float64{15.9, 200.5}, prev.Values)
 	}
 }
 

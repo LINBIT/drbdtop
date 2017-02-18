@@ -100,8 +100,8 @@ func TestRate(t *testing.T) {
 	if r.initial != 100 {
 		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
 	}
-	if r.last != 100 {
-		t.Errorf("Expected last to be %d, got %d", 100, r.last)
+	if r.current != 100 {
+		t.Errorf("Expected current to be %d, got %d", 100, r.current)
 	}
 	if !reflect.DeepEqual(r.Previous.Values, []float64{0}) {
 		t.Errorf("Expected Previous.Values to be %v, got %v", []float64{0}, r.Previous.Values)
@@ -118,8 +118,8 @@ func TestRate(t *testing.T) {
 	if r.initial != 100 {
 		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
 	}
-	if r.last != 200 {
-		t.Errorf("Expected last to be %d, got %d", 200, r.last)
+	if r.current != 200 {
+		t.Errorf("Expected current to be %d, got %d", 200, r.current)
 	}
 	if !reflect.DeepEqual(r.Previous.Values, []float64{0, 100}) {
 		t.Errorf("Expected Previous.Values to be %v, got %v", []float64{0, 100}, r.Previous.Values)

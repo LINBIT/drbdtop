@@ -130,7 +130,7 @@ func (m *minMaxAvgCurrent) calculate(i uint64) {
 
 type rate struct {
 	initial uint64
-	last    uint64
+	current uint64
 	new     bool
 
 	Previous  previousFloat64
@@ -146,11 +146,11 @@ func (r *rate) calculate(t time.Duration, i uint64) {
 		r.new = false
 	}
 	// A connection flapped and we're seeing a new dataset, reset initial to 0.
-	if i < r.last {
+	if i < r.current {
 		r.initial = 0
 	}
 
-	r.last = i
+	r.current = i
 
 	r.Total += (i - r.initial)
 
@@ -273,17 +273,9 @@ type DevVolume struct {
 
 	// Calculated Values
 
-	initialReadKiB   uint64
-	totalReadKiB     uint64
-	readKiBPerSecond float64
-
-	initialActivityLogUpdates uint64
-	totalActivityLogUpdates   uint64
-	alUpdatesPerSecond        float64
-
-	initialBitMapUpdates   uint64
-	totalBitMapUpdates     uint64
-	bitMapUpdatesPerSecond float64
+	ReadKib            rate
+	ActivityLogUpdates rate
+	BitMapUpdates      rate
 
 	UpperPending minMaxAvgCurrent
 	Pending      minMaxAvgCurrent
@@ -311,11 +303,6 @@ type PeerDevVol struct {
 	PendingWrites minMaxAvgCurrent
 	UnackedWrites minMaxAvgCurrent
 
-	initialReceivedKiB uint64
-	totalReceivedKiB   uint64
-	receivedKiBSecond  float64
-
-	initialSentKiB uint64
-	totalSentKiB   uint64
-	sentKiBSecond  float64
+	ReceivedKiB rate
+	SentKib     rate
 }

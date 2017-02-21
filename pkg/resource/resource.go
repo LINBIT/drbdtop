@@ -183,7 +183,7 @@ type Event struct {
 	fields    map[string]string
 }
 
-type Status struct {
+type Resource struct {
 	sync.RWMutex
 	uptimer
 	Name          string
@@ -202,7 +202,7 @@ type Status struct {
 	numConnections int
 }
 
-func (s *Status) Update(e Event) bool {
+func (s *Resource) Update(e Event) bool {
 	s.Lock()
 	defer s.Unlock()
 
@@ -219,7 +219,7 @@ func (s *Status) Update(e Event) bool {
 	return true
 }
 
-func (s *Status) updateResource(e Event) bool {
+func (s *Resource) updateResource(e Event) bool {
 	s.Name = e.fields[resKeys[resName]]
 	s.Role = e.fields[resKeys[resRole]]
 	s.Suspended = e.fields[resKeys[resSuspended]]

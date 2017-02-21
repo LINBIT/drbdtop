@@ -158,7 +158,7 @@ func TestResourceUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	status := Status{}
+	status := Resource{}
 	event := Event{
 		timeStamp: timeStamp,
 		target:    "resource",
@@ -237,7 +237,7 @@ func TestConnectionUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	status := Status{
+	status := Resource{
 		Connections: make(map[string]*Connection),
 	}
 	event := Event{

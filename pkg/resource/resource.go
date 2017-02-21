@@ -190,47 +190,27 @@ type Resource struct {
 	Role          string
 	Suspended     string
 	WriteOrdering string
-	Connections   map[string]*Connection
-	Devices       map[string]*Device
-	PeerDevices   map[string]*PeerDevice
 
 	// Calulated Values
 	updateCount int
-
-	numPeerDevs    int
-	numDevs        int
-	numConnections int
 }
 
-func (s *Resource) Update(e Event) bool {
-	s.Lock()
-	defer s.Unlock()
+func (r *Resource) Update(e Event) bool {
+	r.Lock()
+	defer r.Unlock()
 
-	switch e.target {
-	case "resource":
-		return s.updateResource(e)
-	case "connection":
-		connName := e.fields[connKeys[connConnName]]
-		if s.Connections[connName] == nil {
-			s.Connections[connName] = &Connection{}
-		}
-		return s.Connections[connName].update(e)
-	}
-	return true
-}
-
-func (s *Resource) updateResource(e Event) bool {
-	s.Name = e.fields[resKeys[resName]]
-	s.Role = e.fields[resKeys[resRole]]
-	s.Suspended = e.fields[resKeys[resSuspended]]
-	s.WriteOrdering = e.fields[resKeys[resWriteOrdering]]
-	s.updateTimes(e.timeStamp)
-	s.updateCount++
+	r.Name = e.fields[resKeys[resName]]
+	r.Role = e.fields[resKeys[resRole]]
+	r.Suspended = e.fields[resKeys[resSuspended]]
+	r.WriteOrdering = e.fields[resKeys[resWriteOrdering]]
+	r.updateTimes(e.timeStamp)
+	r.updateCount++
 
 	return true
 }
 
 type Connection struct {
+	sync.RWMutex
 	uptimer
 	peerNodeID       string
 	connectionName   string
@@ -242,7 +222,10 @@ type Connection struct {
 	updateCount int
 }
 
-func (c *Connection) update(e Event) bool {
+func (c *Connection) Update(e Event) bool {
+	c.Lock()
+	defer c.Unlock()
+
 	c.peerNodeID = e.fields[connKeys[connPeerNodeID]]
 	c.connectionName = e.fields[connKeys[connConnName]]
 	c.connectionStatus = e.fields[connKeys[connConnection]]

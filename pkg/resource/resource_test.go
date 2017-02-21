@@ -237,9 +237,7 @@ func TestConnectionUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	status := Resource{
-		Connections: make(map[string]*Connection),
-	}
+	conn := Connection{}
 	event := Event{
 		timeStamp: timeStamp,
 		target:    "connection",
@@ -254,10 +252,9 @@ func TestConnectionUpdate(t *testing.T) {
 	}
 
 	// Update should create a new connection if there isn't one.
-	status.Update(event)
+	conn.Update(event)
 
 	name := event.fields[connKeys[connConnName]]
-	conn := status.Connections[name]
 
 	if conn.connectionName != event.fields[connKeys[connConnName]] {
 		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.connectionName)
@@ -292,10 +289,9 @@ func TestConnectionUpdate(t *testing.T) {
 	}
 
 	// Update should update a new connection if one exists.
-	status.Update(event)
+	conn.Update(event)
 
 	name = event.fields[connKeys[connConnName]]
-	conn = status.Connections[name]
 
 	if conn.connectionName != event.fields[connKeys[connConnName]] {
 		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.connectionName)

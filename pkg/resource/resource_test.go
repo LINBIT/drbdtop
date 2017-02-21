@@ -20,6 +20,7 @@ package resource
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -58,14 +59,11 @@ func TestUpdateTime(t *testing.T) {
 	}
 }
 
-func TestMinMaxAvg(t *testing.T) {
-	stats := newMinMaxAvgCurrent()
+func TestmaxAvgCurrent(t *testing.T) {
+	stats := maxAvgCurrent{}
 
-	stats.calculate(5)
+	stats.calculate("5")
 
-	if stats.Min != 5 {
-		t.Errorf("Expected Min to be %d, got %d", 5, stats.Min)
-	}
 	if stats.Max != 5 {
 		t.Errorf("Expected Max to be %d, got %d", 5, stats.Max)
 	}
@@ -76,11 +74,8 @@ func TestMinMaxAvg(t *testing.T) {
 		t.Errorf("Expected Current to be %d, got %d", 5, stats.Current)
 	}
 
-	stats.calculate(10)
+	stats.calculate("10")
 
-	if stats.Min != 5 {
-		t.Errorf("Expected Min to be %d, got %d", 5, stats.Min)
-	}
 	if stats.Max != 10 {
 		t.Errorf("Expected Max to be %d, got %d", 10, stats.Max)
 	}
@@ -93,9 +88,9 @@ func TestMinMaxAvg(t *testing.T) {
 }
 
 func TestRate(t *testing.T) {
-	r := &rate{Previous: previousFloat64{maxLen: 5}, new: true}
+	r := &rate{Previous: &previousFloat64{maxLen: 5}, new: true}
 
-	r.calculate(time.Second*0, 100)
+	r.calculate(time.Second*0, "100")
 
 	if r.initial != 100 {
 		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
@@ -113,7 +108,7 @@ func TestRate(t *testing.T) {
 		t.Errorf("Expected total to be %d, got %d", 0, r.Total)
 	}
 
-	r.calculate(time.Second*1, 200)
+	r.calculate(time.Second*1, "200")
 
 	if r.initial != 100 {
 		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
@@ -132,7 +127,7 @@ func TestRate(t *testing.T) {
 	}
 
 	// Non-monotonic pattern, reset initial value to calulate total correctly.
-	r.calculate(time.Second*2, 50)
+	r.calculate(time.Second*2, "50")
 	if r.Total != 150 {
 		t.Errorf("Failed to reset total value, total is %d, expected %d: %v", r.Total, 150, r)
 	}
@@ -310,5 +305,56 @@ func TestConnectionUpdate(t *testing.T) {
 	}
 	if conn.updateCount != 2 {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
+	}
+}
+
+func TestDeviceUpdate(t *testing.T) {
+	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	if err != nil {
+		t.Error(err)
+	}
+
+	dev := Device{volumes: make(map[string]*DevVolume)}
+
+	event := Event{
+		timeStamp: timeStamp,
+		target:    "device",
+		fields: map[string]string{
+			devKeys[devName]:         "test0",
+			devKeys[devVolume]:       "0",
+			devKeys[devMinor]:        "0",
+			devKeys[devDisk]:         "UpToDate",
+			devKeys[devSize]:         "5533366723",
+			devKeys[devRead]:         "100001",
+			devKeys[devWritten]:      "10012",
+			devKeys[devALWrites]:     "30032",
+			devKeys[devBMWrites]:     "0",
+			devKeys[devUpperPending]: "2",
+			devKeys[devLowerPending]: "2",
+			devKeys[devALSuspended]:  "no",
+			devKeys[devBlocked]:      "no",
+		},
+	}
+
+	dev.Update(event)
+
+	vol := event.fields[devKeys[devVolume]]
+
+	if dev.resource != event.fields[devKeys[devName]] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[devKeys[devName]], dev.resource)
+	}
+	if dev.volumes[vol].minor != event.fields[devKeys[devMinor]] {
+		t.Errorf("Expected dev.volumes[%q].minor to be %q, got %q", vol, event.fields[devKeys[devMinor]], dev.volumes[vol].minor)
+	}
+	if dev.volumes[vol].diskState != event.fields[devKeys[devDisk]] {
+		t.Errorf("Expected dev.volumes[%q].diskState to be %q, got %q", vol, event.fields[devKeys[devDisk]], dev.volumes[vol].diskState)
+	}
+
+	size, _ := strconv.ParseUint(event.fields[devKeys[devSize]], 10, 64)
+	if dev.volumes[vol].size != size {
+		t.Errorf("Expected dev.volumes[%q].size to be %q, got %d", vol, event.fields[devKeys[devSize]], dev.volumes[vol].size)
+	}
+	if dev.volumes[event.fields[devKeys[devVolume]]].ReadKiB.Total != 0 {
+		t.Errorf("Expected dev.volumes[%q].ReadKib.Total to be %q, got %q", vol, 0, dev.volumes[vol].ReadKiB.Total)
 	}
 }

@@ -20,6 +20,7 @@ package resource
 
 import (
 	"math"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -97,28 +98,21 @@ func (u *uptimer) updateTimes(t time.Time) {
 	u.Uptime = u.CurrentTime.Sub(u.StartTime)
 }
 
-type minMaxAvgCurrent struct {
+type maxAvgCurrent struct {
 	updateCount int
 	total       uint64
 
-	Min     uint64
 	Max     uint64
 	Avg     float64
 	Current uint64
 }
 
-// Set the default value of min to MaxUint64, otherwise it will always be zero.
-func newMinMaxAvgCurrent() *minMaxAvgCurrent {
-	return &minMaxAvgCurrent{Min: math.MaxUint64}
-}
+func (m *maxAvgCurrent) calculate(s string) {
+	i, _ := strconv.ParseUint(s, 10, 64)
 
-func (m *minMaxAvgCurrent) calculate(i uint64) {
 	m.updateCount++
 	m.total += i
 
-	if i < m.Min {
-		m.Min = i
-	}
 	if i > m.Max {
 		m.Max = i
 	}
@@ -133,12 +127,14 @@ type rate struct {
 	current uint64
 	new     bool
 
-	Previous  previousFloat64
+	Previous  *previousFloat64
 	PerSecond float64
 	Total     uint64
 }
 
-func (r *rate) calculate(t time.Duration, i uint64) {
+func (r *rate) calculate(t time.Duration, s string) {
+	i, _ := strconv.ParseUint(s, 10, 64)
+
 	// We have not been calculated before, set initial value
 	// to account for the fact that we are seeing a partial dataset.
 	if r.new {
@@ -237,7 +233,57 @@ func (c *Connection) Update(e Event) bool {
 }
 
 type Device struct {
-	volumes map[string]DevVolume
+	sync.RWMutex
+	resource string
+	volumes  map[string]*DevVolume
+}
+
+func (d *Device) Update(e Event) bool {
+	d.Lock()
+	defer d.Unlock()
+
+	d.resource = e.fields[devKeys[devName]]
+
+	// If this volume doesn't exist, create a fresh one.
+	_, ok := d.volumes[e.fields[devKeys[devVolume]]]
+	if !ok {
+		d.volumes[e.fields[devKeys[devVolume]]] = newDevVolume(200)
+	}
+
+	d.volumes[e.fields[devKeys[devVolume]]].uptimer.updateTimes(e.timeStamp)
+	d.volumes[e.fields[devKeys[devVolume]]].minor = e.fields[devKeys[devMinor]]
+	d.volumes[e.fields[devKeys[devVolume]]].diskState = e.fields[devKeys[devDisk]]
+	d.volumes[e.fields[devKeys[devVolume]]].activityLogSuspended = e.fields[devKeys[devALSuspended]]
+	d.volumes[e.fields[devKeys[devVolume]]].blocked = e.fields[devKeys[devBlocked]]
+
+	// Only update size if we can parse the field correctly.
+	if size, err := strconv.ParseUint(e.fields[devKeys[devSize]], 10, 64); err == nil {
+		d.volumes[e.fields[devKeys[devVolume]]].size = size
+	}
+
+	d.volumes[e.fields[devKeys[devVolume]]].ReadKiB.calculate(
+		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
+		e.fields[devKeys[devRead]])
+
+	d.volumes[e.fields[devKeys[devVolume]]].WrittenKiB.calculate(
+		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
+		e.fields[devKeys[devWritten]])
+
+	d.volumes[e.fields[devKeys[devVolume]]].ActivityLogUpdates.calculate(
+		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
+		e.fields[devKeys[devALWrites]])
+
+	d.volumes[e.fields[devKeys[devVolume]]].BitMapUpdates.calculate(
+		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
+		e.fields[devKeys[devBMWrites]])
+
+	d.volumes[e.fields[devKeys[devVolume]]].UpperPending.calculate(
+		e.fields[devKeys[devUpperPending]])
+
+	d.volumes[e.fields[devKeys[devVolume]]].LowerPending.calculate(
+		e.fields[devKeys[devLowerPending]])
+
+	return true
 }
 
 type DevVolume struct {
@@ -245,23 +291,30 @@ type DevVolume struct {
 	minor                string
 	diskState            string
 	size                 uint64
-	readKiB              uint64
-	writtenKiB           uint64
-	activityLogUpdates   uint64
-	bitMapUpdates        uint64
-	upperPending         uint64
-	lowerPending         uint64
 	activityLogSuspended string
 	blocked              string
 
 	// Calculated Values
+	ReadKiB            *rate
+	WrittenKiB         *rate
+	ActivityLogUpdates *rate
+	BitMapUpdates      *rate
 
-	ReadKib            rate
-	ActivityLogUpdates rate
-	BitMapUpdates      rate
+	UpperPending *maxAvgCurrent
+	LowerPending *maxAvgCurrent
+	Pending      *maxAvgCurrent
+}
 
-	UpperPending minMaxAvgCurrent
-	Pending      minMaxAvgCurrent
+func newDevVolume(maxLen int) *DevVolume {
+	return &DevVolume{
+		ReadKiB:            &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
+		WrittenKiB:         &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
+		ActivityLogUpdates: &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
+		BitMapUpdates:      &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
+
+		UpperPending: &maxAvgCurrent{},
+		LowerPending: &maxAvgCurrent{},
+	}
 }
 
 type PeerDevice struct {
@@ -282,9 +335,9 @@ type PeerDevVol struct {
 	unackedWrites     uint64
 
 	// Calulated Values
-	OutOfSyncKiB  minMaxAvgCurrent
-	PendingWrites minMaxAvgCurrent
-	UnackedWrites minMaxAvgCurrent
+	OutOfSyncKiB  maxAvgCurrent
+	PendingWrites maxAvgCurrent
+	UnackedWrites maxAvgCurrent
 
 	ReceivedKiB rate
 	SentKib     rate

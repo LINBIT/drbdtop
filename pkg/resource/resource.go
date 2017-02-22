@@ -328,17 +328,23 @@ type PeerDevVol struct {
 	replicationStatus string
 	diskState         string
 	resyncSuspended   string
-	receivedKiB       uint64
-	sentKiB           uint64
-	outOfSyncKiB      uint64
-	pendingWrites     uint64
-	unackedWrites     uint64
 
 	// Calulated Values
-	OutOfSyncKiB  maxAvgCurrent
-	PendingWrites maxAvgCurrent
-	UnackedWrites maxAvgCurrent
+	OutOfSyncKiB  *maxAvgCurrent
+	PendingWrites *maxAvgCurrent
+	UnackedWrites *maxAvgCurrent
 
-	ReceivedKiB rate
-	SentKib     rate
+	ReceivedKiB *rate
+	SentKib     *rate
+}
+
+func newPeerDevVol(maxLen int) *PeerDevVol {
+	return &PeerDevVol{
+		OutOfSyncKiB:  &maxAvgCurrent{},
+		PendingWrites: &maxAvgCurrent{},
+		UnackedWrites: &maxAvgCurrent{},
+
+		ReceivedKiB: &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
+		SentKib:     &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
+	}
 }

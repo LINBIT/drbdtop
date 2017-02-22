@@ -318,9 +318,43 @@ func newDevVolume(maxLen int) *DevVolume {
 }
 
 type PeerDevice struct {
+	sync.RWMutex
+	uptimer
+	resource       string
 	peerNodeID     string
 	connectionName string
-	volumes        map[string]PeerDevVol
+	volumes        map[string]*PeerDevVol
+}
+
+func (p *PeerDevice) Update(e Event) bool {
+	p.Lock()
+	defer p.Unlock()
+
+	p.resource = e.fields[peerDevKeys[peerDevName]]
+	p.peerNodeID = e.fields[peerDevKeys[peerDevNodeID]]
+	p.connectionName = e.fields[peerDevKeys[peerDevConnName]]
+	p.updateTimes(e.timeStamp)
+
+	// If this volume doesn't exist, create a fresh one.
+	_, ok := p.volumes[e.fields[peerDevKeys[peerDevVolume]]]
+	if !ok {
+		p.volumes[e.fields[peerDevKeys[peerDevVolume]]] = newPeerDevVol(200)
+	}
+
+	vol := p.volumes[e.fields[peerDevKeys[peerDevVolume]]]
+
+	vol.replicationStatus = e.fields[peerDevKeys[peerDevReplication]]
+	vol.diskState = e.fields[peerDevKeys[peerDevPeerDisk]]
+	vol.resyncSuspended = e.fields[peerDevKeys[peerDevResyncSuspended]]
+
+	vol.OutOfSyncKiB.calculate(e.fields[peerDevKeys[peerDevOutOfSync]])
+	vol.PendingWrites.calculate(e.fields[peerDevKeys[peerDevPending]])
+	vol.UnackedWrites.calculate(e.fields[peerDevKeys[peerDevUnacked]])
+
+	vol.ReceivedKiB.calculate(p.Uptime, e.fields[peerDevKeys[peerDevReceived]])
+	vol.SentKiB.calculate(p.Uptime, e.fields[peerDevKeys[peerDevSent]])
+
+	return true
 }
 
 type PeerDevVol struct {
@@ -335,7 +369,7 @@ type PeerDevVol struct {
 	UnackedWrites *maxAvgCurrent
 
 	ReceivedKiB *rate
-	SentKib     *rate
+	SentKiB     *rate
 }
 
 func newPeerDevVol(maxLen int) *PeerDevVol {
@@ -345,6 +379,6 @@ func newPeerDevVol(maxLen int) *PeerDevVol {
 		UnackedWrites: &maxAvgCurrent{},
 
 		ReceivedKiB: &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
-		SentKib:     &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
+		SentKiB:     &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
 	}
 }

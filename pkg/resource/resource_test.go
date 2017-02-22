@@ -59,7 +59,7 @@ func TestUpdateTime(t *testing.T) {
 	}
 }
 
-func TestmaxAvgCurrent(t *testing.T) {
+func TestMaxAvgCurrent(t *testing.T) {
 	stats := maxAvgCurrent{}
 
 	stats.calculate("5")
@@ -356,5 +356,47 @@ func TestDeviceUpdate(t *testing.T) {
 	}
 	if dev.volumes[event.fields[devKeys[devVolume]]].ReadKiB.Total != 0 {
 		t.Errorf("Expected dev.volumes[%q].ReadKib.Total to be %q, got %q", vol, 0, dev.volumes[vol].ReadKiB.Total)
+	}
+}
+
+func TestPeerDeviceUpdate(t *testing.T) {
+	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	if err != nil {
+		t.Error(err)
+	}
+
+	dev := PeerDevice{volumes: make(map[string]*PeerDevVol)}
+
+	event := Event{
+		timeStamp: timeStamp,
+		target:    "peer-device",
+		fields: map[string]string{
+			peerDevKeys[peerDevName]:            "test0",
+			peerDevKeys[peerDevConnName]:        "peer",
+			peerDevKeys[peerDevVolume]:          "0",
+			peerDevKeys[peerDevReplication]:     "SyncSource",
+			peerDevKeys[peerDevPeerDisk]:        "Inconsistent",
+			peerDevKeys[peerDevResyncSuspended]: "no",
+			peerDevKeys[peerDevReceived]:        "100",
+			peerDevKeys[peerDevSent]:            "500",
+			peerDevKeys[peerDevOutOfSync]:       "200000",
+			peerDevKeys[peerDevPending]:         "0",
+			peerDevKeys[peerDevUnacked]:         "0",
+		},
+	}
+
+	dev.Update(event)
+
+	vol := event.fields[peerDevKeys[peerDevVolume]]
+
+	if dev.resource != event.fields[devKeys[devName]] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[peerDevKeys[peerDevName]], dev.resource)
+	}
+	if dev.volumes[vol].replicationStatus != event.fields[peerDevKeys[peerDevReplication]] {
+		t.Errorf("Expected dev.volumes[%q].replicationStatus to be %q, got %q", vol, event.fields[peerDevKeys[peerDevReplication]], dev.volumes[vol].replicationStatus)
+	}
+	oos, _ := strconv.ParseUint(event.fields[peerDevKeys[peerDevOutOfSync]], 10, 64)
+	if dev.volumes[vol].OutOfSyncKiB.Current != oos {
+		t.Errorf("Expected dev.volumes[%q].OutOfSyncKiB.Current to be %d, got %d", vol, oos, dev.volumes[vol].OutOfSyncKiB.Current)
 	}
 }

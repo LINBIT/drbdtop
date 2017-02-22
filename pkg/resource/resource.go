@@ -98,21 +98,29 @@ func (u *uptimer) updateTimes(t time.Time) {
 	u.Uptime = u.CurrentTime.Sub(u.StartTime)
 }
 
-type maxAvgCurrent struct {
+type minMaxAvgCurrent struct {
 	updateCount int
 	total       uint64
 
+	Min     uint64
 	Max     uint64
 	Avg     float64
 	Current uint64
 }
 
-func (m *maxAvgCurrent) calculate(s string) {
+func newMinMaxAvgCurrent() *minMaxAvgCurrent {
+	return &minMaxAvgCurrent{Min: math.MaxUint64}
+}
+
+func (m *minMaxAvgCurrent) calculate(s string) {
 	i, _ := strconv.ParseUint(s, 10, 64)
 
 	m.updateCount++
 	m.total += i
 
+	if i < m.Min {
+		m.Min = i
+	}
 	if i > m.Max {
 		m.Max = i
 	}
@@ -288,9 +296,9 @@ type DevVolume struct {
 	ActivityLogUpdates *rate
 	BitMapUpdates      *rate
 
-	UpperPending *maxAvgCurrent
-	LowerPending *maxAvgCurrent
-	Pending      *maxAvgCurrent
+	UpperPending *minMaxAvgCurrent
+	LowerPending *minMaxAvgCurrent
+	Pending      *minMaxAvgCurrent
 }
 
 func newDevVolume(maxLen int) *DevVolume {
@@ -300,8 +308,8 @@ func newDevVolume(maxLen int) *DevVolume {
 		ActivityLogUpdates: &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
 		BitMapUpdates:      &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
 
-		UpperPending: &maxAvgCurrent{},
-		LowerPending: &maxAvgCurrent{},
+		UpperPending: newMinMaxAvgCurrent(),
+		LowerPending: newMinMaxAvgCurrent(),
 	}
 }
 
@@ -352,9 +360,9 @@ type PeerDevVol struct {
 	resyncSuspended   string
 
 	// Calulated Values
-	OutOfSyncKiB  *maxAvgCurrent
-	PendingWrites *maxAvgCurrent
-	UnackedWrites *maxAvgCurrent
+	OutOfSyncKiB  *minMaxAvgCurrent
+	PendingWrites *minMaxAvgCurrent
+	UnackedWrites *minMaxAvgCurrent
 
 	ReceivedKiB *rate
 	SentKiB     *rate
@@ -362,9 +370,9 @@ type PeerDevVol struct {
 
 func newPeerDevVol(maxLen int) *PeerDevVol {
 	return &PeerDevVol{
-		OutOfSyncKiB:  &maxAvgCurrent{},
-		PendingWrites: &maxAvgCurrent{},
-		UnackedWrites: &maxAvgCurrent{},
+		OutOfSyncKiB:  newMinMaxAvgCurrent(),
+		PendingWrites: newMinMaxAvgCurrent(),
+		UnackedWrites: newMinMaxAvgCurrent(),
 
 		ReceivedKiB: &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
 		SentKiB:     &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},

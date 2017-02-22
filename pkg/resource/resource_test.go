@@ -60,12 +60,15 @@ func TestUpdateTime(t *testing.T) {
 }
 
 func TestMaxAvgCurrent(t *testing.T) {
-	stats := maxAvgCurrent{}
+	stats := newMinMaxAvgCurrent()
 
 	stats.calculate("5")
 
 	if stats.Max != 5 {
 		t.Errorf("Expected Max to be %d, got %d", 5, stats.Max)
+	}
+	if stats.Min != 5 {
+		t.Errorf("Expected Min to be %d, got %d", 5, stats.Min)
 	}
 	if stats.Avg != float64(5) {
 		t.Errorf("Expected Avg to be %f, got %f", float64(5), stats.Avg)
@@ -78,6 +81,9 @@ func TestMaxAvgCurrent(t *testing.T) {
 
 	if stats.Max != 10 {
 		t.Errorf("Expected Max to be %d, got %d", 10, stats.Max)
+	}
+	if stats.Min != 5 {
+		t.Errorf("Expected Min to be %d, got %d", 5, stats.Min)
 	}
 	if stats.Avg != float64(7.5) {
 		t.Errorf("Expected Avg to be %f, got %f", float64(7.5), stats.Avg)

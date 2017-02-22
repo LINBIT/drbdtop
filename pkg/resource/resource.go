@@ -250,38 +250,26 @@ func (d *Device) Update(e Event) bool {
 		d.volumes[e.fields[devKeys[devVolume]]] = newDevVolume(200)
 	}
 
-	d.volumes[e.fields[devKeys[devVolume]]].uptimer.updateTimes(e.timeStamp)
-	d.volumes[e.fields[devKeys[devVolume]]].minor = e.fields[devKeys[devMinor]]
-	d.volumes[e.fields[devKeys[devVolume]]].diskState = e.fields[devKeys[devDisk]]
-	d.volumes[e.fields[devKeys[devVolume]]].activityLogSuspended = e.fields[devKeys[devALSuspended]]
-	d.volumes[e.fields[devKeys[devVolume]]].blocked = e.fields[devKeys[devBlocked]]
+	vol := d.volumes[e.fields[devKeys[devVolume]]]
+
+	vol.uptimer.updateTimes(e.timeStamp)
+	vol.minor = e.fields[devKeys[devMinor]]
+	vol.diskState = e.fields[devKeys[devDisk]]
+	vol.activityLogSuspended = e.fields[devKeys[devALSuspended]]
+	vol.blocked = e.fields[devKeys[devBlocked]]
 
 	// Only update size if we can parse the field correctly.
 	if size, err := strconv.ParseUint(e.fields[devKeys[devSize]], 10, 64); err == nil {
-		d.volumes[e.fields[devKeys[devVolume]]].size = size
+		vol.size = size
 	}
 
-	d.volumes[e.fields[devKeys[devVolume]]].ReadKiB.calculate(
-		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
-		e.fields[devKeys[devRead]])
+	vol.ReadKiB.calculate(vol.uptimer.Uptime, e.fields[devKeys[devRead]])
+	vol.WrittenKiB.calculate(vol.uptimer.Uptime, e.fields[devKeys[devWritten]])
+	vol.ActivityLogUpdates.calculate(vol.uptimer.Uptime, e.fields[devKeys[devALWrites]])
+	vol.BitMapUpdates.calculate(vol.uptimer.Uptime, e.fields[devKeys[devBMWrites]])
 
-	d.volumes[e.fields[devKeys[devVolume]]].WrittenKiB.calculate(
-		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
-		e.fields[devKeys[devWritten]])
-
-	d.volumes[e.fields[devKeys[devVolume]]].ActivityLogUpdates.calculate(
-		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
-		e.fields[devKeys[devALWrites]])
-
-	d.volumes[e.fields[devKeys[devVolume]]].BitMapUpdates.calculate(
-		d.volumes[e.fields[devKeys[devVolume]]].uptimer.Uptime,
-		e.fields[devKeys[devBMWrites]])
-
-	d.volumes[e.fields[devKeys[devVolume]]].UpperPending.calculate(
-		e.fields[devKeys[devUpperPending]])
-
-	d.volumes[e.fields[devKeys[devVolume]]].LowerPending.calculate(
-		e.fields[devKeys[devLowerPending]])
+	vol.UpperPending.calculate(e.fields[devKeys[devUpperPending]])
+	vol.LowerPending.calculate(e.fields[devKeys[devLowerPending]])
 
 	return true
 }

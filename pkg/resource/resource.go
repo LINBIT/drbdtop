@@ -182,10 +182,10 @@ func (p *previousFloat64) Push(i float64) {
 }
 
 type Event struct {
-	timeStamp time.Time
+	TimeStamp time.Time
 	EventType string
-	target    string
-	fields    map[string]string
+	Target    string
+	Fields    map[string]string
 }
 
 // NewEvent parses the normal string output of drbdsetup events2 and returns an Event.
@@ -210,11 +210,11 @@ func (r *Resource) Update(e Event) bool {
 	r.Lock()
 	defer r.Unlock()
 
-	r.Name = e.fields[resKeys[resName]]
-	r.Role = e.fields[resKeys[resRole]]
-	r.Suspended = e.fields[resKeys[resSuspended]]
-	r.WriteOrdering = e.fields[resKeys[resWriteOrdering]]
-	r.updateTimes(e.timeStamp)
+	r.Name = e.Fields[resKeys[resName]]
+	r.Role = e.Fields[resKeys[resRole]]
+	r.Suspended = e.Fields[resKeys[resSuspended]]
+	r.WriteOrdering = e.Fields[resKeys[resWriteOrdering]]
+	r.updateTimes(e.TimeStamp)
 	r.updateCount++
 
 	return true
@@ -238,13 +238,13 @@ func (c *Connection) Update(e Event) bool {
 	c.Lock()
 	defer c.Unlock()
 
-	c.Resource = e.fields[connKeys[connName]]
-	c.PeerNodeID = e.fields[connKeys[connPeerNodeID]]
-	c.ConnectionName = e.fields[connKeys[connConnName]]
-	c.ConnectionStatus = e.fields[connKeys[connConnection]]
-	c.Role = e.fields[connKeys[connRole]]
-	c.Congested = e.fields[connKeys[connCongested]]
-	c.updateTimes(e.timeStamp)
+	c.Resource = e.Fields[connKeys[connName]]
+	c.PeerNodeID = e.Fields[connKeys[connPeerNodeID]]
+	c.ConnectionName = e.Fields[connKeys[connConnName]]
+	c.ConnectionStatus = e.Fields[connKeys[connConnection]]
+	c.Role = e.Fields[connKeys[connRole]]
+	c.Congested = e.Fields[connKeys[connCongested]]
+	c.updateTimes(e.TimeStamp)
 	c.updateCount++
 	return true
 }
@@ -259,34 +259,34 @@ func (d *Device) Update(e Event) bool {
 	d.Lock()
 	defer d.Unlock()
 
-	d.Resource = e.fields[devKeys[devName]]
+	d.Resource = e.Fields[devKeys[devName]]
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := d.Volumes[e.fields[devKeys[devVolume]]]
+	_, ok := d.Volumes[e.Fields[devKeys[devVolume]]]
 	if !ok {
-		d.Volumes[e.fields[devKeys[devVolume]]] = newDevVolume(200)
+		d.Volumes[e.Fields[devKeys[devVolume]]] = newDevVolume(200)
 	}
 
-	vol := d.Volumes[e.fields[devKeys[devVolume]]]
+	vol := d.Volumes[e.Fields[devKeys[devVolume]]]
 
-	vol.uptimer.updateTimes(e.timeStamp)
-	vol.Minor = e.fields[devKeys[devMinor]]
-	vol.DiskState = e.fields[devKeys[devDisk]]
-	vol.ActivityLogSuspended = e.fields[devKeys[devALSuspended]]
-	vol.Blocked = e.fields[devKeys[devBlocked]]
+	vol.uptimer.updateTimes(e.TimeStamp)
+	vol.Minor = e.Fields[devKeys[devMinor]]
+	vol.DiskState = e.Fields[devKeys[devDisk]]
+	vol.ActivityLogSuspended = e.Fields[devKeys[devALSuspended]]
+	vol.Blocked = e.Fields[devKeys[devBlocked]]
 
 	// Only update size if we can parse the field correctly.
-	if size, err := strconv.ParseUint(e.fields[devKeys[devSize]], 10, 64); err == nil {
+	if size, err := strconv.ParseUint(e.Fields[devKeys[devSize]], 10, 64); err == nil {
 		vol.Size = size
 	}
 
-	vol.ReadKiB.calculate(vol.uptimer.Uptime, e.fields[devKeys[devRead]])
-	vol.WrittenKiB.calculate(vol.uptimer.Uptime, e.fields[devKeys[devWritten]])
-	vol.ActivityLogUpdates.calculate(vol.uptimer.Uptime, e.fields[devKeys[devALWrites]])
-	vol.BitMapUpdates.calculate(vol.uptimer.Uptime, e.fields[devKeys[devBMWrites]])
+	vol.ReadKiB.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devRead]])
+	vol.WrittenKiB.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devWritten]])
+	vol.ActivityLogUpdates.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devALWrites]])
+	vol.BitMapUpdates.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devBMWrites]])
 
-	vol.UpperPending.calculate(e.fields[devKeys[devUpperPending]])
-	vol.LowerPending.calculate(e.fields[devKeys[devLowerPending]])
+	vol.UpperPending.calculate(e.Fields[devKeys[devUpperPending]])
+	vol.LowerPending.calculate(e.Fields[devKeys[devLowerPending]])
 
 	return true
 }
@@ -335,29 +335,29 @@ func (p *PeerDevice) Update(e Event) bool {
 	p.Lock()
 	defer p.Unlock()
 
-	p.Resource = e.fields[peerDevKeys[peerDevName]]
-	p.PeerNodeID = e.fields[peerDevKeys[peerDevNodeID]]
-	p.ConnectionName = e.fields[peerDevKeys[peerDevConnName]]
-	p.updateTimes(e.timeStamp)
+	p.Resource = e.Fields[peerDevKeys[peerDevName]]
+	p.PeerNodeID = e.Fields[peerDevKeys[peerDevNodeID]]
+	p.ConnectionName = e.Fields[peerDevKeys[peerDevConnName]]
+	p.updateTimes(e.TimeStamp)
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := p.Volumes[e.fields[peerDevKeys[peerDevVolume]]]
+	_, ok := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
 	if !ok {
-		p.Volumes[e.fields[peerDevKeys[peerDevVolume]]] = newPeerDevVol(200)
+		p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]] = newPeerDevVol(200)
 	}
 
-	vol := p.Volumes[e.fields[peerDevKeys[peerDevVolume]]]
+	vol := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
 
-	vol.ReplicationStatus = e.fields[peerDevKeys[peerDevReplication]]
-	vol.DiskState = e.fields[peerDevKeys[peerDevPeerDisk]]
-	vol.ResyncSuspended = e.fields[peerDevKeys[peerDevResyncSuspended]]
+	vol.ReplicationStatus = e.Fields[peerDevKeys[peerDevReplication]]
+	vol.DiskState = e.Fields[peerDevKeys[peerDevPeerDisk]]
+	vol.ResyncSuspended = e.Fields[peerDevKeys[peerDevResyncSuspended]]
 
-	vol.OutOfSyncKiB.calculate(e.fields[peerDevKeys[peerDevOutOfSync]])
-	vol.PendingWrites.calculate(e.fields[peerDevKeys[peerDevPending]])
-	vol.UnackedWrites.calculate(e.fields[peerDevKeys[peerDevUnacked]])
+	vol.OutOfSyncKiB.calculate(e.Fields[peerDevKeys[peerDevOutOfSync]])
+	vol.PendingWrites.calculate(e.Fields[peerDevKeys[peerDevPending]])
+	vol.UnackedWrites.calculate(e.Fields[peerDevKeys[peerDevUnacked]])
 
-	vol.ReceivedKiB.calculate(p.Uptime, e.fields[peerDevKeys[peerDevReceived]])
-	vol.SentKiB.calculate(p.Uptime, e.fields[peerDevKeys[peerDevSent]])
+	vol.ReceivedKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevReceived]])
+	vol.SentKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevSent]])
 
 	return true
 }

@@ -161,9 +161,9 @@ func TestResourceUpdate(t *testing.T) {
 
 	status := Resource{}
 	event := Event{
-		timeStamp: timeStamp,
-		target:    "resource",
-		fields: map[string]string{
+		TimeStamp: timeStamp,
+		Target:    "resource",
+		Fields: map[string]string{
 			"name":           "test0",
 			"role":           "Primary",
 			"suspended":      "no",
@@ -174,31 +174,31 @@ func TestResourceUpdate(t *testing.T) {
 	// Update should populate an empty Status.
 	status.Update(event)
 
-	if status.Name != event.fields[resKeys[resName]] {
-		t.Errorf("Expected status.Name to be %q, got %q", event.fields["name"], status.Name)
+	if status.Name != event.Fields[resKeys[resName]] {
+		t.Errorf("Expected status.Name to be %q, got %q", event.Fields["name"], status.Name)
 	}
-	if status.Role != event.fields[resKeys[resRole]] {
-		t.Errorf("Expected status.Role to be %q, got %q", event.fields["role"], status.Role)
+	if status.Role != event.Fields[resKeys[resRole]] {
+		t.Errorf("Expected status.Role to be %q, got %q", event.Fields["role"], status.Role)
 	}
-	if status.Suspended != event.fields[resKeys[resSuspended]] {
-		t.Errorf("Expected status.Suspended to be %q, got %q", event.fields["suspended"], status.Suspended)
+	if status.Suspended != event.Fields[resKeys[resSuspended]] {
+		t.Errorf("Expected status.Suspended to be %q, got %q", event.Fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.fields[resKeys[resWriteOrdering]] {
-		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.fields["write-ordering"], status.WriteOrdering)
+	if status.WriteOrdering != event.Fields[resKeys[resWriteOrdering]] {
+		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
-	if status.StartTime != event.timeStamp {
-		t.Errorf("Expected status.StartTime to be %q, got %q", event.timeStamp, status.StartTime)
+	if status.StartTime != event.TimeStamp {
+		t.Errorf("Expected status.StartTime to be %q, got %q", event.TimeStamp, status.StartTime)
 	}
 	// Start and current time should match when first created.
-	if status.CurrentTime != event.timeStamp {
-		t.Errorf("Expected status.CurrentTime to be %q, got %q", event.timeStamp, status.StartTime)
+	if status.CurrentTime != event.TimeStamp {
+		t.Errorf("Expected status.CurrentTime to be %q, got %q", event.TimeStamp, status.StartTime)
 	}
 
 	// Update should update an exsisting Status.
 	event = Event{
-		timeStamp: timeStamp.Add(time.Millisecond * 500),
-		target:    "resource",
-		fields: map[string]string{
+		TimeStamp: timeStamp.Add(time.Millisecond * 500),
+		Target:    "resource",
+		Fields: map[string]string{
 			"name":           "test0",
 			"role":           "Secondary",
 			"suspended":      "no",
@@ -208,23 +208,23 @@ func TestResourceUpdate(t *testing.T) {
 
 	status.Update(event)
 
-	if status.Name != event.fields[resKeys[resName]] {
-		t.Errorf("Expected status.Name to be %q, got %q", event.fields["name"], status.Name)
+	if status.Name != event.Fields[resKeys[resName]] {
+		t.Errorf("Expected status.Name to be %q, got %q", event.Fields["name"], status.Name)
 	}
-	if status.Role != event.fields[resKeys[resRole]] {
-		t.Errorf("Expected status.Role to be %q, got %q", event.fields["role"], status.Role)
+	if status.Role != event.Fields[resKeys[resRole]] {
+		t.Errorf("Expected status.Role to be %q, got %q", event.Fields["role"], status.Role)
 	}
-	if status.Suspended != event.fields[resKeys[resSuspended]] {
-		t.Errorf("Expected status.Suspended to be %q, got %q", event.fields["suspended"], status.Suspended)
+	if status.Suspended != event.Fields[resKeys[resSuspended]] {
+		t.Errorf("Expected status.Suspended to be %q, got %q", event.Fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.fields[resKeys[resWriteOrdering]] {
-		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.fields["write-ordering"], status.WriteOrdering)
+	if status.WriteOrdering != event.Fields[resKeys[resWriteOrdering]] {
+		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
 	if status.StartTime != timeStamp {
 		t.Errorf("Expected status.StartTime to be %q, got %q", timeStamp, status.StartTime)
 	}
-	if status.CurrentTime != event.timeStamp {
-		t.Errorf("Expected status.CurrentTime to be %q, got %q", event.timeStamp, status.CurrentTime)
+	if status.CurrentTime != event.TimeStamp {
+		t.Errorf("Expected status.CurrentTime to be %q, got %q", event.TimeStamp, status.CurrentTime)
 	}
 	// Start and current time should match when first created.
 	if status.CurrentTime == status.StartTime {
@@ -240,9 +240,9 @@ func TestConnectionUpdate(t *testing.T) {
 
 	conn := Connection{}
 	event := Event{
-		timeStamp: timeStamp,
-		target:    "connection",
-		fields: map[string]string{
+		TimeStamp: timeStamp,
+		Target:    "connection",
+		Fields: map[string]string{
 			connKeys[connName]:       "test0",
 			connKeys[connPeerNodeID]: "1",
 			connKeys[connConnName]:   "bob",
@@ -255,31 +255,31 @@ func TestConnectionUpdate(t *testing.T) {
 	// Update should create a new connection if there isn't one.
 	conn.Update(event)
 
-	name := event.fields[connKeys[connConnName]]
+	name := event.Fields[connKeys[connConnName]]
 
-	if conn.ConnectionName != event.fields[connKeys[connConnName]] {
-		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.ConnectionName)
+	if conn.ConnectionName != event.Fields[connKeys[connConnName]] {
+		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.Fields[connKeys[connName]], conn.ConnectionName)
 	}
-	if conn.PeerNodeID != event.fields[connKeys[connPeerNodeID]] {
-		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
+	if conn.PeerNodeID != event.Fields[connKeys[connPeerNodeID]] {
+		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.Fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
 	}
-	if conn.ConnectionStatus != event.fields[connKeys[connConnection]] {
-		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.fields[connKeys[connConnection]], conn.ConnectionStatus)
+	if conn.ConnectionStatus != event.Fields[connKeys[connConnection]] {
+		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.Fields[connKeys[connConnection]], conn.ConnectionStatus)
 	}
-	if conn.Role != event.fields[connKeys[connRole]] {
-		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.fields[connKeys[connRole]], conn.Role)
+	if conn.Role != event.Fields[connKeys[connRole]] {
+		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.Fields[connKeys[connRole]], conn.Role)
 	}
-	if conn.Congested != event.fields[connKeys[connCongested]] {
-		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.fields[connKeys[connCongested]], conn.Congested)
+	if conn.Congested != event.Fields[connKeys[connCongested]] {
+		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[connKeys[connCongested]], conn.Congested)
 	}
 	if conn.updateCount != 1 {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
 	}
 
 	event = Event{
-		timeStamp: timeStamp,
-		target:    "connection",
-		fields: map[string]string{
+		TimeStamp: timeStamp,
+		Target:    "connection",
+		Fields: map[string]string{
 			connKeys[connName]:       "test0",
 			connKeys[connPeerNodeID]: "1",
 			connKeys[connConnName]:   "bob",
@@ -292,22 +292,22 @@ func TestConnectionUpdate(t *testing.T) {
 	// Update should update a new connection if one exists.
 	conn.Update(event)
 
-	name = event.fields[connKeys[connConnName]]
+	name = event.Fields[connKeys[connConnName]]
 
-	if conn.ConnectionName != event.fields[connKeys[connConnName]] {
-		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.ConnectionName)
+	if conn.ConnectionName != event.Fields[connKeys[connConnName]] {
+		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.Fields[connKeys[connName]], conn.ConnectionName)
 	}
-	if conn.PeerNodeID != event.fields[connKeys[connPeerNodeID]] {
-		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
+	if conn.PeerNodeID != event.Fields[connKeys[connPeerNodeID]] {
+		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.Fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
 	}
-	if conn.ConnectionStatus != event.fields[connKeys[connConnection]] {
-		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.fields[connKeys[connConnection]], conn.ConnectionStatus)
+	if conn.ConnectionStatus != event.Fields[connKeys[connConnection]] {
+		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.Fields[connKeys[connConnection]], conn.ConnectionStatus)
 	}
-	if conn.Role != event.fields[connKeys[connRole]] {
-		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.fields[connKeys[connRole]], conn.Role)
+	if conn.Role != event.Fields[connKeys[connRole]] {
+		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.Fields[connKeys[connRole]], conn.Role)
 	}
-	if conn.Congested != event.fields[connKeys[connCongested]] {
-		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.fields[connKeys[connCongested]], conn.Congested)
+	if conn.Congested != event.Fields[connKeys[connCongested]] {
+		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[connKeys[connCongested]], conn.Congested)
 	}
 	if conn.updateCount != 2 {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
@@ -323,9 +323,9 @@ func TestDeviceUpdate(t *testing.T) {
 	dev := Device{Volumes: make(map[string]*DevVolume)}
 
 	event := Event{
-		timeStamp: timeStamp,
-		target:    "device",
-		fields: map[string]string{
+		TimeStamp: timeStamp,
+		Target:    "device",
+		Fields: map[string]string{
 			devKeys[devName]:         "test0",
 			devKeys[devVolume]:       "0",
 			devKeys[devMinor]:        "0",
@@ -344,23 +344,23 @@ func TestDeviceUpdate(t *testing.T) {
 
 	dev.Update(event)
 
-	vol := event.fields[devKeys[devVolume]]
+	vol := event.Fields[devKeys[devVolume]]
 
-	if dev.Resource != event.fields[devKeys[devName]] {
-		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[devKeys[devName]], dev.Resource)
+	if dev.Resource != event.Fields[devKeys[devName]] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.Fields[devKeys[devName]], dev.Resource)
 	}
-	if dev.Volumes[vol].Minor != event.fields[devKeys[devMinor]] {
-		t.Errorf("Expected dev.volumes[%q].minor to be %q, got %q", vol, event.fields[devKeys[devMinor]], dev.Volumes[vol].Minor)
+	if dev.Volumes[vol].Minor != event.Fields[devKeys[devMinor]] {
+		t.Errorf("Expected dev.volumes[%q].minor to be %q, got %q", vol, event.Fields[devKeys[devMinor]], dev.Volumes[vol].Minor)
 	}
-	if dev.Volumes[vol].DiskState != event.fields[devKeys[devDisk]] {
-		t.Errorf("Expected dev.volumes[%q].DiskState to be %q, got %q", vol, event.fields[devKeys[devDisk]], dev.Volumes[vol].DiskState)
+	if dev.Volumes[vol].DiskState != event.Fields[devKeys[devDisk]] {
+		t.Errorf("Expected dev.volumes[%q].DiskState to be %q, got %q", vol, event.Fields[devKeys[devDisk]], dev.Volumes[vol].DiskState)
 	}
 
-	size, _ := strconv.ParseUint(event.fields[devKeys[devSize]], 10, 64)
+	size, _ := strconv.ParseUint(event.Fields[devKeys[devSize]], 10, 64)
 	if dev.Volumes[vol].Size != size {
-		t.Errorf("Expected dev.volumes[%q].size to be %q, got %d", vol, event.fields[devKeys[devSize]], dev.Volumes[vol].Size)
+		t.Errorf("Expected dev.volumes[%q].size to be %q, got %d", vol, event.Fields[devKeys[devSize]], dev.Volumes[vol].Size)
 	}
-	if dev.Volumes[event.fields[devKeys[devVolume]]].ReadKiB.Total != 0 {
+	if dev.Volumes[event.Fields[devKeys[devVolume]]].ReadKiB.Total != 0 {
 		t.Errorf("Expected dev.volumes[%q].ReadKib.Total to be %q, got %q", vol, 0, dev.Volumes[vol].ReadKiB.Total)
 	}
 }
@@ -374,9 +374,9 @@ func TestPeerDeviceUpdate(t *testing.T) {
 	dev := PeerDevice{Volumes: make(map[string]*PeerDevVol)}
 
 	event := Event{
-		timeStamp: timeStamp,
-		target:    "peer-device",
-		fields: map[string]string{
+		TimeStamp: timeStamp,
+		Target:    "peer-device",
+		Fields: map[string]string{
 			peerDevKeys[peerDevName]:            "test0",
 			peerDevKeys[peerDevConnName]:        "peer",
 			peerDevKeys[peerDevVolume]:          "0",
@@ -393,15 +393,15 @@ func TestPeerDeviceUpdate(t *testing.T) {
 
 	dev.Update(event)
 
-	vol := event.fields[peerDevKeys[peerDevVolume]]
+	vol := event.Fields[peerDevKeys[peerDevVolume]]
 
-	if dev.Resource != event.fields[devKeys[devName]] {
-		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[peerDevKeys[peerDevName]], dev.Resource)
+	if dev.Resource != event.Fields[devKeys[devName]] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.Fields[peerDevKeys[peerDevName]], dev.Resource)
 	}
-	if dev.Volumes[vol].ReplicationStatus != event.fields[peerDevKeys[peerDevReplication]] {
-		t.Errorf("Expected dev.volumes[%q].replicationStatus to be %q, got %q", vol, event.fields[peerDevKeys[peerDevReplication]], dev.Volumes[vol].ReplicationStatus)
+	if dev.Volumes[vol].ReplicationStatus != event.Fields[peerDevKeys[peerDevReplication]] {
+		t.Errorf("Expected dev.volumes[%q].replicationStatus to be %q, got %q", vol, event.Fields[peerDevKeys[peerDevReplication]], dev.Volumes[vol].ReplicationStatus)
 	}
-	oos, _ := strconv.ParseUint(event.fields[peerDevKeys[peerDevOutOfSync]], 10, 64)
+	oos, _ := strconv.ParseUint(event.Fields[peerDevKeys[peerDevOutOfSync]], 10, 64)
 	if dev.Volumes[vol].OutOfSyncKiB.Current != oos {
 		t.Errorf("Expected dev.volumes[%q].OutOfSyncKiB.Current to be %d, got %d", vol, oos, dev.Volumes[vol].OutOfSyncKiB.Current)
 	}
@@ -419,10 +419,10 @@ func TestNewEvent(t *testing.T) {
 	}{
 		{"2017-02-22T19:53:58.445263-08:00 exists resource name:test3 role:Secondary suspended:no write-ordering:flush",
 			Event{
-				timeStamp: resTimeStamp0,
+				TimeStamp: resTimeStamp0,
 				EventType: "exists",
-				target:    "resource",
-				fields: map[string]string{
+				Target:    "resource",
+				Fields: map[string]string{
 					resKeys[resName]:          "test3",
 					resKeys[resRole]:          "Secondary",
 					resKeys[resSuspended]:     "no",
@@ -431,10 +431,10 @@ func TestNewEvent(t *testing.T) {
 		},
 		{"2017-02-22T19:53:58.445263-08:00 exists connection name:test3 peer-node-id:1 conn-name:tom connection:Connected role:Secondary congested:no",
 			Event{
-				timeStamp: resTimeStamp0,
+				TimeStamp: resTimeStamp0,
 				EventType: "exists",
-				target:    "connection",
-				fields: map[string]string{
+				Target:    "connection",
+				Fields: map[string]string{
 					connKeys[connName]:       "test3",
 					connKeys[connPeerNodeID]: "1",
 					connKeys[connConnName]:   "tom",
@@ -445,10 +445,10 @@ func TestNewEvent(t *testing.T) {
 		},
 		{"2017-02-22T19:53:58.445263-08:00 exists device name:test3 volume:0 minor:150 disk:UpToDate size:1048576 read:912 written:0 al-writes:0 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no",
 			Event{
-				timeStamp: resTimeStamp0,
+				TimeStamp: resTimeStamp0,
 				EventType: "exists",
-				target:    "device",
-				fields: map[string]string{
+				Target:    "device",
+				Fields: map[string]string{
 					devKeys[devName]:         "test3",
 					devKeys[devVolume]:       "0",
 					devKeys[devMinor]:        "150",
@@ -466,10 +466,10 @@ func TestNewEvent(t *testing.T) {
 		},
 		{"2017-02-22T19:53:58.445263-08:00 exists peer-device name:test3 peer-node-id:1 conn-name:tom volume:0 replication:Established peer-disk:UpToDate resync-suspended:no received:10 sent:100 out-of-sync:1000 pending:10000 unacked:100000",
 			Event{
-				timeStamp: resTimeStamp0,
+				TimeStamp: resTimeStamp0,
 				EventType: "exists",
-				target:    "peer-device",
-				fields: map[string]string{
+				Target:    "peer-device",
+				Fields: map[string]string{
 					peerDevKeys[peerDevName]:            "test0",
 					peerDevKeys[peerDevNodeID]:          "1",
 					peerDevKeys[peerDevConnName]:        "tom",

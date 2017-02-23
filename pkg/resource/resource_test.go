@@ -489,7 +489,7 @@ func TestNewEvent(t *testing.T) {
 	for _, tt := range drbd9Tests {
 		e, _ := NewEvent(tt.in)
 		if !reflect.DeepEqual(e, tt.out) {
-			t.Errorf("Called: NewEvent(%q) Expected: %v, Got: %v", tt.in, tt.out, e)
+			t.Errorf("Called: NewEvent(%q)\nExpected: %v\nGot: %v", tt.in, tt.out, e)
 		}
 	}
 }

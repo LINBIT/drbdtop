@@ -18,8 +18,68 @@
 
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"os"
+	"sync"
+
+	"github.com/hayswim/drbdtop/pkg/resource"
+)
 
 func main() {
-	fmt.Println("hello world")
+	file := flag.String("file", "", "Path to a file containing output gathered from polling `drbdsetup events2 --timestamps --statistics --now`")
+
+	flag.Parse()
+
+	rawEvents := make(chan string)
+
+	if *file != "" {
+		f, err := os.Open(*file)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+		go func() {
+			for scanner.Scan() {
+				rawEvents <- scanner.Text()
+			}
+			os.Exit(0)
+		}()
+
+	} else {
+		fmt.Println("Only reading from a file is supported right now. Use the --file option next time.")
+		os.Exit(1)
+	}
+
+	// Main update loop. For now just prints events.
+	i := 0
+	for {
+		var wg sync.WaitGroup
+		i++
+		for {
+			s := <-rawEvents
+			e, err := resource.NewEvent(s)
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+
+			// Break on these event targets so that updates are applied in order.
+			if e.Target == "-" {
+				break
+			}
+
+			wg.Add(1)
+			// Update logic goes here.
+			go func() {
+				defer wg.Done()
+				fmt.Printf("%v\n", e)
+			}()
+		}
+		wg.Wait()
+		fmt.Printf("\nThat's %d groups!\n", i)
+	}
 }

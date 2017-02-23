@@ -409,7 +409,7 @@ func TestPeerDeviceUpdate(t *testing.T) {
 
 func TestNewEvent(t *testing.T) {
 
-	resTimeStamp0, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	resTimeStamp0, err := time.Parse(timeFormat, "2017-02-22T19:53:58.445263-08:00")
 	if err != nil {
 		t.Fatal("Unable to parse time format")
 	}
@@ -470,7 +470,7 @@ func TestNewEvent(t *testing.T) {
 				EventType: "exists",
 				Target:    "peer-device",
 				Fields: map[string]string{
-					peerDevKeys[peerDevName]:            "test0",
+					peerDevKeys[peerDevName]:            "test3",
 					peerDevKeys[peerDevNodeID]:          "1",
 					peerDevKeys[peerDevConnName]:        "tom",
 					peerDevKeys[peerDevVolume]:          "0",

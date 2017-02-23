@@ -19,8 +19,10 @@
 package resource
 
 import (
+	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -190,8 +192,31 @@ type Event struct {
 
 // NewEvent parses the normal string output of drbdsetup events2 and returns an Event.
 func NewEvent(e string) (Event, error) {
+	e = strings.TrimSpace(e)
 
-	return Event{}, nil
+	data := strings.Split(e, " ")
+
+	// Dynamically assign event fields for all events, reguardless of event target.
+	fields := make(map[string]string)
+	for i, d := range data[3:] {
+		f := strings.Split(d, ":")
+		if len(f) != 2 {
+			return Event{Fields: make(map[string]string)}, fmt.Errorf("Couldn't parse key/value pair from %q", data[i])
+		}
+		fields[f[0]] = f[1]
+	}
+
+	timeStamp, err := time.Parse(timeFormat, data[0])
+	if err != nil {
+		return Event{Fields: make(map[string]string)}, err
+	}
+
+	return Event{
+		TimeStamp: timeStamp,
+		EventType: data[1],
+		Target:    data[2],
+		Fields:    fields,
+	}, nil
 }
 
 type Resource struct {

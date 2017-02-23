@@ -289,7 +289,7 @@ func (d *Device) Update(e Event) bool {
 	// If this volume doesn't exist, create a fresh one.
 	_, ok := d.Volumes[e.Fields[devKeys[devVolume]]]
 	if !ok {
-		d.Volumes[e.Fields[devKeys[devVolume]]] = newDevVolume(200)
+		d.Volumes[e.Fields[devKeys[devVolume]]] = NewDevVolume(200)
 	}
 
 	vol := d.Volumes[e.Fields[devKeys[devVolume]]]
@@ -335,7 +335,7 @@ type DevVolume struct {
 	Pending      *minMaxAvgCurrent
 }
 
-func newDevVolume(maxLen int) *DevVolume {
+func NewDevVolume(maxLen int) *DevVolume {
 	return &DevVolume{
 		ReadKiB:            &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
 		WrittenKiB:         &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
@@ -368,7 +368,7 @@ func (p *PeerDevice) Update(e Event) bool {
 	// If this volume doesn't exist, create a fresh one.
 	_, ok := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
 	if !ok {
-		p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]] = newPeerDevVol(200)
+		p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]] = NewPeerDevVol(200)
 	}
 
 	vol := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
@@ -402,7 +402,7 @@ type PeerDevVol struct {
 	SentKiB     *rate
 }
 
-func newPeerDevVol(maxLen int) *PeerDevVol {
+func NewPeerDevVol(maxLen int) *PeerDevVol {
 	return &PeerDevVol{
 		OutOfSyncKiB:  newMinMaxAvgCurrent(),
 		PendingWrites: newMinMaxAvgCurrent(),

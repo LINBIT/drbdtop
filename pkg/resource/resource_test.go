@@ -406,3 +406,90 @@ func TestPeerDeviceUpdate(t *testing.T) {
 		t.Errorf("Expected dev.volumes[%q].OutOfSyncKiB.Current to be %d, got %d", vol, oos, dev.Volumes[vol].OutOfSyncKiB.Current)
 	}
 }
+
+func TestNewEvent(t *testing.T) {
+
+	resTimeStamp0, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	if err != nil {
+		t.Fatal("Unable to parse time format")
+	}
+	var drbd9Tests = []struct {
+		in  string
+		out Event
+	}{
+		{"2017-02-22T19:53:58.445263-08:00 exists resource name:test3 role:Secondary suspended:no write-ordering:flush",
+			Event{
+				timeStamp: resTimeStamp0,
+				EventType: "exists",
+				target:    "resource",
+				fields: map[string]string{
+					resKeys[resName]:          "test3",
+					resKeys[resRole]:          "Secondary",
+					resKeys[resSuspended]:     "no",
+					resKeys[resWriteOrdering]: "flush",
+				}},
+		},
+		{"2017-02-22T19:53:58.445263-08:00 exists connection name:test3 peer-node-id:1 conn-name:tom connection:Connected role:Secondary congested:no",
+			Event{
+				timeStamp: resTimeStamp0,
+				EventType: "exists",
+				target:    "connection",
+				fields: map[string]string{
+					connKeys[connName]:       "test3",
+					connKeys[connPeerNodeID]: "1",
+					connKeys[connConnName]:   "tom",
+					connKeys[connConnection]: "Connected",
+					connKeys[connRole]:       "Secondary",
+					connKeys[connCongested]:  "no",
+				}},
+		},
+		{"2017-02-22T19:53:58.445263-08:00 exists device name:test3 volume:0 minor:150 disk:UpToDate size:1048576 read:912 written:0 al-writes:0 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no",
+			Event{
+				timeStamp: resTimeStamp0,
+				EventType: "exists",
+				target:    "device",
+				fields: map[string]string{
+					devKeys[devName]:         "test3",
+					devKeys[devVolume]:       "0",
+					devKeys[devMinor]:        "150",
+					devKeys[devDisk]:         "UpToDate",
+					devKeys[devSize]:         "1048576",
+					devKeys[devRead]:         "912",
+					devKeys[devWritten]:      "0",
+					devKeys[devALWrites]:     "0",
+					devKeys[devBMWrites]:     "0",
+					devKeys[devUpperPending]: "0",
+					devKeys[devLowerPending]: "0",
+					devKeys[devALSuspended]:  "no",
+					devKeys[devBlocked]:      "no",
+				}},
+		},
+		{"2017-02-22T19:53:58.445263-08:00 exists peer-device name:test3 peer-node-id:1 conn-name:tom volume:0 replication:Established peer-disk:UpToDate resync-suspended:no received:10 sent:100 out-of-sync:1000 pending:10000 unacked:100000",
+			Event{
+				timeStamp: resTimeStamp0,
+				EventType: "exists",
+				target:    "peer-device",
+				fields: map[string]string{
+					peerDevKeys[peerDevName]:            "test0",
+					peerDevKeys[peerDevNodeID]:          "1",
+					peerDevKeys[peerDevConnName]:        "tom",
+					peerDevKeys[peerDevVolume]:          "0",
+					peerDevKeys[peerDevReplication]:     "Established",
+					peerDevKeys[peerDevPeerDisk]:        "UpToDate",
+					peerDevKeys[peerDevResyncSuspended]: "no",
+					peerDevKeys[peerDevReceived]:        "10",
+					peerDevKeys[peerDevSent]:            "100",
+					peerDevKeys[peerDevOutOfSync]:       "1000",
+					peerDevKeys[peerDevPending]:         "10000",
+					peerDevKeys[peerDevUnacked]:         "100000",
+				}},
+		},
+	}
+
+	for _, tt := range drbd9Tests {
+		e, _ := NewEvent(tt.in)
+		if !reflect.DeepEqual(e, tt.out) {
+			t.Errorf("Called: NewEvent(%q) Expected: %v, Got: %v", tt.in, tt.out, e)
+		}
+	}
+}

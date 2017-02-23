@@ -183,8 +183,15 @@ func (p *previousFloat64) Push(i float64) {
 
 type Event struct {
 	timeStamp time.Time
+	EventType string
 	target    string
 	fields    map[string]string
+}
+
+// NewEvent parses the normal string output of drbdsetup events2 and returns an Event.
+func NewEvent(e string) (Event, error) {
+
+	return Event{}, nil
 }
 
 type Resource struct {

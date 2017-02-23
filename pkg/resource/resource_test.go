@@ -257,20 +257,20 @@ func TestConnectionUpdate(t *testing.T) {
 
 	name := event.fields[connKeys[connConnName]]
 
-	if conn.connectionName != event.fields[connKeys[connConnName]] {
-		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.connectionName)
+	if conn.ConnectionName != event.fields[connKeys[connConnName]] {
+		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.ConnectionName)
 	}
-	if conn.peerNodeID != event.fields[connKeys[connPeerNodeID]] {
-		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.fields[connKeys[connPeerNodeID]], conn.peerNodeID)
+	if conn.PeerNodeID != event.fields[connKeys[connPeerNodeID]] {
+		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
 	}
-	if conn.connectionStatus != event.fields[connKeys[connConnection]] {
-		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.fields[connKeys[connConnection]], conn.connectionStatus)
+	if conn.ConnectionStatus != event.fields[connKeys[connConnection]] {
+		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.fields[connKeys[connConnection]], conn.ConnectionStatus)
 	}
-	if conn.role != event.fields[connKeys[connRole]] {
-		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.fields[connKeys[connRole]], conn.role)
+	if conn.Role != event.fields[connKeys[connRole]] {
+		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.fields[connKeys[connRole]], conn.Role)
 	}
-	if conn.congested != event.fields[connKeys[connCongested]] {
-		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.fields[connKeys[connCongested]], conn.congested)
+	if conn.Congested != event.fields[connKeys[connCongested]] {
+		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.fields[connKeys[connCongested]], conn.Congested)
 	}
 	if conn.updateCount != 1 {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
@@ -294,20 +294,20 @@ func TestConnectionUpdate(t *testing.T) {
 
 	name = event.fields[connKeys[connConnName]]
 
-	if conn.connectionName != event.fields[connKeys[connConnName]] {
-		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.connectionName)
+	if conn.ConnectionName != event.fields[connKeys[connConnName]] {
+		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.fields[connKeys[connName]], conn.ConnectionName)
 	}
-	if conn.peerNodeID != event.fields[connKeys[connPeerNodeID]] {
-		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.fields[connKeys[connPeerNodeID]], conn.peerNodeID)
+	if conn.PeerNodeID != event.fields[connKeys[connPeerNodeID]] {
+		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
 	}
-	if conn.connectionStatus != event.fields[connKeys[connConnection]] {
-		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.fields[connKeys[connConnection]], conn.connectionStatus)
+	if conn.ConnectionStatus != event.fields[connKeys[connConnection]] {
+		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.fields[connKeys[connConnection]], conn.ConnectionStatus)
 	}
-	if conn.role != event.fields[connKeys[connRole]] {
-		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.fields[connKeys[connRole]], conn.role)
+	if conn.Role != event.fields[connKeys[connRole]] {
+		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.fields[connKeys[connRole]], conn.Role)
 	}
-	if conn.congested != event.fields[connKeys[connCongested]] {
-		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.fields[connKeys[connCongested]], conn.congested)
+	if conn.Congested != event.fields[connKeys[connCongested]] {
+		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.fields[connKeys[connCongested]], conn.Congested)
 	}
 	if conn.updateCount != 2 {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
@@ -320,7 +320,7 @@ func TestDeviceUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	dev := Device{volumes: make(map[string]*DevVolume)}
+	dev := Device{Volumes: make(map[string]*DevVolume)}
 
 	event := Event{
 		timeStamp: timeStamp,
@@ -346,22 +346,22 @@ func TestDeviceUpdate(t *testing.T) {
 
 	vol := event.fields[devKeys[devVolume]]
 
-	if dev.resource != event.fields[devKeys[devName]] {
-		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[devKeys[devName]], dev.resource)
+	if dev.Resource != event.fields[devKeys[devName]] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[devKeys[devName]], dev.Resource)
 	}
-	if dev.volumes[vol].minor != event.fields[devKeys[devMinor]] {
-		t.Errorf("Expected dev.volumes[%q].minor to be %q, got %q", vol, event.fields[devKeys[devMinor]], dev.volumes[vol].minor)
+	if dev.Volumes[vol].Minor != event.fields[devKeys[devMinor]] {
+		t.Errorf("Expected dev.volumes[%q].minor to be %q, got %q", vol, event.fields[devKeys[devMinor]], dev.Volumes[vol].Minor)
 	}
-	if dev.volumes[vol].diskState != event.fields[devKeys[devDisk]] {
-		t.Errorf("Expected dev.volumes[%q].diskState to be %q, got %q", vol, event.fields[devKeys[devDisk]], dev.volumes[vol].diskState)
+	if dev.Volumes[vol].DiskState != event.fields[devKeys[devDisk]] {
+		t.Errorf("Expected dev.volumes[%q].DiskState to be %q, got %q", vol, event.fields[devKeys[devDisk]], dev.Volumes[vol].DiskState)
 	}
 
 	size, _ := strconv.ParseUint(event.fields[devKeys[devSize]], 10, 64)
-	if dev.volumes[vol].size != size {
-		t.Errorf("Expected dev.volumes[%q].size to be %q, got %d", vol, event.fields[devKeys[devSize]], dev.volumes[vol].size)
+	if dev.Volumes[vol].Size != size {
+		t.Errorf("Expected dev.volumes[%q].size to be %q, got %d", vol, event.fields[devKeys[devSize]], dev.Volumes[vol].Size)
 	}
-	if dev.volumes[event.fields[devKeys[devVolume]]].ReadKiB.Total != 0 {
-		t.Errorf("Expected dev.volumes[%q].ReadKib.Total to be %q, got %q", vol, 0, dev.volumes[vol].ReadKiB.Total)
+	if dev.Volumes[event.fields[devKeys[devVolume]]].ReadKiB.Total != 0 {
+		t.Errorf("Expected dev.volumes[%q].ReadKib.Total to be %q, got %q", vol, 0, dev.Volumes[vol].ReadKiB.Total)
 	}
 }
 
@@ -371,7 +371,7 @@ func TestPeerDeviceUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	dev := PeerDevice{volumes: make(map[string]*PeerDevVol)}
+	dev := PeerDevice{Volumes: make(map[string]*PeerDevVol)}
 
 	event := Event{
 		timeStamp: timeStamp,
@@ -395,14 +395,14 @@ func TestPeerDeviceUpdate(t *testing.T) {
 
 	vol := event.fields[peerDevKeys[peerDevVolume]]
 
-	if dev.resource != event.fields[devKeys[devName]] {
-		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[peerDevKeys[peerDevName]], dev.resource)
+	if dev.Resource != event.fields[devKeys[devName]] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.fields[peerDevKeys[peerDevName]], dev.Resource)
 	}
-	if dev.volumes[vol].replicationStatus != event.fields[peerDevKeys[peerDevReplication]] {
-		t.Errorf("Expected dev.volumes[%q].replicationStatus to be %q, got %q", vol, event.fields[peerDevKeys[peerDevReplication]], dev.volumes[vol].replicationStatus)
+	if dev.Volumes[vol].ReplicationStatus != event.fields[peerDevKeys[peerDevReplication]] {
+		t.Errorf("Expected dev.volumes[%q].replicationStatus to be %q, got %q", vol, event.fields[peerDevKeys[peerDevReplication]], dev.Volumes[vol].ReplicationStatus)
 	}
 	oos, _ := strconv.ParseUint(event.fields[peerDevKeys[peerDevOutOfSync]], 10, 64)
-	if dev.volumes[vol].OutOfSyncKiB.Current != oos {
-		t.Errorf("Expected dev.volumes[%q].OutOfSyncKiB.Current to be %d, got %d", vol, oos, dev.volumes[vol].OutOfSyncKiB.Current)
+	if dev.Volumes[vol].OutOfSyncKiB.Current != oos {
+		t.Errorf("Expected dev.volumes[%q].OutOfSyncKiB.Current to be %d, got %d", vol, oos, dev.Volumes[vol].OutOfSyncKiB.Current)
 	}
 }

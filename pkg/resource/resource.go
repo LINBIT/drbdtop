@@ -216,11 +216,12 @@ func (r *Resource) Update(e Event) bool {
 type Connection struct {
 	sync.RWMutex
 	uptimer
-	peerNodeID       string
-	connectionName   string
-	connectionStatus string
-	role             string
-	congested        string
+	Resource         string
+	PeerNodeID       string
+	ConnectionName   string
+	ConnectionStatus string
+	Role             string
+	Congested        string
 	// Calculated Values
 
 	updateCount int
@@ -230,11 +231,12 @@ func (c *Connection) Update(e Event) bool {
 	c.Lock()
 	defer c.Unlock()
 
-	c.peerNodeID = e.fields[connKeys[connPeerNodeID]]
-	c.connectionName = e.fields[connKeys[connConnName]]
-	c.connectionStatus = e.fields[connKeys[connConnection]]
-	c.role = e.fields[connKeys[connRole]]
-	c.congested = e.fields[connKeys[connCongested]]
+	c.Resource = e.fields[connKeys[connName]]
+	c.PeerNodeID = e.fields[connKeys[connPeerNodeID]]
+	c.ConnectionName = e.fields[connKeys[connConnName]]
+	c.ConnectionStatus = e.fields[connKeys[connConnection]]
+	c.Role = e.fields[connKeys[connRole]]
+	c.Congested = e.fields[connKeys[connCongested]]
 	c.updateTimes(e.timeStamp)
 	c.updateCount++
 	return true
@@ -242,33 +244,33 @@ func (c *Connection) Update(e Event) bool {
 
 type Device struct {
 	sync.RWMutex
-	resource string
-	volumes  map[string]*DevVolume
+	Resource string
+	Volumes  map[string]*DevVolume
 }
 
 func (d *Device) Update(e Event) bool {
 	d.Lock()
 	defer d.Unlock()
 
-	d.resource = e.fields[devKeys[devName]]
+	d.Resource = e.fields[devKeys[devName]]
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := d.volumes[e.fields[devKeys[devVolume]]]
+	_, ok := d.Volumes[e.fields[devKeys[devVolume]]]
 	if !ok {
-		d.volumes[e.fields[devKeys[devVolume]]] = newDevVolume(200)
+		d.Volumes[e.fields[devKeys[devVolume]]] = newDevVolume(200)
 	}
 
-	vol := d.volumes[e.fields[devKeys[devVolume]]]
+	vol := d.Volumes[e.fields[devKeys[devVolume]]]
 
 	vol.uptimer.updateTimes(e.timeStamp)
-	vol.minor = e.fields[devKeys[devMinor]]
-	vol.diskState = e.fields[devKeys[devDisk]]
-	vol.activityLogSuspended = e.fields[devKeys[devALSuspended]]
-	vol.blocked = e.fields[devKeys[devBlocked]]
+	vol.Minor = e.fields[devKeys[devMinor]]
+	vol.DiskState = e.fields[devKeys[devDisk]]
+	vol.ActivityLogSuspended = e.fields[devKeys[devALSuspended]]
+	vol.Blocked = e.fields[devKeys[devBlocked]]
 
 	// Only update size if we can parse the field correctly.
 	if size, err := strconv.ParseUint(e.fields[devKeys[devSize]], 10, 64); err == nil {
-		vol.size = size
+		vol.Size = size
 	}
 
 	vol.ReadKiB.calculate(vol.uptimer.Uptime, e.fields[devKeys[devRead]])
@@ -284,11 +286,11 @@ func (d *Device) Update(e Event) bool {
 
 type DevVolume struct {
 	uptimer
-	minor                string
-	diskState            string
-	size                 uint64
-	activityLogSuspended string
-	blocked              string
+	Minor                string
+	DiskState            string
+	Size                 uint64
+	ActivityLogSuspended string
+	Blocked              string
 
 	// Calculated Values
 	ReadKiB            *rate
@@ -316,32 +318,32 @@ func newDevVolume(maxLen int) *DevVolume {
 type PeerDevice struct {
 	sync.RWMutex
 	uptimer
-	resource       string
-	peerNodeID     string
-	connectionName string
-	volumes        map[string]*PeerDevVol
+	Resource       string
+	PeerNodeID     string
+	ConnectionName string
+	Volumes        map[string]*PeerDevVol
 }
 
 func (p *PeerDevice) Update(e Event) bool {
 	p.Lock()
 	defer p.Unlock()
 
-	p.resource = e.fields[peerDevKeys[peerDevName]]
-	p.peerNodeID = e.fields[peerDevKeys[peerDevNodeID]]
-	p.connectionName = e.fields[peerDevKeys[peerDevConnName]]
+	p.Resource = e.fields[peerDevKeys[peerDevName]]
+	p.PeerNodeID = e.fields[peerDevKeys[peerDevNodeID]]
+	p.ConnectionName = e.fields[peerDevKeys[peerDevConnName]]
 	p.updateTimes(e.timeStamp)
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := p.volumes[e.fields[peerDevKeys[peerDevVolume]]]
+	_, ok := p.Volumes[e.fields[peerDevKeys[peerDevVolume]]]
 	if !ok {
-		p.volumes[e.fields[peerDevKeys[peerDevVolume]]] = newPeerDevVol(200)
+		p.Volumes[e.fields[peerDevKeys[peerDevVolume]]] = newPeerDevVol(200)
 	}
 
-	vol := p.volumes[e.fields[peerDevKeys[peerDevVolume]]]
+	vol := p.Volumes[e.fields[peerDevKeys[peerDevVolume]]]
 
-	vol.replicationStatus = e.fields[peerDevKeys[peerDevReplication]]
-	vol.diskState = e.fields[peerDevKeys[peerDevPeerDisk]]
-	vol.resyncSuspended = e.fields[peerDevKeys[peerDevResyncSuspended]]
+	vol.ReplicationStatus = e.fields[peerDevKeys[peerDevReplication]]
+	vol.DiskState = e.fields[peerDevKeys[peerDevPeerDisk]]
+	vol.ResyncSuspended = e.fields[peerDevKeys[peerDevResyncSuspended]]
 
 	vol.OutOfSyncKiB.calculate(e.fields[peerDevKeys[peerDevOutOfSync]])
 	vol.PendingWrites.calculate(e.fields[peerDevKeys[peerDevPending]])
@@ -355,9 +357,9 @@ func (p *PeerDevice) Update(e Event) bool {
 
 type PeerDevVol struct {
 	uptimer
-	replicationStatus string
-	diskState         string
-	resyncSuspended   string
+	ReplicationStatus string
+	DiskState         string
+	ResyncSuspended   string
 
 	// Calulated Values
 	OutOfSyncKiB  *minMaxAvgCurrent

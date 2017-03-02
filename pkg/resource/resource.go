@@ -195,6 +195,9 @@ func NewEvent(e string) (Event, error) {
 	e = strings.TrimSpace(e)
 
 	data := strings.Split(e, " ")
+	if len(data) < 3 {
+		return Event{Fields: make(map[string]string)}, fmt.Errorf("Couldn't create an Event from %v", data)
+	}
 
 	// Dynamically assign event fields for all events, reguardless of event target.
 	fields := make(map[string]string)
@@ -332,7 +335,6 @@ type DevVolume struct {
 
 	UpperPending *minMaxAvgCurrent
 	LowerPending *minMaxAvgCurrent
-	Pending      *minMaxAvgCurrent
 }
 
 func NewDevVolume(maxLen int) *DevVolume {

@@ -23,6 +23,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/hayswim/drbdtop/pkg/resource"
@@ -55,31 +56,32 @@ func main() {
 		os.Exit(1)
 	}
 
+	dev := &resource.PeerDevice{Volumes: make(map[string]*resource.PeerDevVol)}
 	// Main update loop. For now just prints events.
-	i := 0
 	for {
 		var wg sync.WaitGroup
-		i++
 		for {
 			s := <-rawEvents
-			e, err := resource.NewEvent(s)
-			if err != nil {
-				fmt.Printf("%v\n", err)
-			}
 
 			// Break on these event targets so that updates are applied in order.
-			if e.Target == "-" {
+			if strings.HasSuffix(s, "-") {
 				break
 			}
 
 			wg.Add(1)
 			// Update logic goes here.
-			go func() {
+			go func(s string) {
 				defer wg.Done()
-				fmt.Printf("%v\n", e)
-			}()
+				e, err := resource.NewEvent(s)
+				if err != nil {
+					fmt.Printf("%v\n", err)
+				}
+				if e.Target == "peer-device" {
+					dev.Update(e)
+					fmt.Printf("oss: min: %d\t max: %d\t avg: %f\t cur: %d\n", dev.Volumes["0"].OutOfSyncKiB.Min, dev.Volumes["0"].OutOfSyncKiB.Max, dev.Volumes["0"].OutOfSyncKiB.Avg, dev.Volumes["0"].OutOfSyncKiB.Current)
+				}
+			}(s)
 		}
 		wg.Wait()
-		fmt.Printf("\nThat's %d groups!\n", i)
 	}
 }

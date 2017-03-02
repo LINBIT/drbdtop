@@ -56,8 +56,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	dev := &resource.PeerDevice{Volumes: make(map[string]*resource.PeerDevVol)}
-	// Main update loop. For now just prints events.
+	events := make(chan resource.Event, 5)
+	errors := make(chan error, 100)
+
+	// Main update loop.
 	for {
 		var wg sync.WaitGroup
 		for {
@@ -74,12 +76,9 @@ func main() {
 				defer wg.Done()
 				e, err := resource.NewEvent(s)
 				if err != nil {
-					fmt.Printf("%v\n", err)
+					errors <- err
 				}
-				if e.Target == "peer-device" {
-					dev.Update(e)
-					fmt.Printf("oss: min: %d\t max: %d\t avg: %f\t cur: %d\n", dev.Volumes["0"].OutOfSyncKiB.Min, dev.Volumes["0"].OutOfSyncKiB.Max, dev.Volumes["0"].OutOfSyncKiB.Avg, dev.Volumes["0"].OutOfSyncKiB.Current)
-				}
+				events <- e
 			}(s)
 		}
 		wg.Wait()

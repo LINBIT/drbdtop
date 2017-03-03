@@ -49,7 +49,7 @@ func main() {
 			for scanner.Scan() {
 				rawEvents <- scanner.Text()
 			}
-			os.Exit(0)
+			close(rawEvents)
 		}()
 
 	} else {

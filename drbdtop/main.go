@@ -26,6 +26,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/hayswim/drbdtop/pkg/display"
 	"github.com/hayswim/drbdtop/pkg/resource"
 )
 
@@ -58,6 +59,9 @@ func main() {
 
 	events := make(chan resource.Event, 5)
 	errors := make(chan error, 100)
+
+	display := display.NewUglyPrinter()
+	go display.Display(events, errors)
 
 	// Main update loop.
 	for {

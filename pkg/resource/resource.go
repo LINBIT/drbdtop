@@ -222,6 +222,10 @@ func NewEvent(e string) (Event, error) {
 	}, nil
 }
 
+type Updater interface {
+	Update(Event)
+}
+
 type Resource struct {
 	sync.RWMutex
 	uptimer
@@ -234,7 +238,7 @@ type Resource struct {
 	updateCount int
 }
 
-func (r *Resource) Update(e Event) bool {
+func (r *Resource) Update(e Event) {
 	r.Lock()
 	defer r.Unlock()
 
@@ -244,8 +248,6 @@ func (r *Resource) Update(e Event) bool {
 	r.WriteOrdering = e.Fields[resKeys[resWriteOrdering]]
 	r.updateTimes(e.TimeStamp)
 	r.updateCount++
-
-	return true
 }
 
 type Connection struct {
@@ -262,7 +264,7 @@ type Connection struct {
 	updateCount int
 }
 
-func (c *Connection) Update(e Event) bool {
+func (c *Connection) Update(e Event) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -274,7 +276,6 @@ func (c *Connection) Update(e Event) bool {
 	c.Congested = e.Fields[connKeys[connCongested]]
 	c.updateTimes(e.TimeStamp)
 	c.updateCount++
-	return true
 }
 
 type Device struct {
@@ -283,7 +284,13 @@ type Device struct {
 	Volumes  map[string]*DevVolume
 }
 
-func (d *Device) Update(e Event) bool {
+func NewDevice() *Device {
+	return &Device{
+		Volumes: make(map[string]*DevVolume),
+	}
+}
+
+func (d *Device) Update(e Event) {
 	d.Lock()
 	defer d.Unlock()
 
@@ -315,8 +322,6 @@ func (d *Device) Update(e Event) bool {
 
 	vol.UpperPending.calculate(e.Fields[devKeys[devUpperPending]])
 	vol.LowerPending.calculate(e.Fields[devKeys[devLowerPending]])
-
-	return true
 }
 
 type DevVolume struct {
@@ -358,7 +363,13 @@ type PeerDevice struct {
 	Volumes        map[string]*PeerDevVol
 }
 
-func (p *PeerDevice) Update(e Event) bool {
+func NewPeerDevice() *PeerDevice {
+	return &PeerDevice{
+		Volumes: make(map[string]*PeerDevVol),
+	}
+}
+
+func (p *PeerDevice) Update(e Event) {
 	p.Lock()
 	defer p.Unlock()
 
@@ -385,8 +396,6 @@ func (p *PeerDevice) Update(e Event) bool {
 
 	vol.ReceivedKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevReceived]])
 	vol.SentKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevSent]])
-
-	return true
 }
 
 type PeerDevVol struct {

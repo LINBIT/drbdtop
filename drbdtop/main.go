@@ -28,8 +28,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hayswim/drbdtop/pkg/display"
-	"github.com/hayswim/drbdtop/pkg/resource"
+	"drbdtop.io/drbdtop/pkg/display"
+	"drbdtop.io/drbdtop/pkg/resource"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/hayswim/drbdtop/pkg/resource"
+	"drbdtop.io/drbdtop/pkg/resource"
 )
 
 // UglyPrinter is the bare minimum screen printer.

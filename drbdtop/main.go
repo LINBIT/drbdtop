@@ -23,8 +23,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/hayswim/drbdtop/pkg/display"
 	"github.com/hayswim/drbdtop/pkg/resource"
@@ -37,6 +39,7 @@ func main() {
 
 	rawEvents := make(chan string)
 
+	errors := make(chan error, 100)
 	if *file != "" {
 		f, err := os.Open(*file)
 		if err != nil {
@@ -53,12 +56,25 @@ func main() {
 		}()
 
 	} else {
-		fmt.Println("Only reading from a file is supported right now. Use the --file option next time.")
-		os.Exit(1)
+		go func() {
+			for {
+				out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
+				if err != nil {
+					errors <- err
+				} else {
+					s := string(out)
+					for _, rawEvent := range strings.Split(s, "\n") {
+						if rawEvent != "" {
+							rawEvents <- rawEvent
+						}
+					}
+				}
+				time.Sleep(time.Millisecond * 500)
+			}
+		}()
 	}
 
 	events := make(chan resource.Event, 5)
-	errors := make(chan error, 100)
 
 	display := display.NewUglyPrinter()
 	go display.Display(events, errors)
@@ -74,16 +90,18 @@ func main() {
 				break
 			}
 
-			wg.Add(1)
-			// Update logic goes here.
-			go func(s string) {
-				defer wg.Done()
-				e, err := resource.NewEvent(s)
-				if err != nil {
-					errors <- err
-				}
-				events <- e
-			}(s)
+			if s != "" {
+				wg.Add(1)
+				// Update logic goes here.
+				go func(s string) {
+					defer wg.Done()
+					e, err := resource.NewEvent(s)
+					if err != nil {
+						errors <- err
+					}
+					events <- e
+				}(s)
+			}
 		}
 		wg.Wait()
 	}

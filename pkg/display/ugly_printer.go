@@ -15,7 +15,7 @@ type UglyPrinter struct {
 	connections map[string]*resource.Connection
 	devices     map[string]*resource.Device
 	peerDevices map[string]*resource.PeerDevice
-	lastErr     error
+	lastErr     []error
 }
 
 func NewUglyPrinter() UglyPrinter {
@@ -60,7 +60,11 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 					u.peerDevices[evt.Fields["name"]].Update(evt)
 				}
 			case err := <-err:
-				u.lastErr = err
+				if len(u.lastErr) >= 5 {
+					u.lastErr = append(u.lastErr[1:], err)
+				} else {
+					u.lastErr = append(u.lastErr, err)
+				}
 			}
 		}
 	}()
@@ -113,7 +117,10 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 			}
 		}
 		fmt.Printf("\n")
-		fmt.Printf("Last Error: %v\n", u.lastErr)
-		time.Sleep(time.Millisecond * 100)
+		fmt.Println("Errors:")
+		for _, e := range u.lastErr {
+			fmt.Printf("%v\n", e)
+		}
+		time.Sleep(time.Millisecond * 50)
 	}
 }

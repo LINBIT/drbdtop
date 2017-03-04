@@ -201,10 +201,10 @@ func NewEvent(e string) (Event, error) {
 
 	// Dynamically assign event fields for all events, reguardless of event target.
 	fields := make(map[string]string)
-	for i, d := range data[3:] {
+	for _, d := range data[3:] {
 		f := strings.Split(d, ":")
 		if len(f) != 2 {
-			return Event{Fields: make(map[string]string)}, fmt.Errorf("Couldn't parse key/value pair from %q", data[i])
+			return Event{Fields: make(map[string]string)}, fmt.Errorf("Couldn't parse key/value pair from %q", d)
 		}
 		fields[f[0]] = f[1]
 	}

@@ -13,18 +13,18 @@ import (
 // UglyPrinter is the bare minimum screen printer.
 type UglyPrinter struct {
 	resources   map[string]*resource.Resource
-	connections map[string]*resource.Connection
+	connections map[string]map[string]*resource.Connection
 	devices     map[string]*resource.Device
-	peerDevices map[string]*resource.PeerDevice
+	peerDevices map[string]map[string]*resource.PeerDevice
 	lastErr     []error
 }
 
 func NewUglyPrinter() UglyPrinter {
 	return UglyPrinter{
 		resources:   make(map[string]*resource.Resource),
-		connections: make(map[string]*resource.Connection),
+		connections: make(map[string]map[string]*resource.Connection),
 		devices:     make(map[string]*resource.Device),
-		peerDevices: make(map[string]*resource.PeerDevice),
+		peerDevices: make(map[string]map[string]*resource.PeerDevice),
 	}
 }
 
@@ -44,9 +44,15 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 				case "connection":
 					_, ok := u.connections[evt.Fields["name"]]
 					if !ok {
-						u.connections[evt.Fields["name"]] = &resource.Connection{}
+						u.connections[evt.Fields["name"]] = make(map[string]*resource.Connection)
 					}
-					u.connections[evt.Fields["name"]].Update(evt)
+
+					_, ok = u.connections[evt.Fields["name"]][evt.Fields["conn-name"]]
+					if !ok {
+						u.connections[evt.Fields["name"]][evt.Fields["conn-name"]] = &resource.Connection{}
+					}
+
+					u.connections[evt.Fields["name"]][evt.Fields["conn-name"]].Update(evt)
 				case "device":
 					_, ok := u.devices[evt.Fields["name"]]
 					if !ok {
@@ -56,9 +62,15 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 				case "peer-device":
 					_, ok := u.peerDevices[evt.Fields["name"]]
 					if !ok {
-						u.peerDevices[evt.Fields["name"]] = resource.NewPeerDevice()
+						u.peerDevices[evt.Fields["name"]] = make(map[string]*resource.PeerDevice)
 					}
-					u.peerDevices[evt.Fields["name"]].Update(evt)
+
+					_, ok = u.peerDevices[evt.Fields["name"]][evt.Fields["conn-name"]]
+					if !ok {
+						u.peerDevices[evt.Fields["name"]][evt.Fields["conn-name"]] = resource.NewPeerDevice()
+					}
+
+					u.peerDevices[evt.Fields["name"]][evt.Fields["conn-name"]].Update(evt)
 				}
 			case err := <-err:
 				if len(u.lastErr) >= 5 {
@@ -88,13 +100,39 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 
 			fmt.Printf("\n")
 
-			if c, ok := u.connections[k]; ok {
-				c.RLock()
-				fmt.Printf("\tConnection to %s: Status: %s Role: %s Congested: %s\n", c.ConnectionName, c.ConnectionStatus, c.Role, c.Congested)
-				c.RUnlock()
-			}
+			if _, ok := u.connections[k]; ok {
+				var connKeys []string
+				for j := range u.connections[k] {
+					connKeys = append(connKeys, j)
+				}
+				sort.Strings(connKeys)
 
-			fmt.Printf("\n")
+				for _, conn := range connKeys {
+					if c, ok := u.connections[k][conn]; ok {
+						c.RLock()
+						fmt.Printf("\tConnection to %s: Status: %s Role: %s Congested: %s\n", c.ConnectionName, c.ConnectionStatus, c.Role, c.Congested)
+						c.RUnlock()
+
+						if d, ok := u.peerDevices[k][conn]; ok {
+							d.RLock()
+							fmt.Printf("\t%s's device:\n", d.ConnectionName)
+							var keys []string
+							for k := range d.Volumes {
+								keys = append(keys, k)
+							}
+							sort.Strings(keys)
+							for _, k := range keys {
+								fmt.Printf("\t\tvolume %s: repStatus: %s resyncSuspended: %s disk state:: %s out-of-sync: %d %d %.1f %d (min/max/avg/current) send KiB/Sec: %.1f total sent KiB %d\n",
+									k, d.Volumes[k].ReplicationStatus, d.Volumes[k].ResyncSuspended, d.Volumes[k].DiskState,
+									d.Volumes[k].OutOfSyncKiB.Min, d.Volumes[k].OutOfSyncKiB.Max, d.Volumes[k].OutOfSyncKiB.Avg, d.Volumes[k].OutOfSyncKiB.Current,
+									d.Volumes[k].SentKiB.PerSecond, d.Volumes[k].SentKiB.Total)
+							}
+							d.RUnlock()
+						}
+						fmt.Printf("\n")
+					}
+				}
+			}
 
 			if d, ok := u.devices[k]; ok {
 				fmt.Printf("\tLocal Disk:\n")
@@ -109,25 +147,6 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 						k, d.Volumes[k].DiskState, d.Volumes[k].Size, d.Volumes[k].Blocked, d.Volumes[k].Minor,
 						d.Volumes[k].ReadKiB.PerSecond, d.Volumes[k].ReadKiB.Total, d.Volumes[k].WrittenKiB.PerSecond, d.Volumes[k].WrittenKiB.Total,
 						d.Volumes[k].LowerPending.Min, d.Volumes[k].LowerPending.Max, d.Volumes[k].LowerPending.Avg, d.Volumes[k].LowerPending.Current)
-				}
-				d.RUnlock()
-			}
-
-			fmt.Printf("\n")
-
-			if d, ok := u.peerDevices[k]; ok {
-				d.RLock()
-				fmt.Printf("\t%s's device:\n", d.ConnectionName)
-				var keys []string
-				for k := range d.Volumes {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
-				for _, k := range keys {
-					fmt.Printf("\t\tvolume %s: repStatus: %s resyncSuspended: %s disk state:: %s out-of-sync: %d %d %.1f %d (min/max/avg/current) send KiB/Sec: %.1f total sent KiB %d\n",
-						k, d.Volumes[k].ReplicationStatus, d.Volumes[k].ResyncSuspended, d.Volumes[k].DiskState,
-						d.Volumes[k].OutOfSyncKiB.Min, d.Volumes[k].OutOfSyncKiB.Max, d.Volumes[k].OutOfSyncKiB.Avg, d.Volumes[k].OutOfSyncKiB.Current,
-						d.Volumes[k].SentKiB.PerSecond, d.Volumes[k].SentKiB.Total)
 				}
 				d.RUnlock()
 			}

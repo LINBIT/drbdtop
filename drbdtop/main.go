@@ -19,15 +19,12 @@
 package main
 
 import (
-	"bufio"
 	"flag"
-	"fmt"
-	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
 
+	"drbdtop.io/drbdtop/pkg/collect"
 	"drbdtop.io/drbdtop/pkg/display"
 	"drbdtop.io/drbdtop/pkg/resource"
 )
@@ -38,48 +35,24 @@ func main() {
 	flag.Parse()
 
 	rawEvents := make(chan string)
-
 	errors := make(chan error, 100)
+
+	var input collect.Collector
+
 	if *file != "" {
-		f, err := os.Open(*file)
-		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-		defer f.Close()
-
-		scanner := bufio.NewScanner(f)
-		go func() {
-			for scanner.Scan() {
-				rawEvents <- scanner.Text()
-			}
-			close(rawEvents)
-		}()
-
+		input = collect.FileCollector{Path: file}
 	} else {
-		go func() {
-			for {
-				out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
-				if err != nil {
-					errors <- err
-				} else {
-					s := string(out)
-					for _, rawEvent := range strings.Split(s, "\n") {
-						if rawEvent != "" {
-							rawEvents <- rawEvent
-						}
-					}
-				}
-				time.Sleep(time.Millisecond * 500)
-			}
-		}()
+		input = collect.Events2Poll{Interval: time.Millisecond * 500}
 	}
+
+	go input.Collect(rawEvents, errors)
 
 	events := make(chan resource.Event, 5)
 
 	display := display.NewUglyPrinter()
 	go display.Display(events, errors)
 
-	// Main update loop.
+	// Parse rawEvents and send them into the events channel.
 	for {
 		var wg sync.WaitGroup
 		for {
@@ -92,7 +65,6 @@ func main() {
 
 			if s != "" {
 				wg.Add(1)
-				// Update logic goes here.
 				go func(s string) {
 					defer wg.Done()
 					e, err := resource.NewEvent(s)

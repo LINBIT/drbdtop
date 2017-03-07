@@ -100,6 +100,25 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 
 			fmt.Printf("\n")
 
+			if d, ok := u.devices[k]; ok {
+				fmt.Printf("\tLocal Disk:\n")
+				d.RLock()
+				var keys []string
+				for k := range d.Volumes {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+				for _, k := range keys {
+					fmt.Printf("\t\tvolume %s: diskState: %s site: %d blocked: %s minor: %s readKiB/Sec: %.1f total read KiB %d writtenKiB/Sec: %.1f total written KiB %d LowerPedning (%d %d %.1f %d) min/max/avg/current\n",
+						k, d.Volumes[k].DiskState, d.Volumes[k].Size, d.Volumes[k].Blocked, d.Volumes[k].Minor,
+						d.Volumes[k].ReadKiB.PerSecond, d.Volumes[k].ReadKiB.Total, d.Volumes[k].WrittenKiB.PerSecond, d.Volumes[k].WrittenKiB.Total,
+						d.Volumes[k].LowerPending.Min, d.Volumes[k].LowerPending.Max, d.Volumes[k].LowerPending.Avg, d.Volumes[k].LowerPending.Current)
+				}
+				d.RUnlock()
+			}
+
+			fmt.Printf("\n")
+
 			if _, ok := u.connections[k]; ok {
 				var connKeys []string
 				for j := range u.connections[k] {
@@ -133,24 +152,6 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 					}
 				}
 			}
-
-			if d, ok := u.devices[k]; ok {
-				fmt.Printf("\tLocal Disk:\n")
-				d.RLock()
-				var keys []string
-				for k := range d.Volumes {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
-				for _, k := range keys {
-					fmt.Printf("\t\tvolume %s: diskState: %s site: %d blocked: %s minor: %s readKiB/Sec: %.1f total read KiB %d writtenKiB/Sec: %.1f total written KiB %d LowerPedning (%d %d %.1f %d) min/max/avg/current\n",
-						k, d.Volumes[k].DiskState, d.Volumes[k].Size, d.Volumes[k].Blocked, d.Volumes[k].Minor,
-						d.Volumes[k].ReadKiB.PerSecond, d.Volumes[k].ReadKiB.Total, d.Volumes[k].WrittenKiB.PerSecond, d.Volumes[k].WrittenKiB.Total,
-						d.Volumes[k].LowerPending.Min, d.Volumes[k].LowerPending.Max, d.Volumes[k].LowerPending.Avg, d.Volumes[k].LowerPending.Current)
-				}
-				d.RUnlock()
-			}
-			fmt.Printf("\n")
 		}
 		fmt.Printf("\n")
 		fmt.Println("Errors:")

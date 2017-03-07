@@ -176,7 +176,7 @@ type previousFloat64 struct {
 }
 
 func (p *previousFloat64) Push(i float64) {
-	if len(p.Values) == p.maxLen {
+	if len(p.Values) >= p.maxLen {
 		p.Values = append(p.Values[1:], i)
 	} else {
 		p.Values = append(p.Values, i)

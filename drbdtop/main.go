@@ -20,6 +20,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -31,6 +32,8 @@ import (
 
 func main() {
 	file := flag.String("file", "", "Path to a file containing output gathered from polling `drbdsetup events2 --timestamps --statistics --now`")
+	interval := flag.String("interval", "500ms",
+		"Time to wait between updating drbd status. Valid time units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'. Defualt: 500ms")
 
 	flag.Parse()
 
@@ -42,7 +45,12 @@ func main() {
 	if *file != "" {
 		input = collect.FileCollector{Path: file}
 	} else {
-		input = collect.Events2Poll{Interval: time.Millisecond * 500}
+		duration, err := time.ParseDuration(*interval)
+		if err != nil {
+			errors <- fmt.Errorf("defaulting to 500ms polling interval: %v", err)
+			duration = time.Millisecond * 500
+		}
+		input = collect.Events2Poll{Interval: duration}
 	}
 
 	go input.Collect(rawEvents, errors)

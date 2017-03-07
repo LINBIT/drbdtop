@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sort"
 	"time"
 
 	"drbdtop.io/drbdtop/pkg/resource"
@@ -74,11 +75,16 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 		c.Stdout = os.Stdout
 		c.Run()
 
-		for k, v := range u.resources {
-			v.RLock()
-			fmt.Printf("%s:\n", v.Name)
-			fmt.Printf("\tRole: %s Suspended: %s WriteOrdering: %s\n", v.Role, v.Suspended, v.WriteOrdering)
-			v.RUnlock()
+		var keys []string
+		for k := range u.resources {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			u.resources[k].RLock()
+			fmt.Printf("%s:\n", k)
+			fmt.Printf("\tRole: %s Suspended: %s WriteOrdering: %s\n", u.resources[k].Role, u.resources[k].Suspended, u.resources[k].WriteOrdering)
+			u.resources[k].RUnlock()
 
 			fmt.Printf("\n")
 
@@ -93,11 +99,16 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 			if d, ok := u.devices[k]; ok {
 				fmt.Printf("\tLocal Disk:\n")
 				d.RLock()
-				for k, v := range d.Volumes {
+				var keys []string
+				for k := range d.Volumes {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+				for _, k := range keys {
 					fmt.Printf("\t\tvolume %s: diskState: %s site: %d blocked: %s minor: %s readKiB/Sec: %.1f total read KiB %d writtenKiB/Sec: %.1f total written KiB %d LowerPedning (%d %d %.1f %d) min/max/avg/current\n",
-						k, v.DiskState, v.Size, v.Blocked, v.Minor,
-						v.ReadKiB.PerSecond, v.ReadKiB.Total, v.WrittenKiB.PerSecond, v.WrittenKiB.Total,
-						v.LowerPending.Min, v.LowerPending.Max, v.LowerPending.Avg, v.LowerPending.Current)
+						k, d.Volumes[k].DiskState, d.Volumes[k].Size, d.Volumes[k].Blocked, d.Volumes[k].Minor,
+						d.Volumes[k].ReadKiB.PerSecond, d.Volumes[k].ReadKiB.Total, d.Volumes[k].WrittenKiB.PerSecond, d.Volumes[k].WrittenKiB.Total,
+						d.Volumes[k].LowerPending.Min, d.Volumes[k].LowerPending.Max, d.Volumes[k].LowerPending.Avg, d.Volumes[k].LowerPending.Current)
 				}
 				d.RUnlock()
 			}
@@ -107,14 +118,20 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 			if d, ok := u.peerDevices[k]; ok {
 				d.RLock()
 				fmt.Printf("\t%s's device:\n", d.ConnectionName)
-				for k, v := range d.Volumes {
+				var keys []string
+				for k := range d.Volumes {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+				for _, k := range keys {
 					fmt.Printf("\t\tvolume %s: repStatus: %s resyncSuspended: %s disk state:: %s out-of-sync: %d %d %.1f %d (min/max/avg/current) send KiB/Sec: %.1f total sent KiB %d\n",
-						k, v.ReplicationStatus, v.ResyncSuspended, v.DiskState,
-						v.OutOfSyncKiB.Min, v.OutOfSyncKiB.Max, v.OutOfSyncKiB.Avg, v.OutOfSyncKiB.Current,
-						v.SentKiB.PerSecond, v.SentKiB.Total)
+						k, d.Volumes[k].ReplicationStatus, d.Volumes[k].ResyncSuspended, d.Volumes[k].DiskState,
+						d.Volumes[k].OutOfSyncKiB.Min, d.Volumes[k].OutOfSyncKiB.Max, d.Volumes[k].OutOfSyncKiB.Avg, d.Volumes[k].OutOfSyncKiB.Current,
+						d.Volumes[k].SentKiB.PerSecond, d.Volumes[k].SentKiB.Total)
 				}
 				d.RUnlock()
 			}
+			fmt.Printf("\n")
 		}
 		fmt.Printf("\n")
 		fmt.Println("Errors:")

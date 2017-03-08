@@ -493,3 +493,48 @@ func TestNewEvent(t *testing.T) {
 		}
 	}
 }
+
+func TestConnectionDanger(t *testing.T) {
+	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	if err != nil {
+		t.Error(err)
+	}
+
+	conn := Connection{}
+	event := Event{
+		TimeStamp: timeStamp,
+		Target:    "connection",
+		Fields: map[string]string{
+			connKeys[connConnection]: "StandAlone",
+			connKeys[connRole]:       "Secondary",
+			connKeys[connCongested]:  "no",
+		},
+	}
+
+	// Update should update the danger level.
+	conn.Update(event)
+
+	expectedDanger := uint32(2500000)
+
+	if conn.Danger != expectedDanger {
+		t.Errorf("Expected StandAlone to have a danger level of %d, got %d", expectedDanger, conn.Danger)
+	}
+
+	event = Event{
+		TimeStamp: timeStamp,
+		Target:    "connection",
+		Fields: map[string]string{
+			connKeys[connConnection]: "Connected",
+			connKeys[connRole]:       "Unknown",
+			connKeys[connCongested]:  "yes",
+		},
+	}
+
+	conn.Update(event)
+
+	expectedDanger = 1400
+
+	if conn.Danger != expectedDanger {
+		t.Errorf("Expected StandAlone to have a danger level of %d, got %d", expectedDanger, conn.Danger)
+	}
+}

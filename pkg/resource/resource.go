@@ -84,6 +84,33 @@ const (
 	peerDevUnacked
 )
 
+var connDangerScores = map[string]uint32{
+	"Connected":  0,
+	"SyncSource": 500,
+	"SyncTarget": 600,
+	"StandAlone": 2500000,
+
+	"default": 1000,
+}
+
+var diskDangerScores = map[string]uint32{
+	"UpToDate":   0,
+	"Consistent": 100,
+	"Diskless":   250,
+	"Outdated":   400,
+	"DUnknown":   2000,
+
+	"default": 1000,
+}
+
+var roleDangerScores = map[string]uint32{
+	"Primary":   0,
+	"Secondary": 0,
+	"Unknown":   1000,
+
+	"default": 1000,
+}
+
 type uptimer struct {
 	StartTime   time.Time
 	CurrentTime time.Time
@@ -261,6 +288,7 @@ type Connection struct {
 	Congested        string
 	// Calculated Values
 
+	Danger      uint32
 	updateCount int
 }
 
@@ -275,7 +303,32 @@ func (c *Connection) Update(e Event) {
 	c.Role = e.Fields[connKeys[connRole]]
 	c.Congested = e.Fields[connKeys[connCongested]]
 	c.updateTimes(e.TimeStamp)
+	c.Danger = c.getDanger()
 	c.updateCount++
+}
+
+func (c *Connection) getDanger() uint32 {
+	var d uint32
+
+	i, ok := connDangerScores[c.ConnectionStatus]
+	if !ok {
+		d += connDangerScores["default"]
+	} else {
+		d += i
+	}
+
+	i, ok = roleDangerScores[c.Role]
+	if !ok {
+		d += connDangerScores["default"]
+	} else {
+		d += i
+	}
+
+	if c.Congested != "no" {
+		d += 400
+	}
+
+	return d
 }
 
 type Device struct {

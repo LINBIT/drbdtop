@@ -4,6 +4,30 @@ import (
 	"drbdtop.io/drbdtop/pkg/resource"
 )
 
+// ResourceCollection is a collection of stats collected organized under their respective resource names.
+type ResourceCollection struct {
+	Resources map[string]*ByRes
+}
+
+// Update a collection of ByRes from an Event.
+func (r *ResourceCollection) Update(e resource.Event) {
+}
+
+// ByName returns a list of *ByRes sorted alpha my resource name.
+func (r ResourceCollection) ByName() []*ByRes {
+	return []*ByRes{NewByRes()}
+}
+
+// ByDanger returns a list of *ByRes sorted by danger, highest first.
+func (r ResourceCollection) ByDanger() []*ByRes {
+	return []*ByRes{NewByRes()}
+}
+
+// Primaries returns a list of *ByRes whose resources are local primaries, sorted by name.
+func (r ResourceCollection) Primaries() []*ByRes {
+	return []*ByRes{NewByRes()}
+}
+
 // ByRes organizes events related to a particular resource.
 type ByRes struct {
 	Res         *resource.Resource

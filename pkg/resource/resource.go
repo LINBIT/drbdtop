@@ -335,6 +335,9 @@ type Device struct {
 	sync.RWMutex
 	Resource string
 	Volumes  map[string]*DevVolume
+
+	//Calculated Values.
+	Danger uint32
 }
 
 func NewDevice() *Device {
@@ -375,6 +378,23 @@ func (d *Device) Update(e Event) {
 
 	vol.UpperPending.calculate(e.Fields[devKeys[devUpperPending]])
 	vol.LowerPending.calculate(e.Fields[devKeys[devLowerPending]])
+
+	d.Danger = d.getDanger()
+}
+
+func (d *Device) getDanger() uint32 {
+	var score uint32
+
+	for _, v := range d.Volumes {
+		i, ok := diskDangerScores[v.DiskState]
+		if !ok {
+			score += diskDangerScores["default"]
+		} else {
+			score += i
+		}
+	}
+
+	return score
 }
 
 type DevVolume struct {
@@ -414,6 +434,9 @@ type PeerDevice struct {
 	PeerNodeID     string
 	ConnectionName string
 	Volumes        map[string]*PeerDevVol
+
+	// Calulated values.
+	Danger uint32
 }
 
 func NewPeerDevice() *PeerDevice {
@@ -449,6 +472,26 @@ func (p *PeerDevice) Update(e Event) {
 
 	vol.ReceivedKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevReceived]])
 	vol.SentKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevSent]])
+
+	p.Danger = p.getDanger()
+}
+
+func (p *PeerDevice) getDanger() uint32 {
+	var score uint32
+
+	for _, v := range p.Volumes {
+		i, ok := diskDangerScores[v.DiskState]
+		if !ok {
+			score += diskDangerScores["default"]
+		} else {
+			score += i
+		}
+
+		// One point of danger per Mebibyte Out of Sync
+		score += uint32(v.OutOfSyncKiB.Current / 1024)
+	}
+
+	return score
 }
 
 type PeerDevVol struct {

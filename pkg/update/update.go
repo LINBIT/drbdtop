@@ -4,9 +4,16 @@ import (
 	"drbdtop.io/drbdtop/pkg/resource"
 )
 
+// ByResSorter sorts a []*ByRes in place.
+type ByResSorter interface {
+	ByResSort(map[string]*ByRes)
+}
+
 // ResourceCollection is a collection of stats collected organized under their respective resource names.
 type ResourceCollection struct {
 	Resources map[string]*ByRes
+	Sorted    []*ByRes
+	Sort      ByResSorter
 }
 
 // Update a collection of ByRes from an Event.

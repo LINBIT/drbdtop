@@ -84,7 +84,7 @@ const (
 	peerDevUnacked
 )
 
-var connDangerScores = map[string]uint32{
+var connDangerScores = map[string]uint64{
 	"Connected":  0,
 	"SyncSource": 500,
 	"SyncTarget": 600,
@@ -93,7 +93,7 @@ var connDangerScores = map[string]uint32{
 	"default": 1000,
 }
 
-var diskDangerScores = map[string]uint32{
+var diskDangerScores = map[string]uint64{
 	"UpToDate":   0,
 	"Consistent": 100,
 	"Diskless":   250,
@@ -103,7 +103,7 @@ var diskDangerScores = map[string]uint32{
 	"default": 1000,
 }
 
-var roleDangerScores = map[string]uint32{
+var roleDangerScores = map[string]uint64{
 	"Primary":   0,
 	"Secondary": 0,
 	"Unknown":   1000,
@@ -288,7 +288,7 @@ type Connection struct {
 	Congested        string
 	// Calculated Values
 
-	Danger      uint32
+	Danger      uint64
 	updateCount int
 }
 
@@ -307,8 +307,8 @@ func (c *Connection) Update(e Event) {
 	c.updateCount++
 }
 
-func (c *Connection) getDanger() uint32 {
-	var d uint32
+func (c *Connection) getDanger() uint64 {
+	var d uint64
 
 	i, ok := connDangerScores[c.ConnectionStatus]
 	if !ok {
@@ -337,7 +337,7 @@ type Device struct {
 	Volumes  map[string]*DevVolume
 
 	//Calculated Values.
-	Danger uint32
+	Danger uint64
 }
 
 func NewDevice() *Device {
@@ -382,8 +382,8 @@ func (d *Device) Update(e Event) {
 	d.Danger = d.getDanger()
 }
 
-func (d *Device) getDanger() uint32 {
-	var score uint32
+func (d *Device) getDanger() uint64 {
+	var score uint64
 
 	for _, v := range d.Volumes {
 		i, ok := diskDangerScores[v.DiskState]
@@ -436,7 +436,7 @@ type PeerDevice struct {
 	Volumes        map[string]*PeerDevVol
 
 	// Calulated values.
-	Danger uint32
+	Danger uint64
 }
 
 func NewPeerDevice() *PeerDevice {
@@ -476,8 +476,8 @@ func (p *PeerDevice) Update(e Event) {
 	p.Danger = p.getDanger()
 }
 
-func (p *PeerDevice) getDanger() uint32 {
-	var score uint32
+func (p *PeerDevice) getDanger() uint64 {
+	var score uint64
 
 	for _, v := range p.Volumes {
 		i, ok := diskDangerScores[v.DiskState]
@@ -488,7 +488,7 @@ func (p *PeerDevice) getDanger() uint32 {
 		}
 
 		// One point of danger per Mebibyte Out of Sync
-		score += uint32(v.OutOfSyncKiB.Current / 1024)
+		score += v.OutOfSyncKiB.Current / 1024
 	}
 
 	return score

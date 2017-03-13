@@ -514,7 +514,7 @@ func TestConnectionDanger(t *testing.T) {
 	// Update should update the danger level.
 	conn.Update(event)
 
-	expectedDanger := uint32(2500000)
+	expectedDanger := uint64(2500000)
 
 	if conn.Danger != expectedDanger {
 		t.Errorf("Expected StandAlone to have a danger level of %d, got %d", expectedDanger, conn.Danger)

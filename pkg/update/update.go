@@ -2,12 +2,14 @@ package update
 
 import (
 	"sort"
+	"sync"
 
 	"drbdtop.io/drbdtop/pkg/resource"
 )
 
 // ByRes organizes events related to a particular resource.
 type ByRes struct {
+	sync.RWMutex
 	Res         *resource.Resource
 	Connections map[string]*resource.Connection
 	Device      *resource.Device

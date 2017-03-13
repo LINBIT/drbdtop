@@ -60,6 +60,7 @@ func (b *ByRes) Update(evt resource.Event) {
 // ResourceCollection is a collection of stats collected organized under their respective resource names.
 // Implements the Sort interface, sorting the *ByRes within List.
 type ResourceCollection struct {
+	sync.RWMutex
 	Map  map[string]*ByRes
 	List []*ByRes
 	less []LessFunc
@@ -76,6 +77,21 @@ func NewResourceCollection() *ResourceCollection {
 
 // Update a collection of ByRes from an Event.
 func (rc *ResourceCollection) Update(e resource.Event) {
+	rc.Lock()
+
+	res := e.Fields["name"]
+	rc.Map[res].Update(e)
+
+	// Rebuild list from map values.
+	rc.List = []*ByRes{}
+	for _, v := range rc.Map {
+		rc.List = append(rc.List, v)
+	}
+
+	// Sort locks the rc as well, so we need to release it here to avoid deadlock.
+	rc.Unlock()
+
+	rc.Sort()
 }
 
 // All code adapted from https://golang.org/pkg/sort/#example__sortMultiKeys
@@ -83,6 +99,8 @@ type LessFunc func(p1, p2 *ByRes) bool
 
 // Sort sorts the argument slice according to the less functions passed to OrderedBy.
 func (rc *ResourceCollection) Sort() {
+	rc.Lock()
+	defer rc.Unlock()
 	sort.Sort(rc)
 }
 

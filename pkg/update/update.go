@@ -126,3 +126,8 @@ func (ms *MultiSorter) Less(i, j int) bool {
 func Name(r1, r2 *ByRes) bool {
 	return r1.Res.Name < r2.Res.Name
 }
+
+// NameReverse sorts resource names by alpha in reverse order.
+func NameReverse(r1, r2 *ByRes) bool {
+	return r1.Res.Name > r2.Res.Name
+}

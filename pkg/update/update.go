@@ -122,7 +122,7 @@ func (ms *MultiSorter) Less(i, j int) bool {
 	return ms.less[k](p, q)
 }
 
-// Names sorts resource names by alpha.
-func Names(r1, r2 *ByRes) bool {
+// Name sorts resource names by alpha.
+func Name(r1, r2 *ByRes) bool {
 	return r1.Res.Name < r2.Res.Name
 }

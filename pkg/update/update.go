@@ -94,7 +94,9 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Sort()
 }
 
-// All code adapted from https://golang.org/pkg/sort/#example__sortMultiKeys
+// Sorting code adapted from https://golang.org/pkg/sort/#example__sortMultiKeys
+
+// LessFunc determines if p1 should come before p2 during a sort.
 type LessFunc func(p1, p2 *ByRes) bool
 
 // Sort sorts the argument slice according to the less functions passed to OrderedBy.

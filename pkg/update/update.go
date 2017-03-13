@@ -60,7 +60,7 @@ func (b *ByRes) Update(evt resource.Event) {
 type ResourceCollection struct {
 	Map  map[string]*ByRes
 	List []*ByRes
-	less []lessFunc
+	less []LessFunc
 }
 
 // NewResourceCollection returns a new *ResourceCollection with maps created
@@ -68,7 +68,7 @@ type ResourceCollection struct {
 func NewResourceCollection() *ResourceCollection {
 	return &ResourceCollection{
 		Map:  make(map[string]*ByRes),
-		less: []lessFunc{Name},
+		less: []LessFunc{Name},
 	}
 }
 
@@ -77,7 +77,7 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 }
 
 // All code adapted from https://golang.org/pkg/sort/#example__sortMultiKeys
-type lessFunc func(p1, p2 *ByRes) bool
+type LessFunc func(p1, p2 *ByRes) bool
 
 // Sort sorts the argument slice according to the less functions passed to OrderedBy.
 func (rc *ResourceCollection) Sort() {
@@ -86,7 +86,7 @@ func (rc *ResourceCollection) Sort() {
 
 // OrderBy replaces the less functions used to sort, in order.
 // Call its Sort method to sort the data.
-func (rc *ResourceCollection) OrderBy(less ...lessFunc) {
+func (rc *ResourceCollection) OrderBy(less ...LessFunc) {
 	rc.less = less
 }
 

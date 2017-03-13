@@ -6,16 +6,6 @@ import (
 	"drbdtop.io/drbdtop/pkg/resource"
 )
 
-// ResourceCollection is a collection of stats collected organized under their respective resource names.
-type ResourceCollection struct {
-	Map    map[string]*ByRes
-	Sorted *MultiSorter
-}
-
-// Update a collection of ByRes from an Event.
-func (r *ResourceCollection) Update(e resource.Event) {
-}
-
 // ByRes organizes events related to a particular resource.
 type ByRes struct {
 	Res         *resource.Resource
@@ -63,37 +53,40 @@ func (b *ByRes) Update(evt resource.Event) {
 	}
 }
 
-// https://golang.org/pkg/sort/#example__sortMultiKeys
+// ResourceCollection is a collection of stats collected organized under their respective resource names.
+// Implements the Sort interface, sorting the *ByRes within List.
+type ResourceCollection struct {
+	Map  map[string]*ByRes
+	List []*ByRes
+	less []lessFunc
+}
+
+// Update a collection of ByRes from an Event.
+func (rc *ResourceCollection) Update(e resource.Event) {
+}
+
+// All code adapted from https://golang.org/pkg/sort/#example__sortMultiKeys
 type lessFunc func(p1, p2 *ByRes) bool
 
-// MultiSorter implements the Sort interface, sorting the changes within.
-type MultiSorter struct {
-	Resources []*ByRes
-	less      []lessFunc
-}
-
 // Sort sorts the argument slice according to the less functions passed to OrderedBy.
-func (ms *MultiSorter) Sort(changes []*ByRes) {
-	ms.Resources = changes
-	sort.Sort(ms)
+func (rc *ResourceCollection) Sort() {
+	sort.Sort(rc)
 }
 
-// OrderedBy returns a Sorter that sorts using the less functions, in order.
+// OrderBy replaces the less functions used to sort, in order.
 // Call its Sort method to sort the data.
-func OrderedBy(less ...lessFunc) *MultiSorter {
-	return &MultiSorter{
-		less: less,
-	}
+func (rc *ResourceCollection) OrderBy(less ...lessFunc) {
+	rc.less = less
 }
 
 // Len is part of sort.Interface.
-func (ms *MultiSorter) Len() int {
-	return len(ms.Resources)
+func (rc *ResourceCollection) Len() int {
+	return len(rc.List)
 }
 
 // Swap is part of sort.Interface.
-func (ms *MultiSorter) Swap(i, j int) {
-	ms.Resources[i], ms.Resources[j] = ms.Resources[j], ms.Resources[i]
+func (rc *ResourceCollection) Swap(i, j int) {
+	rc.List[i], rc.List[j] = rc.List[j], rc.List[i]
 }
 
 // Less is part of sort.Interface. It is implemented by looping along the
@@ -101,12 +94,12 @@ func (ms *MultiSorter) Swap(i, j int) {
 // !Less. Note that it can call the less functions twice per call. We
 // could change the functions to return -1, 0, 1 and reduce the
 // number of calls for greater efficiency: an exercise for the reader.
-func (ms *MultiSorter) Less(i, j int) bool {
-	p, q := ms.Resources[i], ms.Resources[j]
+func (rc *ResourceCollection) Less(i, j int) bool {
+	p, q := rc.List[i], rc.List[j]
 	// Try all but the last comparison.
 	var k int
-	for k = 0; k < len(ms.less)-1; k++ {
-		less := ms.less[k]
+	for k = 0; k < len(rc.less)-1; k++ {
+		less := rc.less[k]
 		switch {
 		case less(p, q):
 			// p < q, so we have a decision.
@@ -119,7 +112,7 @@ func (ms *MultiSorter) Less(i, j int) bool {
 	}
 	// All comparisons to here said "equal", so just return whatever
 	// the final comparison reports.
-	return ms.less[k](p, q)
+	return rc.less[k](p, q)
 }
 
 // Name sorts resource names by alpha.

@@ -14,6 +14,7 @@ type ByRes struct {
 	Connections map[string]*resource.Connection
 	Device      *resource.Device
 	PeerDevices map[string]*resource.PeerDevice
+	Danger      uint64
 }
 
 // NewByRes returns an empty ByRes that's ready to be Updated.

@@ -63,6 +63,15 @@ type ResourceCollection struct {
 	less []lessFunc
 }
 
+// NewResourceCollection returns a new *ResourceCollection with maps created
+// and configured to sort by Name only.
+func NewResourceCollection() *ResourceCollection {
+	return &ResourceCollection{
+		Map:  make(map[string]*ByRes),
+		less: []lessFunc{Name},
+	}
+}
+
 // Update a collection of ByRes from an Event.
 func (rc *ResourceCollection) Update(e resource.Event) {
 }

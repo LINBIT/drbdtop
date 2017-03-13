@@ -28,6 +28,8 @@ func NewByRes() *ByRes {
 
 // Update a ByRes with a new Event's data.
 func (b *ByRes) Update(evt resource.Event) {
+	b.Lock()
+	defer b.Unlock()
 	for {
 		switch evt.Target {
 		case "resource":

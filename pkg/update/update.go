@@ -58,6 +58,21 @@ func (b *ByRes) Update(evt resource.Event) {
 		// Unknown event target, ignore it.
 		_ = evt
 	}
+
+	// Calculate Danger.
+	var dangerScore uint64
+
+	for _, c := range b.Connections {
+		dangerScore += c.Danger
+	}
+
+	dangerScore += b.Device.Danger
+
+	for _, p := range b.PeerDevices {
+		dangerScore += p.Danger
+	}
+
+	b.Danger = dangerScore
 }
 
 // ResourceCollection is a collection of stats collected organized under their respective resource names.

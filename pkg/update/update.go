@@ -106,7 +106,9 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 	// Rebuild list from map values.
 	rc.List = []*ByRes{}
 	for _, v := range rc.Map {
-		rc.List = append(rc.List, v)
+		if v.Res.Name != "" {
+			rc.List = append(rc.List, v)
+		}
 	}
 
 	// Sort locks the rc as well, so we need to release it here to avoid deadlock.

@@ -40,6 +40,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 		}
 	}()
 
+	u.resources.OrderBy(update.Danger, update.SizeReverse, update.NameReverse)
 	for {
 		c := exec.Command("clear")
 		c.Stdout = os.Stdout
@@ -47,7 +48,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 
 		for _, r := range u.resources.List {
 			r.RLock()
-			fmt.Printf("%s:\n", r.Res.Name)
+			fmt.Printf("%s (%d):\n", r.Res.Name, r.Danger)
 			fmt.Printf("\tRole: %s Suspended: %s WriteOrdering: %s\n", r.Res.Role, r.Res.Suspended, r.Res.WriteOrdering)
 
 			fmt.Printf("\n")

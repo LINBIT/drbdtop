@@ -98,17 +98,17 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Lock()
 
 	resName := e.Fields["name"]
-	if _, ok := rc.Map[resName]; !ok {
-		rc.Map[resName] = NewByRes()
+	if resName != "" {
+		if _, ok := rc.Map[resName]; !ok {
+			rc.Map[resName] = NewByRes()
+		}
+		rc.Map[resName].Update(e)
 	}
-	rc.Map[resName].Update(e)
 
 	// Rebuild list from map values.
 	rc.List = []*ByRes{}
 	for _, v := range rc.Map {
-		if v.Res.Name != "" {
-			rc.List = append(rc.List, v)
-		}
+		rc.List = append(rc.List, v)
 	}
 
 	// Sort locks the rc as well, so we need to release it here to avoid deadlock.

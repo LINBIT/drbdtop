@@ -196,3 +196,13 @@ func localSize(b *ByRes) uint64 {
 
 	return size
 }
+
+// Danger sorts resource names by danger.
+func Danger(r1, r2 *ByRes) bool {
+	return r1.Danger < r2.Danger
+}
+
+// DangerReverse sorts resource names by danger in reverse order.
+func DangerReverse(r1, r2 *ByRes) bool {
+	return r1.Danger > r2.Danger
+}

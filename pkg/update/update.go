@@ -31,33 +31,32 @@ func NewByRes() *ByRes {
 func (b *ByRes) Update(evt resource.Event) {
 	b.Lock()
 	defer b.Unlock()
-	for {
-		switch evt.Target {
-		case "resource":
-			b.Res.Update(evt)
 
-		case "device":
-			b.Device.Update(evt)
+	switch evt.Target {
+	case "resource":
+		b.Res.Update(evt)
 
-		case "connection":
-			conn := evt.Fields["conn-name"]
+	case "device":
+		b.Device.Update(evt)
 
-			if _, ok := b.Connections[conn]; !ok {
-				b.Connections[conn] = &resource.Connection{}
-			}
-			b.Connections[conn].Update(evt)
+	case "connection":
+		conn := evt.Fields["conn-name"]
 
-		case "peer-device":
-			conn := evt.Fields["conn-name"]
-
-			if _, ok := b.PeerDevices[conn]; !ok {
-				b.PeerDevices[conn] = resource.NewPeerDevice()
-			}
-			b.PeerDevices[conn].Update(evt)
-		default:
-			// Unknown event target, ignore it.
-			_ = evt
+		if _, ok := b.Connections[conn]; !ok {
+			b.Connections[conn] = &resource.Connection{}
 		}
+		b.Connections[conn].Update(evt)
+
+	case "peer-device":
+		conn := evt.Fields["conn-name"]
+
+		if _, ok := b.PeerDevices[conn]; !ok {
+			b.PeerDevices[conn] = resource.NewPeerDevice()
+		}
+		b.PeerDevices[conn].Update(evt)
+	default:
+		// Unknown event target, ignore it.
+		_ = evt
 	}
 }
 

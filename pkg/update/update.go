@@ -97,8 +97,11 @@ func NewResourceCollection() *ResourceCollection {
 func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Lock()
 
-	res := e.Fields["name"]
-	rc.Map[res].Update(e)
+	resName := e.Fields["name"]
+	if _, ok := rc.Map[resName]; !ok {
+		rc.Map[resName] = NewByRes()
+	}
+	rc.Map[resName].Update(e)
 
 	// Rebuild list from map values.
 	rc.List = []*ByRes{}

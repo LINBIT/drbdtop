@@ -112,6 +112,8 @@ func (rc *ResourceCollection) Sort() {
 // OrderBy replaces the less functions used to sort, in order.
 // Call its Sort method to sort the data.
 func (rc *ResourceCollection) OrderBy(less ...LessFunc) {
+	rc.Lock()
+	defer rc.Unlock()
 	rc.less = less
 }
 

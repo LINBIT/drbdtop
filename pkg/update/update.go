@@ -54,6 +54,9 @@ func (b *ByRes) Update(evt resource.Event) {
 				b.PeerDevices[conn] = resource.NewPeerDevice()
 			}
 			b.PeerDevices[conn].Update(evt)
+		default:
+			// Unknown event target, ignore it.
+			_ = evt
 		}
 	}
 }

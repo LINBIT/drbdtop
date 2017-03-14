@@ -45,8 +45,6 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 		c.Stdout = os.Stdout
 		c.Run()
 
-		u.resources.RLock()
-
 		for _, r := range u.resources.List {
 			r.RLock()
 			fmt.Printf("%s:\n", r.Res.Name)
@@ -98,13 +96,13 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 					fmt.Printf("\n")
 				}
 			}
+			r.RUnlock()
 		}
 		fmt.Printf("\n")
 		fmt.Println("Errors:")
 		for _, e := range u.lastErr {
 			fmt.Printf("%v\n", e)
 		}
-		u.resources.RUnlock()
 		time.Sleep(time.Millisecond * 50)
 	}
 }

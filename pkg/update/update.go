@@ -177,3 +177,22 @@ func Name(r1, r2 *ByRes) bool {
 func NameReverse(r1, r2 *ByRes) bool {
 	return r1.Res.Name > r2.Res.Name
 }
+
+// Size sorts resource names by local disk size.
+func Size(r1, r2 *ByRes) bool {
+	return localSize(r1) < localSize(r2)
+}
+
+// SizeReverse sorts resource names by local disk size in reverse order.
+func SizeReverse(r1, r2 *ByRes) bool {
+	return localSize(r1) > localSize(r2)
+}
+
+func localSize(b *ByRes) uint64 {
+	var size uint64
+	for _, v := range b.Device.Volumes {
+		size += v.Size
+	}
+
+	return size
+}

@@ -57,32 +57,35 @@ func main() {
 
 	events := make(chan resource.Event, 5)
 
-	display := display.NewUglyPrinter()
-	go display.Display(events, errors)
-
 	// Parse rawEvents and send them into the events channel.
-	for {
-		var wg sync.WaitGroup
+	go func() {
 		for {
-			s := <-rawEvents
+			var wg sync.WaitGroup
+			for {
+				s := <-rawEvents
 
-			// Break on these event targets so that updates are applied in order.
-			if strings.HasSuffix(s, "-") {
-				break
-			}
+				// Break on these event targets so that updates are applied in order.
+				if strings.HasSuffix(s, "-") {
+					break
+				}
 
-			if s != "" {
-				wg.Add(1)
-				go func(s string) {
-					defer wg.Done()
-					e, err := resource.NewEvent(s)
-					if err != nil {
-						errors <- err
-					}
-					events <- e
-				}(s)
+				if s != "" {
+					wg.Add(1)
+					go func(s string) {
+						defer wg.Done()
+						e, err := resource.NewEvent(s)
+						if err != nil {
+							errors <- err
+						}
+						events <- e
+					}(s)
+				}
 			}
+			wg.Wait()
 		}
-		wg.Wait()
-	}
+	}()
+
+	display := display.NewUglyPrinter()
+
+	display.Display(events, errors)
 }

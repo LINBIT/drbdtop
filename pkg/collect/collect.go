@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"drbdtop.io/drbdtop/pkg/resource"
 )
 
 // Collector sends raw event strings into a channel.
@@ -30,6 +32,7 @@ func (c FileCollector) Collect(rawEvents chan<- string, errors chan<- error) {
 	for scanner.Scan() {
 		rawEvents <- scanner.Text()
 	}
+	rawEvents <- resource.EOF
 }
 
 // Events2Poll continuously calls drbdsetup events2 at a specified Interval.
@@ -43,6 +46,7 @@ func (c Events2Poll) Collect(rawEvents chan<- string, errors chan<- error) {
 		out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
 		if err != nil {
 			errors <- err
+			rawEvents <- resource.EOF
 		} else {
 			s := string(out)
 			for _, rawEvent := range strings.Split(s, "\n") {

@@ -25,10 +25,14 @@ func NewUglyPrinter() UglyPrinter {
 
 // Display clears the screen and resource information in a loop.
 func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
+	done := false
 	go func() {
 		for {
 			select {
 			case evt := <-event:
+				if evt.Target == resource.EOF {
+					done = true
+				}
 				u.resources.Update(evt)
 			case err := <-err:
 				if len(u.lastErr) >= 5 {
@@ -103,6 +107,9 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 		fmt.Println("Errors:")
 		for _, e := range u.lastErr {
 			fmt.Printf("%v\n", e)
+		}
+		if done {
+			return
 		}
 		time.Sleep(time.Millisecond * 50)
 	}

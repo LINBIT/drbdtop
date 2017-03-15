@@ -102,7 +102,6 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 				}
 			}
 		}
-		u.resources.RUnlock()
 		fmt.Printf("\n")
 		fmt.Println("Errors:")
 		for _, e := range u.lastErr {
@@ -111,6 +110,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 		if done {
 			return
 		}
+		u.resources.RUnlock()
 		time.Sleep(time.Millisecond * 50)
 	}
 }

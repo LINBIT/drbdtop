@@ -2,6 +2,7 @@ package display
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"sort"
@@ -73,22 +74,7 @@ func printByRes(r *update.ByRes) {
 	printRes(r)
 	fmt.Printf("\n")
 
-	fmt.Printf("\tLocal Disk:\n")
-
-	d := r.Device
-	var keys []string
-	for k := range d.Volumes {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		color := dangerColor(d.Danger).SprintFunc()
-		fmt.Printf("\t\tvolume %s: diskState: %s site: %d blocked: %s minor: %s readKiB/Sec: %.1f total read KiB %d writtenKiB/Sec: %.1f total written KiB %d LowerPedning (%d %d %.1f %d) min/max/avg/current\n",
-			color(k), d.Volumes[k].DiskState, d.Volumes[k].Size, d.Volumes[k].Blocked, d.Volumes[k].Minor,
-			d.Volumes[k].ReadKiB.PerSecond, d.Volumes[k].ReadKiB.Total, d.Volumes[k].WrittenKiB.PerSecond, d.Volumes[k].WrittenKiB.Total,
-			d.Volumes[k].LowerPending.Min, d.Volumes[k].LowerPending.Max, d.Volumes[k].LowerPending.Avg, d.Volumes[k].LowerPending.Current)
-	}
-
+	printLocalDisk(r.Device)
 	fmt.Printf("\n")
 
 	var connKeys []string
@@ -134,6 +120,49 @@ func printRes(r *update.ByRes) {
 	fmt.Printf("\n")
 }
 
+func printLocalDisk(d *resource.Device) {
+	h2 := color.New(color.FgHiCyan)
+	h2.Printf("\tLocal Disk:\n")
+
+	var keys []string
+	for k := range d.Volumes {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		dColor := dangerColor(d.Danger).SprintFunc()
+		v := d.Volumes[k]
+		fmt.Printf("\t\tvolume %s (/dev/drbd/%s):", dColor(k), v.Minor)
+		dState := v.DiskState
+
+		if dState != "UpToDate" {
+			c := color.New(color.FgHiYellow)
+			c.Printf(" %s ", dState)
+		} else {
+			fmt.Printf(" %s ", dState)
+		}
+
+		if v.Blocked != "no" {
+			c := color.New(color.FgHiYellow)
+			c.Printf(" Blocked: %s ", d.Volumes[k].Blocked)
+		}
+
+		if v.ActivityLogSuspended != "no" {
+			c := color.New(color.FgHiYellow)
+			c.Printf(" Activity Log Suspended: %s ", d.Volumes[k].Blocked)
+		}
+
+		fmt.Printf("\n")
+		fmt.Printf("\t\t\tsize: %s total-read:%s read/Sec:%s total-written:%s written/Sec:%s ",
+			uint64kb2Human(v.Size),
+			uint64kb2Human(v.ReadKiB.Total), float64kb2Human(v.ReadKiB.PerSecond),
+			uint64kb2Human(v.WrittenKiB.Total), float64kb2Human(v.WrittenKiB.PerSecond))
+
+		fmt.Printf("\n")
+	}
+
+}
+
 func dangerColor(danger uint64) *color.Color {
 	if danger == 0 {
 		return color.New(color.FgHiGreen)
@@ -142,4 +171,29 @@ func dangerColor(danger uint64) *color.Color {
 	} else {
 		return color.New(color.FgHiRed)
 	}
+}
+
+// uint64kb2Human takes a size in KiB and returns a human readable size with suffix.
+func uint64kb2Human(kBytes uint64) string {
+	i := float64(kBytes)
+	sizes := []string{"KiB", "Mib", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
+	unit := float64(1024)
+	if i < unit {
+		return fmt.Sprintf("%.1f%s", i, sizes[0])
+	}
+
+	exp := int(math.Log(i) / math.Log(unit))
+	return fmt.Sprintf("%.1f%s", (i / (math.Pow(unit, float64(exp)))), sizes[exp])
+}
+
+// float64kb2Human takes a size in KiB and returns a human readable size with suffix.
+func float64kb2Human(kBytes float64) string {
+	sizes := []string{"KiB", "Mib", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
+	unit := float64(1024)
+	if kBytes < unit {
+		return fmt.Sprintf("%.1f%s", kBytes, sizes[0])
+	}
+
+	exp := int(math.Log(kBytes) / math.Log(unit))
+	return fmt.Sprintf("%.1f%s", (kBytes / (math.Pow(unit, float64(exp)))), sizes[exp])
 }

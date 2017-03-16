@@ -153,7 +153,8 @@ func printLocalDisk(d *resource.Device) {
 
 func printConn(c *resource.Connection) {
 	dColor := dangerColor(c.Danger).SprintFunc()
-	fmt.Printf("\tConnection to %s:", dColor(c.ConnectionName))
+	h2 := color.New(color.FgHiCyan).SprintFunc()
+	fmt.Printf("\t%s %s:", h2("Connection to"), dColor(c.ConnectionName))
 	cl := color.New(color.FgWhite)
 
 	if c.ConnectionStatus == "Connected" {
@@ -204,12 +205,31 @@ func printPeerDev(d *resource.PeerDevice) {
 		}
 		fmt.Printf("\n")
 
-		fmt.Printf("\t\t\t\ttotal-sent:%s sent/Sec:%s total-received:%s Received/Sec:%s ",
+		fmt.Printf("\t\t\t\ttotal-sent:%s sent/Sec:%s total-received:%s Received/Sec:%s\n",
 			uint64kb2Human(v.SentKiB.Total), float64kb2Human(v.SentKiB.PerSecond),
 			uint64kb2Human(v.ReceivedKiB.Total), float64kb2Human(v.ReceivedKiB.PerSecond))
 
 		dColor = dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
-		fmt.Printf("OutOfSync:%s: ", dColor(uint64kb2Human(v.OutOfSyncKiB.Current)))
+		fmt.Printf("\t\t\t\tOutOfSync: current:%s average:%s min:%s max%s\n",
+			dColor(uint64kb2Human(v.OutOfSyncKiB.Current)),
+			dColor(float64kb2Human(v.OutOfSyncKiB.Avg)),
+			dColor(uint64kb2Human(v.OutOfSyncKiB.Min)),
+			dColor(uint64kb2Human(v.OutOfSyncKiB.Max)))
+
+		dColor = dangerColor(v.PendingWrites.Current).SprintFunc()
+		fmt.Printf("\t\t\t\tPendingWrites: current:%s average:%s min:%s max%s\n",
+			dColor(uint64kb2Human(v.PendingWrites.Current)),
+			dColor(float64kb2Human(v.PendingWrites.Avg)),
+			dColor(uint64kb2Human(v.PendingWrites.Min)),
+			dColor(uint64kb2Human(v.PendingWrites.Max)))
+
+		dColor = dangerColor(v.UnackedWrites.Current).SprintFunc()
+		fmt.Printf("\t\t\t\tUnackedWrites: current:%s average:%s min:%s max%s\n",
+			dColor(uint64kb2Human(v.UnackedWrites.Current)),
+			dColor(float64kb2Human(v.UnackedWrites.Avg)),
+			dColor(uint64kb2Human(v.UnackedWrites.Min)),
+			dColor(uint64kb2Human(v.UnackedWrites.Max)))
+
 		fmt.Printf("\n")
 	}
 }

@@ -85,8 +85,8 @@ func printByRes(r *update.ByRes) {
 
 	for _, conn := range connKeys {
 		if c, ok := r.Connections[conn]; ok {
-			color := dangerColor(c.Danger).SprintFunc()
-			fmt.Printf("\tConnection to %s: Status: %s Role: %s Congested: %s\n", color(c.ConnectionName), c.ConnectionStatus, c.Role, c.Congested)
+
+			printConn(c)
 
 			if d, ok := r.PeerDevices[conn]; ok {
 				color := dangerColor(d.Danger).SprintFunc()
@@ -161,6 +161,35 @@ func printLocalDisk(d *resource.Device) {
 		fmt.Printf("\n")
 	}
 
+}
+
+func printConn(c *resource.Connection) {
+	dColor := dangerColor(c.Danger).SprintFunc()
+	fmt.Printf("\tConnection to %s:", dColor(c.ConnectionName))
+	cl := color.New(color.FgWhite)
+
+	if c.ConnectionStatus == "Connected" {
+		cl = color.New(color.FgHiGreen)
+	} else if c.ConnectionStatus == "StandAlone" {
+		cl = color.New(color.FgHiRed)
+	} else {
+		cl = color.New(color.FgHiYellow)
+	}
+
+	cl.Printf(" %s ", c.ConnectionStatus)
+
+	if c.Role == "Unknown" {
+		cl = color.New(color.FgHiYellow)
+		cl.Printf(" Role:%s ", c.Role)
+	}
+	fmt.Printf(" Role:%s ", c.Role)
+
+	if c.Congested == "no" {
+		cl = color.New(color.FgHiYellow)
+		cl.Printf(" Congested ")
+	}
+
+	fmt.Printf("\n")
 }
 
 func dangerColor(danger uint64) *color.Color {

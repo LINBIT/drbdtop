@@ -70,10 +70,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 
 func printByRes(r *update.ByRes) {
 
-	color := dangerColor(r.Danger).SprintFunc()
-	fmt.Printf("%s (%d):\n", color(r.Res.Name), r.Danger)
-	fmt.Printf("\tRole: %s Suspended: %s WriteOrdering: %s\n", r.Res.Role, r.Res.Suspended, r.Res.WriteOrdering)
-
+	printRes(r)
 	fmt.Printf("\n")
 
 	fmt.Printf("\tLocal Disk:\n")
@@ -123,6 +120,18 @@ func printByRes(r *update.ByRes) {
 			fmt.Printf("\n")
 		}
 	}
+}
+
+func printRes(r *update.ByRes) {
+	dColor := dangerColor(r.Danger).Add(color.Italic).SprintFunc()
+	fmt.Printf("%s (%d): %s ", dColor(r.Res.Name), r.Danger, r.Res.Role)
+
+	if r.Res.Suspended != "no" {
+		c := color.New(color.FgHiRed)
+		c.Printf("(Suspended)")
+	}
+
+	fmt.Printf("\n")
 }
 
 func dangerColor(danger uint64) *color.Color {

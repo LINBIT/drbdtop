@@ -89,19 +89,7 @@ func printByRes(r *update.ByRes) {
 			printConn(c)
 
 			if d, ok := r.PeerDevices[conn]; ok {
-				color := dangerColor(d.Danger).SprintFunc()
-				fmt.Printf("\t%s's device:\n", color(d.ConnectionName))
-				var keys []string
-				for k := range d.Volumes {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
-				for _, k := range keys {
-					fmt.Printf("\t\tvolume %s: repStatus: %s resyncSuspended: %s disk state:: %s out-of-sync: %d %d %.1f %d (min/max/avg/current) send KiB/Sec: %.1f total sent KiB %d\n",
-						k, d.Volumes[k].ReplicationStatus, d.Volumes[k].ResyncSuspended, d.Volumes[k].DiskState,
-						d.Volumes[k].OutOfSyncKiB.Min, d.Volumes[k].OutOfSyncKiB.Max, d.Volumes[k].OutOfSyncKiB.Avg, d.Volumes[k].OutOfSyncKiB.Current,
-						d.Volumes[k].SentKiB.PerSecond, d.Volumes[k].SentKiB.Total)
-				}
+				printPeerDev(d)
 			}
 			fmt.Printf("\n")
 		}
@@ -190,6 +178,40 @@ func printConn(c *resource.Connection) {
 	}
 
 	fmt.Printf("\n")
+}
+
+func printPeerDev(d *resource.PeerDevice) {
+	dColor := dangerColor(d.Danger).SprintFunc()
+	fmt.Printf("\t\t%s's device:\n", dColor(d.ConnectionName))
+	var keys []string
+	for k := range d.Volumes {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := d.Volumes[k]
+		fmt.Printf("\t\t\tvolume %s: ", k)
+		cl := color.New(color.FgWhite)
+
+		if v.ReplicationStatus != "Established" {
+			cl = color.New(color.FgHiYellow)
+			cl.Printf("Replication:%s", v.ReplicationStatus)
+		}
+
+		if v.ResyncSuspended != "no" {
+			cl = color.New(color.FgHiYellow)
+			cl.Printf(" ResyncSuspended:%s ", v.ResyncSuspended)
+		}
+		fmt.Printf("\n")
+
+		fmt.Printf("\t\t\t\ttotal-sent:%s sent/Sec:%s total-received:%s Received/Sec:%s ",
+			uint64kb2Human(v.SentKiB.Total), float64kb2Human(v.SentKiB.PerSecond),
+			uint64kb2Human(v.ReceivedKiB.Total), float64kb2Human(v.ReceivedKiB.PerSecond))
+
+		dColor = dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
+		fmt.Printf("OutOfSync:%s: ", dColor(uint64kb2Human(v.OutOfSyncKiB.Current)))
+		fmt.Printf("\n")
+	}
 }
 
 func dangerColor(danger uint64) *color.Color {

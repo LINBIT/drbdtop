@@ -205,8 +205,10 @@ func printPeerDev(d *resource.PeerDevice) {
 		}
 		fmt.Printf("\n")
 
-		fmt.Printf("\t\t\t\ttotal-sent:%s sent/Sec:%s total-received:%s Received/Sec:%s\n",
-			uint64kb2Human(v.SentKiB.Total), float64kb2Human(v.SentKiB.PerSecond),
+		fmt.Printf("\t\t\t\tSent: total:%s Per/Sec:%s\n",
+			uint64kb2Human(v.SentKiB.Total), float64kb2Human(v.SentKiB.PerSecond))
+
+		fmt.Printf("\t\t\t\tReceived: total:%s Per/Sec:%s\n",
 			uint64kb2Human(v.ReceivedKiB.Total), float64kb2Human(v.ReceivedKiB.PerSecond))
 
 		dColor = dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()

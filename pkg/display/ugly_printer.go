@@ -9,6 +9,7 @@ import (
 
 	"drbdtop.io/drbdtop/pkg/resource"
 	"drbdtop.io/drbdtop/pkg/update"
+	"github.com/fatih/color"
 )
 
 // UglyPrinter is the bare minimum screen printer.
@@ -52,55 +53,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 
 		u.resources.RLock()
 		for _, r := range u.resources.List {
-			fmt.Printf("%s (%d):\n", r.Res.Name, r.Danger)
-			fmt.Printf("\tRole: %s Suspended: %s WriteOrdering: %s\n", r.Res.Role, r.Res.Suspended, r.Res.WriteOrdering)
-
-			fmt.Printf("\n")
-
-			fmt.Printf("\tLocal Disk:\n")
-
-			d := r.Device
-			var keys []string
-			for k := range d.Volumes {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-			for _, k := range keys {
-				fmt.Printf("\t\tvolume %s: diskState: %s site: %d blocked: %s minor: %s readKiB/Sec: %.1f total read KiB %d writtenKiB/Sec: %.1f total written KiB %d LowerPedning (%d %d %.1f %d) min/max/avg/current\n",
-					k, d.Volumes[k].DiskState, d.Volumes[k].Size, d.Volumes[k].Blocked, d.Volumes[k].Minor,
-					d.Volumes[k].ReadKiB.PerSecond, d.Volumes[k].ReadKiB.Total, d.Volumes[k].WrittenKiB.PerSecond, d.Volumes[k].WrittenKiB.Total,
-					d.Volumes[k].LowerPending.Min, d.Volumes[k].LowerPending.Max, d.Volumes[k].LowerPending.Avg, d.Volumes[k].LowerPending.Current)
-			}
-
-			fmt.Printf("\n")
-
-			var connKeys []string
-			for j := range r.Connections {
-				connKeys = append(connKeys, j)
-			}
-			sort.Strings(connKeys)
-
-			for _, conn := range connKeys {
-				if c, ok := r.Connections[conn]; ok {
-					fmt.Printf("\tConnection to %s: Status: %s Role: %s Congested: %s\n", c.ConnectionName, c.ConnectionStatus, c.Role, c.Congested)
-
-					if d, ok := r.PeerDevices[conn]; ok {
-						fmt.Printf("\t%s's device:\n", d.ConnectionName)
-						var keys []string
-						for k := range d.Volumes {
-							keys = append(keys, k)
-						}
-						sort.Strings(keys)
-						for _, k := range keys {
-							fmt.Printf("\t\tvolume %s: repStatus: %s resyncSuspended: %s disk state:: %s out-of-sync: %d %d %.1f %d (min/max/avg/current) send KiB/Sec: %.1f total sent KiB %d\n",
-								k, d.Volumes[k].ReplicationStatus, d.Volumes[k].ResyncSuspended, d.Volumes[k].DiskState,
-								d.Volumes[k].OutOfSyncKiB.Min, d.Volumes[k].OutOfSyncKiB.Max, d.Volumes[k].OutOfSyncKiB.Avg, d.Volumes[k].OutOfSyncKiB.Current,
-								d.Volumes[k].SentKiB.PerSecond, d.Volumes[k].SentKiB.Total)
-						}
-					}
-					fmt.Printf("\n")
-				}
-			}
+			printByRes(r)
 		}
 		fmt.Printf("\n")
 		fmt.Println("Errors:")
@@ -112,5 +65,72 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 		}
 		u.resources.RUnlock()
 		time.Sleep(time.Millisecond * 50)
+	}
+}
+
+func printByRes(r *update.ByRes) {
+
+	color := dangerColor(r.Danger).SprintFunc()
+	fmt.Printf("%s (%d):\n", color(r.Res.Name), r.Danger)
+	fmt.Printf("\tRole: %s Suspended: %s WriteOrdering: %s\n", r.Res.Role, r.Res.Suspended, r.Res.WriteOrdering)
+
+	fmt.Printf("\n")
+
+	fmt.Printf("\tLocal Disk:\n")
+
+	d := r.Device
+	var keys []string
+	for k := range d.Volumes {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		color := dangerColor(d.Danger).SprintFunc()
+		fmt.Printf("\t\tvolume %s: diskState: %s site: %d blocked: %s minor: %s readKiB/Sec: %.1f total read KiB %d writtenKiB/Sec: %.1f total written KiB %d LowerPedning (%d %d %.1f %d) min/max/avg/current\n",
+			color(k), d.Volumes[k].DiskState, d.Volumes[k].Size, d.Volumes[k].Blocked, d.Volumes[k].Minor,
+			d.Volumes[k].ReadKiB.PerSecond, d.Volumes[k].ReadKiB.Total, d.Volumes[k].WrittenKiB.PerSecond, d.Volumes[k].WrittenKiB.Total,
+			d.Volumes[k].LowerPending.Min, d.Volumes[k].LowerPending.Max, d.Volumes[k].LowerPending.Avg, d.Volumes[k].LowerPending.Current)
+	}
+
+	fmt.Printf("\n")
+
+	var connKeys []string
+	for j := range r.Connections {
+		connKeys = append(connKeys, j)
+	}
+	sort.Strings(connKeys)
+
+	for _, conn := range connKeys {
+		if c, ok := r.Connections[conn]; ok {
+			color := dangerColor(c.Danger).SprintFunc()
+			fmt.Printf("\tConnection to %s: Status: %s Role: %s Congested: %s\n", color(c.ConnectionName), c.ConnectionStatus, c.Role, c.Congested)
+
+			if d, ok := r.PeerDevices[conn]; ok {
+				color := dangerColor(d.Danger).SprintFunc()
+				fmt.Printf("\t%s's device:\n", color(d.ConnectionName))
+				var keys []string
+				for k := range d.Volumes {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+				for _, k := range keys {
+					fmt.Printf("\t\tvolume %s: repStatus: %s resyncSuspended: %s disk state:: %s out-of-sync: %d %d %.1f %d (min/max/avg/current) send KiB/Sec: %.1f total sent KiB %d\n",
+						k, d.Volumes[k].ReplicationStatus, d.Volumes[k].ResyncSuspended, d.Volumes[k].DiskState,
+						d.Volumes[k].OutOfSyncKiB.Min, d.Volumes[k].OutOfSyncKiB.Max, d.Volumes[k].OutOfSyncKiB.Avg, d.Volumes[k].OutOfSyncKiB.Current,
+						d.Volumes[k].SentKiB.PerSecond, d.Volumes[k].SentKiB.Total)
+				}
+			}
+			fmt.Printf("\n")
+		}
+	}
+}
+
+func dangerColor(danger uint64) *color.Color {
+	if danger == 0 {
+		return color.New(color.FgHiGreen)
+	} else if danger < 10000 {
+		return color.New(color.FgHiYellow)
+	} else {
+		return color.New(color.FgHiRed)
 	}
 }

@@ -183,7 +183,6 @@ func printConn(c *resource.Connection) {
 
 func printPeerDev(d *resource.PeerDevice) {
 	dColor := dangerColor(d.Danger).SprintFunc()
-	fmt.Printf("\t\t%s's device:\n", dColor(d.ConnectionName))
 	var keys []string
 	for k := range d.Volumes {
 		keys = append(keys, k)
@@ -191,7 +190,7 @@ func printPeerDev(d *resource.PeerDevice) {
 	sort.Strings(keys)
 	for _, k := range keys {
 		v := d.Volumes[k]
-		fmt.Printf("\t\t\tvolume %s: ", k)
+		fmt.Printf("\t\tvolume %s: ", k)
 		cl := color.New(color.FgWhite)
 
 		if v.ReplicationStatus != "Established" {
@@ -205,28 +204,28 @@ func printPeerDev(d *resource.PeerDevice) {
 		}
 		fmt.Printf("\n")
 
-		fmt.Printf("\t\t\t\tSent: total:%s Per/Sec:%s\n",
+		fmt.Printf("\t\t\tSent: total:%s Per/Sec:%s\n",
 			uint64kb2Human(v.SentKiB.Total), float64kb2Human(v.SentKiB.PerSecond))
 
-		fmt.Printf("\t\t\t\tReceived: total:%s Per/Sec:%s\n",
+		fmt.Printf("\t\t\tReceived: total:%s Per/Sec:%s\n",
 			uint64kb2Human(v.ReceivedKiB.Total), float64kb2Human(v.ReceivedKiB.PerSecond))
 
 		dColor = dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
-		fmt.Printf("\t\t\t\tOutOfSync: current:%s average:%s min:%s max%s\n",
+		fmt.Printf("\t\t\tOutOfSync: current:%s average:%s min:%s max%s\n",
 			dColor(uint64kb2Human(v.OutOfSyncKiB.Current)),
 			dColor(float64kb2Human(v.OutOfSyncKiB.Avg)),
 			dColor(uint64kb2Human(v.OutOfSyncKiB.Min)),
 			dColor(uint64kb2Human(v.OutOfSyncKiB.Max)))
 
 		dColor = dangerColor(v.PendingWrites.Current).SprintFunc()
-		fmt.Printf("\t\t\t\tPendingWrites: current:%s average:%s min:%s max%s\n",
+		fmt.Printf("\t\t\tPendingWrites: current:%s average:%s min:%s max%s\n",
 			dColor(uint64kb2Human(v.PendingWrites.Current)),
 			dColor(float64kb2Human(v.PendingWrites.Avg)),
 			dColor(uint64kb2Human(v.PendingWrites.Min)),
 			dColor(uint64kb2Human(v.PendingWrites.Max)))
 
 		dColor = dangerColor(v.UnackedWrites.Current).SprintFunc()
-		fmt.Printf("\t\t\t\tUnackedWrites: current:%s average:%s min:%s max%s\n",
+		fmt.Printf("\t\t\tUnackedWrites: current:%s average:%s min:%s max%s\n",
 			dColor(uint64kb2Human(v.UnackedWrites.Current)),
 			dColor(float64kb2Human(v.UnackedWrites.Avg)),
 			dColor(uint64kb2Human(v.UnackedWrites.Min)),

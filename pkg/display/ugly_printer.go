@@ -46,7 +46,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 		}
 	}()
 
-	u.resources.OrderBy(update.Danger, update.SizeReverse, update.NameReverse)
+	u.resources.OrderBy(update.Danger, update.Size, update.Name)
 	for {
 		c := exec.Command("clear")
 		c.Stdout = os.Stdout

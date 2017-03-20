@@ -291,6 +291,7 @@ type Connection struct {
 	PeerNodeID       string
 	ConnectionName   string
 	ConnectionStatus string
+	ConnectionHint   string
 	Role             string
 	Congested        string
 	// Calculated Values
@@ -311,6 +312,7 @@ func (c *Connection) Update(e Event) {
 	c.Congested = e.Fields[connKeys[connCongested]]
 	c.updateTimes(e.TimeStamp)
 	c.Danger = c.getDanger()
+	c.connStatusExplination()
 	c.updateCount++
 }
 
@@ -336,6 +338,34 @@ func (c *Connection) getDanger() uint64 {
 	}
 
 	return d
+}
+
+func (c *Connection) connStatusExplination() {
+	switch c.ConnectionStatus {
+	case "StandAlone":
+		c.ConnectionHint = fmt.Sprintf("dropped connection or disconnected manually. try running drbdadm connect %s", c.ConnectionName)
+	case "Disconnecting":
+		c.ConnectionHint = fmt.Sprintf("disconnecting from %s", c.ConnectionName)
+	case "Unconnected":
+		c.ConnectionHint = fmt.Sprintf("not yet connected to %s", c.ConnectionName)
+	case "Timeout":
+		c.ConnectionHint = fmt.Sprintf("connection to %s dropped after timeout", c.ConnectionName)
+	case "BrokenPipe":
+		fallthrough
+	case "NetworkFailure":
+		fallthrough
+	case "ProtocolError":
+		c.ConnectionHint = fmt.Sprintf("lost connection to %s", c.ConnectionName)
+	case "TearDown":
+		c.ConnectionHint = fmt.Sprintf("%s is closing the connection", c.ConnectionName)
+	case "Connecting":
+		c.ConnectionHint = fmt.Sprintf("establishing connection with %s", c.ConnectionName)
+	case "Connected":
+		c.ConnectionHint = fmt.Sprintf("connected to %s", c.ConnectionName)
+	default:
+		c.ConnectionHint = "unknown connection state!"
+
+	}
 }
 
 type Device struct {
@@ -505,7 +535,7 @@ func (p *PeerDevice) getDanger() uint64 {
 func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
 	switch v.ReplicationStatus {
 	case "Off":
-		return fmt.Sprintf("dropped connection or disconnected manually. try running drbdadm connect %s", p.Resource)
+		return fmt.Sprintf("not replicating to %s", p.Resource)
 	case "Established":
 		return fmt.Sprintf("healthy connection to %s — mirroring active", p.ConnectionName)
 	case "StartingSyncS":

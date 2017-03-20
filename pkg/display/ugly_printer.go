@@ -152,26 +152,26 @@ func printLocalDisk(d *resource.Device) {
 }
 
 func printConn(c *resource.Connection) {
-	dColor := dangerColor(c.Danger).SprintFunc()
-	h2 := color.New(color.FgHiCyan).SprintFunc()
-	fmt.Printf("\t%s %s:", h2("Connection to"), dColor(c.ConnectionName))
-	cl := color.New(color.FgWhite)
+	h2 := color.New(color.FgHiCyan)
+	h2.Printf("\tConnection to %s", c.ConnectionName)
 
-	if c.ConnectionStatus == "Connected" {
-		cl = color.New(color.FgHiGreen)
-	} else if c.ConnectionStatus == "StandAlone" {
-		cl = color.New(color.FgHiRed)
-	} else {
-		cl = color.New(color.FgHiYellow)
-	}
+	cl := color.New()
 
-	cl.Printf(" %s ", c.ConnectionStatus)
-
+	roleColor := color.New(color.FgHiGreen).SprintFunc()
 	if c.Role == "Unknown" {
-		cl = color.New(color.FgHiYellow)
-		cl.Printf(" Role:%s ", c.Role)
+		roleColor = color.New(color.FgHiYellow).SprintFunc()
 	}
-	fmt.Printf(" Role:%s ", c.Role)
+	fmt.Printf("(%s):", roleColor(c.Role))
+
+	if c.ConnectionStatus != "Connected" {
+		cl = color.New(color.FgHiYellow)
+		if c.ConnectionStatus == "StandAlone" {
+			cl = color.New(color.FgHiRed)
+
+			cl.Printf("%s", c.ConnectionStatus)
+			fmt.Printf("(%s)", c.ConnectionHint)
+		}
+	}
 
 	if c.Congested == "no" {
 		cl = color.New(color.FgHiYellow)

@@ -142,9 +142,9 @@ func printLocalDisk(d *resource.Device) {
 
 		fmt.Printf("\n")
 		fmt.Printf("\t\t\tsize: %s total-read:%s read/Sec:%s total-written:%s written/Sec:%s ",
-			uint64kb2Human(v.Size),
-			uint64kb2Human(v.ReadKiB.Total), float64kb2Human(v.ReadKiB.PerSecond),
-			uint64kb2Human(v.WrittenKiB.Total), float64kb2Human(v.WrittenKiB.PerSecond))
+			kib2Human(float64(v.Size)),
+			kib2Human(float64(v.ReadKiB.Total)), kib2Human(v.ReadKiB.PerSecond),
+			kib2Human(float64(v.WrittenKiB.Total)), kib2Human(v.WrittenKiB.PerSecond))
 
 		fmt.Printf("\n")
 	}
@@ -206,31 +206,31 @@ func printPeerDev(d *resource.PeerDevice) {
 		fmt.Printf("\n")
 
 		fmt.Printf("\t\t\tSent: total:%s Per/Sec:%s\n",
-			uint64kb2Human(v.SentKiB.Total), float64kb2Human(v.SentKiB.PerSecond))
+			kib2Human(float64(v.SentKiB.Total)), kib2Human(v.SentKiB.PerSecond))
 
 		fmt.Printf("\t\t\tReceived: total:%s Per/Sec:%s\n",
-			uint64kb2Human(v.ReceivedKiB.Total), float64kb2Human(v.ReceivedKiB.PerSecond))
+			kib2Human(float64(v.ReceivedKiB.Total)), kib2Human(v.ReceivedKiB.PerSecond))
 
 		dColor = dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
 		fmt.Printf("\t\t\tOutOfSync: current:%s average:%s min:%s max%s\n",
-			dColor(uint64kb2Human(v.OutOfSyncKiB.Current)),
-			dColor(float64kb2Human(v.OutOfSyncKiB.Avg)),
-			dColor(uint64kb2Human(v.OutOfSyncKiB.Min)),
-			dColor(uint64kb2Human(v.OutOfSyncKiB.Max)))
+			dColor(kib2Human(float64(v.OutOfSyncKiB.Current))),
+			dColor(kib2Human(v.OutOfSyncKiB.Avg)),
+			dColor(kib2Human(float64(v.OutOfSyncKiB.Min))),
+			dColor(kib2Human(float64(v.OutOfSyncKiB.Max))))
 
 		dColor = dangerColor(v.PendingWrites.Current).SprintFunc()
 		fmt.Printf("\t\t\tPendingWrites: current:%s average:%s min:%s max%s\n",
-			dColor(uint64kb2Human(v.PendingWrites.Current)),
-			dColor(float64kb2Human(v.PendingWrites.Avg)),
-			dColor(uint64kb2Human(v.PendingWrites.Min)),
-			dColor(uint64kb2Human(v.PendingWrites.Max)))
+			dColor(kib2Human(float64(v.PendingWrites.Current))),
+			dColor(kib2Human(v.PendingWrites.Avg)),
+			dColor(kib2Human(float64(v.PendingWrites.Min))),
+			dColor(kib2Human(float64(v.PendingWrites.Max))))
 
 		dColor = dangerColor(v.UnackedWrites.Current).SprintFunc()
 		fmt.Printf("\t\t\tUnackedWrites: current:%s average:%s min:%s max%s\n",
-			dColor(uint64kb2Human(v.UnackedWrites.Current)),
-			dColor(float64kb2Human(v.UnackedWrites.Avg)),
-			dColor(uint64kb2Human(v.UnackedWrites.Min)),
-			dColor(uint64kb2Human(v.UnackedWrites.Max)))
+			dColor(kib2Human(float64(v.UnackedWrites.Current))),
+			dColor(kib2Human(v.UnackedWrites.Avg)),
+			dColor(kib2Human(float64(v.UnackedWrites.Min))),
+			dColor(kib2Human(float64(v.UnackedWrites.Max))))
 
 		fmt.Printf("\n")
 	}
@@ -246,27 +246,14 @@ func dangerColor(danger uint64) *color.Color {
 	}
 }
 
-// uint64kb2Human takes a size in KiB and returns a human readable size with suffix.
-func uint64kb2Human(kBytes uint64) string {
-	i := float64(kBytes)
+// kib2Human takes a size in KiB and returns a human readable size with suffix.
+func kib2Human(kiBytes float64) string {
 	sizes := []string{"KiB", "Mib", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
 	unit := float64(1024)
-	if i < unit {
-		return fmt.Sprintf("%.1f%s", i, sizes[0])
+	if kiBytes < unit {
+		return fmt.Sprintf("%.1f%s", kiBytes, sizes[0])
 	}
 
-	exp := int(math.Log(i) / math.Log(unit))
-	return fmt.Sprintf("%.1f%s", (i / (math.Pow(unit, float64(exp)))), sizes[exp])
-}
-
-// float64kb2Human takes a size in KiB and returns a human readable size with suffix.
-func float64kb2Human(kBytes float64) string {
-	sizes := []string{"KiB", "Mib", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
-	unit := float64(1024)
-	if kBytes < unit {
-		return fmt.Sprintf("%.1f%s", kBytes, sizes[0])
-	}
-
-	exp := int(math.Log(kBytes) / math.Log(unit))
-	return fmt.Sprintf("%.1f%s", (kBytes / (math.Pow(unit, float64(exp)))), sizes[exp])
+	exp := int(math.Log(kiBytes) / math.Log(unit))
+	return fmt.Sprintf("%.1f%s", (kiBytes / (math.Pow(unit, float64(exp)))), sizes[exp])
 }

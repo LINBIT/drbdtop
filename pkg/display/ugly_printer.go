@@ -196,6 +196,7 @@ func printPeerDev(d *resource.PeerDevice) {
 		if v.ReplicationStatus != "Established" {
 			cl = color.New(color.FgHiYellow)
 			cl.Printf("Replication:%s", v.ReplicationStatus)
+			fmt.Printf("(%s)", v.ReplicationHint)
 		}
 
 		if v.ResyncSuspended != "no" {

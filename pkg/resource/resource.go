@@ -470,6 +470,7 @@ func (p *PeerDevice) Update(e Event) {
 	vol := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
 
 	vol.ReplicationStatus = e.Fields[peerDevKeys[peerDevReplication]]
+	vol.ReplicationHint = p.replicationExplination(vol)
 	vol.DiskState = e.Fields[peerDevKeys[peerDevPeerDisk]]
 	vol.ResyncSuspended = e.Fields[peerDevKeys[peerDevResyncSuspended]]
 
@@ -501,9 +502,47 @@ func (p *PeerDevice) getDanger() uint64 {
 	return score
 }
 
+func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
+	switch v.ReplicationStatus {
+	case "Off":
+		return fmt.Sprintf("dropped connection or disconnected manually. try running drbdadm connect %s", p.Resource)
+	case "Established":
+		return fmt.Sprintf("healthy connection to %s — mirroring active", p.ConnectionName)
+	case "StartingSyncS":
+		return fmt.Sprintf("full resync of local data to %s due to admin", p.ConnectionName)
+	case "StartingSyncT":
+		return fmt.Sprintf("full resync from %s due to admin", p.ConnectionName)
+	case "WFBitMapS":
+		return fmt.Sprintf("resync to %s starting", p.ConnectionName)
+	case "WFBitMapT":
+		return fmt.Sprintf("resync from %s starting", p.ConnectionName)
+	case "WFSyncUUID":
+		return fmt.Sprintf("resync from %s starting", p.ConnectionName)
+	case "SyncSource":
+		return fmt.Sprintf("synchronizing %s with local data", p.ConnectionName)
+	case "SyncTarget":
+		return fmt.Sprintf("local volume is being synchronized with data from %s", p.ConnectionName)
+	case "VerifyS":
+		return fmt.Sprintf("verifying %s with local data", p.ConnectionName)
+	case "VerifyT":
+		return fmt.Sprintf("local volume is being verified with data from %s", p.ConnectionName)
+	case "PausedSyncS":
+		return fmt.Sprintf("synchronizing %s with local data is paused", p.ConnectionName)
+	case "PausedSyncT":
+		return fmt.Sprintf("synchronization with data from %s is paused", p.ConnectionName)
+	case "Ahead":
+		return fmt.Sprintf("temporarily disconnected from %s to preserve local I/O performance", p.ConnectionName)
+	case "Behind":
+		return fmt.Sprintf("temporarily disconnected from %s to preserve %[1]s's I/O performance", p.ConnectionName)
+	default:
+		return "unknown replication status!"
+	}
+}
+
 type PeerDevVol struct {
 	uptimer
 	ReplicationStatus string
+	ReplicationHint   string
 	DiskState         string
 	ResyncSuspended   string
 

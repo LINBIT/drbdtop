@@ -12,7 +12,7 @@ import (
 
 // Collector sends raw event strings into a channel.
 type Collector interface {
-	Collect(rawEvents chan<- string, errors chan<- error)
+	Collect(events chan<- resource.Event, errors chan<- error)
 }
 
 // FileCollector gathers newline delimited events from a plaintext file.
@@ -20,19 +20,24 @@ type FileCollector struct {
 	Path *string
 }
 
-func (c FileCollector) Collect(rawEvents chan<- string, errors chan<- error) {
+func (c FileCollector) Collect(events chan<- resource.Event, errors chan<- error) {
 	f, err := os.Open(*c.Path)
 	if err != nil {
 		errors <- err
 	}
 	defer f.Close()
-	defer close(rawEvents)
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		rawEvents <- scanner.Text()
+		e := scanner.Text()
+		evt, err := resource.NewEvent(e)
+		if err != nil {
+			errors <- err
+		} else {
+			events <- evt
+		}
 	}
-	rawEvents <- resource.EOF
+	events <- resource.NewEOF()
 }
 
 // Events2Poll continuously calls drbdsetup events2 at a specified Interval.
@@ -41,16 +46,23 @@ type Events2Poll struct {
 	Interval time.Duration
 }
 
-func (c Events2Poll) Collect(rawEvents chan<- string, errors chan<- error) {
+func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) {
 	for {
 		out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
 		if err != nil {
 			errors <- err
-			rawEvents <- resource.EOF
+			events <- resource.NewEOF()
 		} else {
 			s := string(out)
-			for _, rawEvent := range strings.Split(s, "\n") {
-				rawEvents <- rawEvent
+			for _, e := range strings.Split(s, "\n") {
+				if e != "" {
+					evt, err := resource.NewEvent(e)
+					if err != nil {
+						errors <- err
+					} else {
+						events <- evt
+					}
+				}
 			}
 		}
 		time.Sleep(c.Interval)

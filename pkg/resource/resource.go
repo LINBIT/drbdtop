@@ -224,10 +224,6 @@ type Event struct {
 func NewEvent(e string) (Event, error) {
 	e = strings.TrimSpace(e)
 
-	if e == EOF {
-		return newEOF()
-	}
-
 	data := strings.Split(e, " ")
 	if len(data) < 3 {
 		return Event{Fields: make(map[string]string)}, fmt.Errorf("Couldn't create an Event from %v", data)
@@ -255,10 +251,9 @@ func NewEvent(e string) (Event, error) {
 		Fields:    fields,
 	}, nil
 }
-func newEOF() (Event, error) {
-	return Event{
-		Target: EOF,
-	}, nil
+
+func NewEOF() Event {
+	return Event{Target: EOF}
 }
 
 type Updater interface {

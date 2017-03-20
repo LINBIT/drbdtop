@@ -21,8 +21,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strings"
-	"sync"
 	"time"
 
 	"drbdtop.io/drbdtop/pkg/collect"
@@ -37,7 +35,6 @@ func main() {
 
 	flag.Parse()
 
-	rawEvents := make(chan string)
 	errors := make(chan error, 100)
 
 	var input collect.Collector
@@ -53,39 +50,9 @@ func main() {
 		input = collect.Events2Poll{Interval: duration}
 	}
 
-	go input.Collect(rawEvents, errors)
-
 	events := make(chan resource.Event, 5)
-
-	// Parse rawEvents and send them into the events channel.
-	go func() {
-		for {
-			var wg sync.WaitGroup
-			for {
-				s := <-rawEvents
-
-				// Break on these event targets so that updates are applied in order.
-				if strings.HasSuffix(s, "-") {
-					break
-				}
-
-				if s != "" {
-					wg.Add(1)
-					go func(s string) {
-						defer wg.Done()
-						e, err := resource.NewEvent(s)
-						if err != nil {
-							errors <- err
-						}
-						events <- e
-					}(s)
-				}
-			}
-			wg.Wait()
-		}
-	}()
+	go input.Collect(events, errors)
 
 	display := display.NewUglyPrinter()
-
 	display.Display(events, errors)
 }

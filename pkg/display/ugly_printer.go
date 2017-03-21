@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"sort"
+	"strings"
 	"time"
 
 	"drbdtop.io/drbdtop/pkg/resource"
@@ -86,8 +87,8 @@ func printByRes(r *update.ByRes) {
 
 			printConn(c)
 
-			if d, ok := r.PeerDevices[conn]; ok {
-				printPeerDev(d)
+			if _, ok := r.PeerDevices[conn]; ok {
+				printPeerDev(r, conn)
 			}
 			fmt.Printf("\n")
 		}
@@ -186,7 +187,9 @@ func printConn(c *resource.Connection) {
 	fmt.Printf("\n")
 }
 
-func printPeerDev(d *resource.PeerDevice) {
+func printPeerDev(r *update.ByRes, conn string) {
+	d := r.PeerDevices[conn]
+
 	dColor := dangerColor(d.Danger).SprintFunc()
 	var keys []string
 	for k := range d.Volumes {
@@ -202,6 +205,11 @@ func printPeerDev(d *resource.PeerDevice) {
 			cl = color.New(color.FgHiYellow)
 			cl.Printf("Replication:%s", v.ReplicationStatus)
 			fmt.Printf("(%s)", v.ReplicationHint)
+		}
+
+		if strings.HasPrefix(v.ReplicationStatus, "Sync") {
+			fmt.Printf(" %.1f%% remaining",
+				(float64(v.OutOfSyncKiB.Current)/float64(r.Device.Volumes[k].Size))*100)
 		}
 
 		if v.ResyncSuspended != "no" {

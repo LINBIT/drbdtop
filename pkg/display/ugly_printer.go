@@ -74,7 +74,7 @@ func printByRes(r *update.ByRes) {
 	printRes(r)
 	fmt.Printf("\n")
 
-	printLocalDisk(r.Device)
+	printLocalDisk(r)
 	fmt.Printf("\n")
 
 	var connKeys []string
@@ -97,8 +97,7 @@ func printByRes(r *update.ByRes) {
 }
 
 func printRes(r *update.ByRes) {
-	dColor := dangerColor(r.Danger).Add(color.Italic).SprintFunc()
-	fmt.Printf("%s (%d): %s ", dColor(r.Res.Name), r.Danger, r.Res.Role)
+	fmt.Printf("%s: ", r.Res.Name)
 
 	if r.Res.Suspended != "no" {
 		c := color.New(color.FgHiRed)
@@ -108,9 +107,17 @@ func printRes(r *update.ByRes) {
 	fmt.Printf("\n")
 }
 
-func printLocalDisk(d *resource.Device) {
+func printLocalDisk(r *update.ByRes) {
 	h2 := color.New(color.FgHiCyan)
-	h2.Printf("\tLocal Disk:\n")
+
+	roleColor := color.New(color.FgHiGreen).SprintFunc()
+	if r.Res.Role == "Unknown" {
+		roleColor = color.New(color.FgHiYellow).SprintFunc()
+	}
+
+	h2.Printf("\tLocal Disk(%s):\n", roleColor(r.Res.Role))
+
+	d := r.Device
 
 	var keys []string
 	for k := range d.Volumes {

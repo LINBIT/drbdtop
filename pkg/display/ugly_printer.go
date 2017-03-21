@@ -225,17 +225,17 @@ func printPeerDev(d *resource.PeerDevice) {
 
 		dColor = dangerColor(v.PendingWrites.Current).SprintFunc()
 		fmt.Printf("\t\t\tPendingWrites: current:%s average:%s min:%s max%s\n",
-			dColor(kib2Human(float64(v.PendingWrites.Current))),
-			dColor(kib2Human(v.PendingWrites.Avg)),
-			dColor(kib2Human(float64(v.PendingWrites.Min))),
-			dColor(kib2Human(float64(v.PendingWrites.Max))))
+			dColor(v.PendingWrites.Current),
+			dColor(fmt.Sprintf("%.1f", v.PendingWrites.Avg)),
+			dColor(v.PendingWrites.Min),
+			dColor(v.PendingWrites.Max))
 
 		dColor = dangerColor(v.UnackedWrites.Current).SprintFunc()
 		fmt.Printf("\t\t\tUnackedWrites: current:%s average:%s min:%s max%s\n",
-			dColor(kib2Human(float64(v.UnackedWrites.Current))),
-			dColor(kib2Human(v.UnackedWrites.Avg)),
-			dColor(kib2Human(float64(v.UnackedWrites.Min))),
-			dColor(kib2Human(float64(v.UnackedWrites.Max))))
+			dColor(v.UnackedWrites.Current),
+			dColor(fmt.Sprintf("%.1f", v.UnackedWrites.Avg)),
+			dColor(v.UnackedWrites.Min),
+			dColor(v.UnackedWrites.Max))
 
 		fmt.Printf("\n")
 	}

@@ -499,6 +499,8 @@ func (p *PeerDevice) Update(e Event) {
 
 	vol := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
 
+	vol.updateTimes(e.TimeStamp)
+
 	vol.ReplicationStatus = e.Fields[peerDevKeys[peerDevReplication]]
 	vol.ReplicationHint = p.replicationExplination(vol)
 	vol.DiskState = e.Fields[peerDevKeys[peerDevPeerDisk]]

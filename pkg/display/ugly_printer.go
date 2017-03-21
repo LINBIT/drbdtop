@@ -19,10 +19,8 @@ type UglyPrinter struct {
 	lastErr   []error
 }
 
-func NewUglyPrinter() UglyPrinter {
-	return UglyPrinter{
-		resources: update.NewResourceCollection(),
-	}
+func NewUglyPrinter(d time.Duration) UglyPrinter {
+	return UglyPrinter{resources: update.NewResourceCollection(d)}
 }
 
 // Display clears the screen and resource information in a loop.

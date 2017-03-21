@@ -3,6 +3,7 @@ package update
 import (
 	"sort"
 	"sync"
+	"time"
 
 	"drbdtop.io/drbdtop/pkg/resource"
 )
@@ -75,21 +76,47 @@ func (b *ByRes) Update(evt resource.Event) {
 	b.Danger = dangerScore
 }
 
+func (b *ByRes) prune(t time.Time) {
+	for k, c := range b.Connections {
+		if c.CurrentTime.Before(t) {
+			delete(b.Connections, k)
+		}
+	}
+	for k, v := range b.Device.Volumes {
+		if v.CurrentTime.Before(t) {
+			delete(b.Device.Volumes, k)
+		}
+	}
+	for k, p := range b.PeerDevices {
+		if p.CurrentTime.Before(t) {
+			delete(b.PeerDevices, k)
+		} else {
+			for key, v := range p.Volumes {
+				if v.CurrentTime.Before(t) {
+					delete(p.Volumes, key)
+				}
+			}
+		}
+	}
+}
+
 // ResourceCollection is a collection of stats collected organized under their respective resource names.
 // Implements the Sort interface, sorting the *ByRes within List.
 type ResourceCollection struct {
 	sync.RWMutex
-	Map  map[string]*ByRes
-	List []*ByRes
-	less []LessFunc
+	Map            map[string]*ByRes
+	List           []*ByRes
+	less           []LessFunc
+	updateInterval time.Duration
 }
 
 // NewResourceCollection returns a new *ResourceCollection with maps created
 // and configured to sort by Name only.
-func NewResourceCollection() *ResourceCollection {
+func NewResourceCollection(d time.Duration) *ResourceCollection {
 	return &ResourceCollection{
-		Map:  make(map[string]*ByRes),
-		less: []LessFunc{Name},
+		Map:            make(map[string]*ByRes),
+		less:           []LessFunc{Name},
+		updateInterval: d,
 	}
 }
 
@@ -105,6 +132,11 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 		rc.Map[resName].Update(e)
 	}
 
+	// Clean up old data.
+	if rc.updateInterval != 0 {
+		rc.prune(e.TimeStamp.Add(-3 * rc.updateInterval))
+	}
+
 	// Rebuild list from map values.
 	rc.List = []*ByRes{}
 	for _, v := range rc.Map {
@@ -115,6 +147,16 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Unlock()
 
 	rc.Sort()
+}
+
+func (rc *ResourceCollection) prune(t time.Time) {
+	for k, v := range rc.Map {
+		if v.Res.CurrentTime.Before(t) {
+			delete(rc.Map, k)
+		} else {
+			v.prune(t)
+		}
+	}
 }
 
 // Sorting code adapted from https://golang.org/pkg/sort/#example__sortMultiKeys

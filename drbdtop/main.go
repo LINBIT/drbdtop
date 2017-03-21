@@ -37,22 +37,24 @@ func main() {
 
 	errors := make(chan error, 100)
 
+	duration, err := time.ParseDuration(*interval)
+	if err != nil {
+		errors <- fmt.Errorf("defaulting to 500ms polling interval: %v", err)
+		duration = time.Millisecond * 500
+	}
+
 	var input collect.Collector
 
 	if *file != "" {
+		duration = 0 // Set duration to zero to prevent pruning.
 		input = collect.FileCollector{Path: file}
 	} else {
-		duration, err := time.ParseDuration(*interval)
-		if err != nil {
-			errors <- fmt.Errorf("defaulting to 500ms polling interval: %v", err)
-			duration = time.Millisecond * 500
-		}
 		input = collect.Events2Poll{Interval: duration}
 	}
 
 	events := make(chan resource.Event, 5)
 	go input.Collect(events, errors)
 
-	display := display.NewUglyPrinter()
+	display := display.NewUglyPrinter(duration)
 	display.Display(events, errors)
 }

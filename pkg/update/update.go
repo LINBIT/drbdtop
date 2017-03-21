@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"drbdtop.io/drbdtop/pkg/resource"
+	"github.com/facette/natsort"
 )
 
 // ByRes organizes events related to a particular resource.
@@ -215,14 +216,16 @@ func (rc *ResourceCollection) Less(i, j int) bool {
 	return rc.less[k](p, q)
 }
 
-// Name sorts resource names by alpha.
+// Name sorts resource names by natual sorting order.
 func Name(r1, r2 *ByRes) bool {
-	return r1.Res.Name < r2.Res.Name
+	return natsort.Compare(r1.Res.Name, r2.Res.Name)
 }
 
-// NameReverse sorts resource names by alpha in reverse order.
+// NameReverse sorts resource names by reverse natual sorting order.
 func NameReverse(r1, r2 *ByRes) bool {
-	return r1.Res.Name > r2.Res.Name
+	// If we simply negate the comparison function, we'll swap elements that are equal.
+	// Names have to be unique, so we can get away with it here.
+	return !natsort.Compare(r1.Res.Name, r2.Res.Name)
 }
 
 // Size sorts resource names by local disk size.

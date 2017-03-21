@@ -510,8 +510,8 @@ func (p *PeerDevice) Update(e Event) {
 	vol.PendingWrites.calculate(e.Fields[peerDevKeys[peerDevPending]])
 	vol.UnackedWrites.calculate(e.Fields[peerDevKeys[peerDevUnacked]])
 
-	vol.ReceivedKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevReceived]])
-	vol.SentKiB.calculate(p.Uptime, e.Fields[peerDevKeys[peerDevSent]])
+	vol.ReceivedKiB.calculate(vol.Uptime, e.Fields[peerDevKeys[peerDevReceived]])
+	vol.SentKiB.calculate(vol.Uptime, e.Fields[peerDevKeys[peerDevSent]])
 
 	p.Danger = p.getDanger()
 }

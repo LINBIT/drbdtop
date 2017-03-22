@@ -179,7 +179,7 @@ func printConn(c *resource.Connection) {
 		}
 	}
 
-	if c.Congested == "no" {
+	if c.Congested != "no" {
 		cl = color.New(color.FgHiYellow)
 		cl.Printf(" Congested ")
 	}

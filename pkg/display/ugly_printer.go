@@ -225,21 +225,21 @@ func printPeerDev(r *update.ByRes, conn string) {
 			kib2Human(float64(v.ReceivedKiB.Total)), kib2Human(v.ReceivedKiB.PerSecond))
 
 		dColor = dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
-		fmt.Printf("\t\t\tOutOfSync: current:%s average:%s min:%s max%s\n",
+		fmt.Printf("\t\t\tOutOfSync: current:%s average:%s min:%s max:%s\n",
 			dColor(kib2Human(float64(v.OutOfSyncKiB.Current))),
 			dColor(kib2Human(v.OutOfSyncKiB.Avg)),
 			dColor(kib2Human(float64(v.OutOfSyncKiB.Min))),
 			dColor(kib2Human(float64(v.OutOfSyncKiB.Max))))
 
 		dColor = dangerColor(v.PendingWrites.Current).SprintFunc()
-		fmt.Printf("\t\t\tPendingWrites: current:%s average:%s min:%s max%s\n",
+		fmt.Printf("\t\t\tPendingWrites: current:%s average:%s min:%s max:%s\n",
 			dColor(v.PendingWrites.Current),
 			dColor(fmt.Sprintf("%.1f", v.PendingWrites.Avg)),
 			dColor(v.PendingWrites.Min),
 			dColor(v.PendingWrites.Max))
 
 		dColor = dangerColor(v.UnackedWrites.Current).SprintFunc()
-		fmt.Printf("\t\t\tUnackedWrites: current:%s average:%s min:%s max%s\n",
+		fmt.Printf("\t\t\tUnackedWrites: current:%s average:%s min:%s max:%s\n",
 			dColor(v.UnackedWrites.Current),
 			dColor(fmt.Sprintf("%.1f", v.UnackedWrites.Avg)),
 			dColor(v.UnackedWrites.Min),

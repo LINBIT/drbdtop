@@ -261,12 +261,12 @@ func dangerColor(danger uint64) *color.Color {
 
 // kib2Human takes a size in KiB and returns a human readable size with suffix.
 func kib2Human(kiBytes float64) string {
-	sizes := []string{"KiB", "Mib", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
+	sizes := []string{"K", "M", "G", "T", "P", "E", "Z", "Y"}
 	unit := float64(1024)
 	if kiBytes < unit {
 		return fmt.Sprintf("%.1f%s", kiBytes, sizes[0])
 	}
 
 	exp := int(math.Log(kiBytes) / math.Log(unit))
-	return fmt.Sprintf("%.1f%s", (kiBytes / (math.Pow(unit, float64(exp)))), sizes[exp])
+	return fmt.Sprintf("%.1f%siB", (kiBytes / (math.Pow(unit, float64(exp)))), sizes[exp])
 }

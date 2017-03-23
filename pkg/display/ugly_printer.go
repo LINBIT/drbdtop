@@ -126,14 +126,14 @@ func printLocalDisk(r *update.ByRes) {
 	for _, k := range keys {
 		dColor := dangerColor(d.Danger).SprintFunc()
 		v := d.Volumes[k]
-		fmt.Printf("\t\tvolume %s (/dev/drbd/%s):", dColor(k), v.Minor)
+		fmt.Printf("\t\tvolume %s (/dev/drbd%s):", dColor(k), v.Minor)
 		dState := v.DiskState
 
 		if dState != "UpToDate" {
 			c := color.New(color.FgHiYellow)
-			c.Printf(" %s ", dState)
-		} else {
-			fmt.Printf(" %s ", dState)
+			c.Printf(" %s", dState)
+
+			fmt.Printf("(%s)", v.DiskHint)
 		}
 
 		if v.Blocked != "no" {

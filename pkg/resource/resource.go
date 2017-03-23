@@ -400,6 +400,7 @@ func (d *Device) Update(e Event) {
 	vol.uptimer.updateTimes(e.TimeStamp)
 	vol.Minor = e.Fields[devKeys[devMinor]]
 	vol.DiskState = e.Fields[devKeys[devDisk]]
+	vol.diskStateExplination()
 	vol.ActivityLogSuspended = e.Fields[devKeys[devALSuspended]]
 	vol.Blocked = e.Fields[devKeys[devBlocked]]
 
@@ -438,6 +439,7 @@ type DevVolume struct {
 	uptimer
 	Minor                string
 	DiskState            string
+	DiskHint             string
 	Size                 uint64
 	ActivityLogSuspended string
 	Blocked              string
@@ -461,6 +463,29 @@ func NewDevVolume(maxLen int) *DevVolume {
 
 		UpperPending: newMinMaxAvgCurrent(),
 		LowerPending: newMinMaxAvgCurrent(),
+	}
+}
+
+func (v *DevVolume) diskStateExplination() {
+	switch v.DiskState {
+	case "Diskless":
+		v.DiskHint = "detached from local backing disk"
+	case "Attaching":
+		v.DiskHint = "reading metadata"
+	case "Failed":
+		v.DiskHint = "I/O failure reported by local backing disk"
+	case "Negotiating":
+		v.DiskHint = "communicating with peer..."
+	case "Inconsistent":
+		v.DiskHint = "local data is not accessible or usable until resync is complete"
+	case "Outdated":
+		v.DiskHint = "data is usable, but a peer has newer data"
+	case "Consistent":
+		v.DiskHint = "data is usable, but we have no network connection"
+	case "UpToDate":
+		v.DiskHint = "normal disk state"
+	default:
+		v.DiskHint = "unknown disk state!"
 	}
 }
 

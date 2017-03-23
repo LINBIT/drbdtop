@@ -190,7 +190,6 @@ func printConn(c *resource.Connection) {
 func printPeerDev(r *update.ByRes, conn string) {
 	d := r.PeerDevices[conn]
 
-	dColor := dangerColor(d.Danger).SprintFunc()
 	var keys []string
 	for k := range d.Volumes {
 		keys = append(keys, k)
@@ -224,26 +223,35 @@ func printPeerDev(r *update.ByRes, conn string) {
 		fmt.Printf("\t\t\tReceived: total:%s Per/Sec:%s\n",
 			kib2Human(float64(v.ReceivedKiB.Total)), kib2Human(v.ReceivedKiB.PerSecond))
 
-		dColor = dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
+		oosCl := dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
+		oosAvgCl := dangerColor(uint64(v.OutOfSyncKiB.Avg) / uint64(1024)).SprintFunc()
+		oosMinCl := dangerColor(v.OutOfSyncKiB.Min / uint64(1024)).SprintFunc()
+		oosMaxCl := dangerColor(v.OutOfSyncKiB.Max / uint64(1024)).SprintFunc()
 		fmt.Printf("\t\t\tOutOfSync: current:%s average:%s min:%s max:%s\n",
-			dColor(kib2Human(float64(v.OutOfSyncKiB.Current))),
-			dColor(kib2Human(v.OutOfSyncKiB.Avg)),
-			dColor(kib2Human(float64(v.OutOfSyncKiB.Min))),
-			dColor(kib2Human(float64(v.OutOfSyncKiB.Max))))
+			oosCl(kib2Human(float64(v.OutOfSyncKiB.Current))),
+			oosAvgCl(kib2Human(v.OutOfSyncKiB.Avg)),
+			oosMinCl(kib2Human(float64(v.OutOfSyncKiB.Min))),
+			oosMaxCl(kib2Human(float64(v.OutOfSyncKiB.Max))))
 
-		dColor = dangerColor(v.PendingWrites.Current).SprintFunc()
+		penCl := dangerColor(v.PendingWrites.Current).SprintFunc()
+		penAvgCl := dangerColor(uint64(v.PendingWrites.Avg)).SprintFunc()
+		penMinCl := dangerColor(v.PendingWrites.Min).SprintFunc()
+		penMaxCl := dangerColor(v.PendingWrites.Max).SprintFunc()
 		fmt.Printf("\t\t\tPendingWrites: current:%s average:%s min:%s max:%s\n",
-			dColor(v.PendingWrites.Current),
-			dColor(fmt.Sprintf("%.1f", v.PendingWrites.Avg)),
-			dColor(v.PendingWrites.Min),
-			dColor(v.PendingWrites.Max))
+			penCl(v.PendingWrites.Current),
+			penAvgCl(fmt.Sprintf("%.1f", v.PendingWrites.Avg)),
+			penMinCl(v.PendingWrites.Min),
+			penMaxCl(v.PendingWrites.Max))
 
-		dColor = dangerColor(v.UnackedWrites.Current).SprintFunc()
+		unAckCl := dangerColor(v.UnackedWrites.Current).SprintFunc()
+		unAckAvgCl := dangerColor(uint64(v.UnackedWrites.Avg)).SprintFunc()
+		unAckMinCl := dangerColor(v.UnackedWrites.Min).SprintFunc()
+		unAckMaxCl := dangerColor(v.UnackedWrites.Max).SprintFunc()
 		fmt.Printf("\t\t\tUnackedWrites: current:%s average:%s min:%s max:%s\n",
-			dColor(v.UnackedWrites.Current),
-			dColor(fmt.Sprintf("%.1f", v.UnackedWrites.Avg)),
-			dColor(v.UnackedWrites.Min),
-			dColor(v.UnackedWrites.Max))
+			unAckCl(v.UnackedWrites.Current),
+			unAckAvgCl(fmt.Sprintf("%.1f", v.UnackedWrites.Avg)),
+			unAckMinCl(v.UnackedWrites.Min),
+			unAckMaxCl(v.UnackedWrites.Max))
 
 		fmt.Printf("\n")
 	}

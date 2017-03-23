@@ -164,7 +164,7 @@ func (m *minMaxAvgCurrent) calculate(s string) {
 
 type rate struct {
 	initial uint64
-	current uint64
+	last    uint64
 	new     bool
 
 	Previous  *previousFloat64
@@ -181,14 +181,16 @@ func (r *rate) calculate(t time.Duration, s string) {
 		r.initial = i
 		r.new = false
 	}
-	// A connection flapped and we're seeing a new dataset, reset initial to 0.
-	if i < r.current {
+	// A connection flapped and we're seeing a new dataset,
+	// reset initial to 0 and adjust total to account for old data.
+	if i < r.last {
 		r.initial = 0
+		r.Total = (r.last - i)
+	} else {
+		r.Total = (i - r.initial)
 	}
 
-	r.current = i
-
-	r.Total += (i - r.initial)
+	r.last = i
 
 	rate := float64(r.Total) / t.Seconds()
 	if math.IsNaN(rate) {

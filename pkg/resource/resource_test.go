@@ -101,8 +101,8 @@ func TestRate(t *testing.T) {
 	if r.initial != 100 {
 		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
 	}
-	if r.current != 100 {
-		t.Errorf("Expected current to be %d, got %d", 100, r.current)
+	if r.last != 100 {
+		t.Errorf("Expected current to be %d, got %d", 100, r.last)
 	}
 	if !reflect.DeepEqual(r.Previous.Values, []float64{0}) {
 		t.Errorf("Expected Previous.Values to be %v, got %v", []float64{0}, r.Previous.Values)
@@ -114,26 +114,58 @@ func TestRate(t *testing.T) {
 		t.Errorf("Expected total to be %d, got %d", 0, r.Total)
 	}
 
+	// Deal with data not increasing.
+
 	r.calculate(time.Second*1, "200")
 
 	if r.initial != 100 {
 		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
 	}
-	if r.current != 200 {
-		t.Errorf("Expected current to be %d, got %d", 200, r.current)
+	if r.last != 200 {
+		t.Errorf("Expected current to be %d, got %d", 200, r.last)
 	}
 	if !reflect.DeepEqual(r.Previous.Values, []float64{0, 100}) {
 		t.Errorf("Expected Previous.Values to be %v, got %v", []float64{0, 100}, r.Previous.Values)
 	}
-	if r.PerSecond != 100 {
+	if r.PerSecond != float64(100) {
 		t.Errorf("Expected PerSecond to be %d, got %f", 100, r.PerSecond)
 	}
 	if r.Total != 100 {
 		t.Errorf("Expected total to be %d, got %d", 100, r.Total)
 	}
 
-	// Non-monotonic pattern, reset initial value to calulate total correctly.
-	r.calculate(time.Second*2, "50")
+	r.calculate(time.Second*2, "200")
+
+	if r.initial != 100 {
+		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
+	}
+	if r.last != 200 {
+		t.Errorf("Expected current to be %d, got %d", 200, r.last)
+	}
+	if !reflect.DeepEqual(r.Previous.Values, []float64{0, 100, 50}) {
+		t.Errorf("Expected Previous.Values to be %v, got %v", []float64{0, 100, 50}, r.Previous.Values)
+	}
+	if r.PerSecond != float64(50) {
+		t.Errorf("Expected PerSecond to be %d, got %f", 100, r.PerSecond)
+	}
+	if r.Total != 100 {
+		t.Errorf("Expected total to be %d, got %d", 100, r.Total)
+	}
+
+	r.calculate(time.Second*3, "200")
+
+	if r.initial != 100 {
+		t.Errorf("Expected initial to be %d, got %d", 100, r.initial)
+	}
+	if r.last != 200 {
+		t.Errorf("Expected current to be %d, got %d", 200, r.last)
+	}
+	if r.Total != 100 {
+		t.Errorf("Expected total to be %d, got %d", 100, r.Total)
+	}
+
+	// Non-monotonic pattern, reset initial value and calulate total correctly.
+	r.calculate(time.Second*4, "50")
 	if r.Total != 150 {
 		t.Errorf("Failed to reset total value, total is %d, expected %d: %v", r.Total, 150, r)
 	}

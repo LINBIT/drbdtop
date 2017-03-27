@@ -185,22 +185,20 @@ func TestPreviousFloat64(t *testing.T) {
 	}
 }
 
+/*
+ * New Events are created from strings generated from drbdsetup events2 such as:
+ * 2017-03-27T08:28:17.072611-07:00 exists resource name:test0 role:Primary suspended:no write-ordering:flush
+ * 2017-03-27T08:28:17.072611-07:00 exists device name: volume:0 minor:0 disk:UpToDate client:no size:4056 read:1340 written:16 al-writes:1 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no
+ * 2017-02-15T14:43:16.688437+00:00 exists connection name:test0 conn-name:peer connection:Connected role:Secondary congested:no
+ * 2017-02-15T14:43:16.688437+00:00 exists peer-device name:test0 conn-name:peer volume:0 replication:SyncSource peer-disk:Inconsistent resync-suspended:no received:0 sent:2050743348 out-of-sync:205655500 pending:0 unacked:0
+ */
+
 func TestResourceUpdate(t *testing.T) {
-	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
-	if err != nil {
-		t.Error(err)
-	}
 
 	status := Resource{}
-	event := Event{
-		TimeStamp: timeStamp,
-		Target:    "resource",
-		Fields: map[string]string{
-			"name":           "test0",
-			"role":           "Primary",
-			"suspended":      "no",
-			"write-ordering": "flush",
-		},
+	event, err := NewEvent("2017-02-15T12:57:53.000000-08:00 exists resource name:test0 role:Primary suspended:no write-ordering:flush")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// Update should populate an empty Status.
@@ -218,24 +216,11 @@ func TestResourceUpdate(t *testing.T) {
 	if status.WriteOrdering != event.Fields[ResKeys.writeOrdering] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
-	if status.StartTime != event.TimeStamp {
-		t.Errorf("Expected status.StartTime to be %q, got %q", event.TimeStamp, status.StartTime)
-	}
-	// Start and current time should match when first created.
-	if status.CurrentTime != event.TimeStamp {
-		t.Errorf("Expected status.CurrentTime to be %q, got %q", event.TimeStamp, status.StartTime)
-	}
 
 	// Update should update an exsisting Status.
-	event = Event{
-		TimeStamp: timeStamp.Add(time.Millisecond * 500),
-		Target:    "resource",
-		Fields: map[string]string{
-			"name":           "test0",
-			"role":           "Secondary",
-			"suspended":      "no",
-			"write-ordering": "drain",
-		},
+	event, err = NewEvent("2017-02-15T12:57:55.000000-08:00 exists resource name:test0 role:Secondary suspended:no write-ordering:drain")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	status.Update(event)
@@ -251,16 +236,6 @@ func TestResourceUpdate(t *testing.T) {
 	}
 	if status.WriteOrdering != event.Fields[ResKeys.writeOrdering] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
-	}
-	if status.StartTime != timeStamp {
-		t.Errorf("Expected status.StartTime to be %q, got %q", timeStamp, status.StartTime)
-	}
-	if status.CurrentTime != event.TimeStamp {
-		t.Errorf("Expected status.CurrentTime to be %q, got %q", event.TimeStamp, status.CurrentTime)
-	}
-	// Start and current time should match when first created.
-	if status.CurrentTime == status.StartTime {
-		t.Errorf("Expected status.CurrentTime %q, and status.startTime %q to differ.", status.CurrentTime, status.StartTime)
 	}
 }
 

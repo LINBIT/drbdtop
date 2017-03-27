@@ -42,7 +42,7 @@ func (b *ByRes) Update(evt resource.Event) {
 		b.Device.Update(evt)
 
 	case "connection":
-		conn := evt.Fields["conn-name"]
+		conn := evt.Fields[resource.ConnKeys.ConnName]
 
 		if _, ok := b.Connections[conn]; !ok {
 			b.Connections[conn] = &resource.Connection{}
@@ -50,7 +50,7 @@ func (b *ByRes) Update(evt resource.Event) {
 		b.Connections[conn].Update(evt)
 
 	case "peer-device":
-		conn := evt.Fields["conn-name"]
+		conn := evt.Fields[resource.ConnKeys.ConnName]
 
 		if _, ok := b.PeerDevices[conn]; !ok {
 			b.PeerDevices[conn] = resource.NewPeerDevice()
@@ -125,7 +125,7 @@ func NewResourceCollection(d time.Duration) *ResourceCollection {
 func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Lock()
 
-	resName := e.Fields["name"]
+	resName := e.Fields[resource.ResKeys.Name]
 	if resName != "" {
 		if _, ok := rc.Map[resName]; !ok {
 			rc.Map[resName] = NewByRes()

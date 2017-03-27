@@ -1,0 +1,19 @@
+hash: 8243a65e10392d45b8aca0967423db7570a889124414693ffd2bc934953f9133
+updated: 2017-03-27T13:54:57.930474149-07:00
+imports:
+- name: github.com/facette/natsort
+  version: 3769c5fd310020fdd04779443fd9255c8cf04e34
+- name: github.com/fatih/color
+  version: 9131ab34cf20d2f6d83fdc67168a5430d1c7dc23
+- name: github.com/mattn/go-colorable
+  version: 5411d3eea5978e6cdc258b30de592b60df6aba96
+  repo: https://github.com/mattn/go-colorable
+- name: github.com/mattn/go-isatty
+  version: 57fdcb988a5c543893cc61bce354a6e24ab70022
+  repo: https://github.com/mattn/go-isatty
+- name: golang.org/x/sys
+  version: e24f485414aeafb646f6fca458b0bf869c0880a1
+  repo: https://go.googlesource.com/sys
+  subpackages:
+  - unix
+testImports: []

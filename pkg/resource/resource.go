@@ -52,13 +52,14 @@ const (
 	connCongested
 )
 
-var devKeys = []string{"name", "volume", "minor", "disk", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
+var devKeys = []string{"name", "volume", "minor", "disk", "client", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
 
 const (
 	devName = iota
 	devVolume
 	devMinor
 	devDisk
+	devClient
 	devSize
 	devRead
 	devWritten
@@ -402,6 +403,7 @@ func (d *Device) Update(e Event) {
 	vol.uptimer.updateTimes(e.TimeStamp)
 	vol.Minor = e.Fields[devKeys[devMinor]]
 	vol.DiskState = e.Fields[devKeys[devDisk]]
+	vol.Client = e.Fields[devKeys[devClient]]
 	vol.diskStateExplination()
 	vol.ActivityLogSuspended = e.Fields[devKeys[devALSuspended]]
 	vol.Blocked = e.Fields[devKeys[devBlocked]]
@@ -415,7 +417,6 @@ func (d *Device) Update(e Event) {
 	vol.WrittenKiB.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devWritten]])
 	vol.ActivityLogUpdates.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devALWrites]])
 	vol.BitMapUpdates.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devBMWrites]])
-
 	vol.UpperPending.calculate(e.Fields[devKeys[devUpperPending]])
 	vol.LowerPending.calculate(e.Fields[devKeys[devLowerPending]])
 
@@ -442,6 +443,7 @@ type DevVolume struct {
 	Minor                string
 	DiskState            string
 	DiskHint             string
+	Client               string
 	Size                 uint64
 	ActivityLogSuspended string
 	Blocked              string

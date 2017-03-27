@@ -42,52 +42,55 @@ type resKeys struct {
 // ResKeys is a data container for the field keys of resource Events.
 var ResKeys = resKeys{"name", "role", "suspended", "write-ordering"}
 
-var connKeys = []string{"name", "peer-node-id", "conn-name", "connection", "role", "congested"}
+type connKeys struct {
+	Name       string
+	PeerNodeID string
+	ConnName   string
+	Connection string
+	Role       string
+	Congested  string
+}
 
-const (
-	connName = iota
-	connPeerNodeID
-	connConnName
-	connConnection
-	connRole
-	connCongested
-)
+// ConnKeys is a data container for the field keys of connection Events.
+var ConnKeys = connKeys{"name", "peer-node-id", "conn-name", "connection", "role", "congested"}
 
-var devKeys = []string{"name", "volume", "minor", "disk", "client", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
+type devKeys struct {
+	Name         string
+	Volume       string
+	Minor        string
+	Disk         string
+	Client       string
+	Size         string
+	Read         string
+	Written      string
+	ALWrites     string
+	BMWrites     string
+	UpperPending string
+	LowerPending string
+	ALSuspended  string
+	Blocked      string
+}
 
-const (
-	devName = iota
-	devVolume
-	devMinor
-	devDisk
-	devClient
-	devSize
-	devRead
-	devWritten
-	devALWrites
-	devBMWrites
-	devUpperPending
-	devLowerPending
-	devALSuspended
-	devBlocked
-)
+// DevKeys is a data container for the field keys of device Events.
+var DevKeys = devKeys{"name", "volume", "minor", "disk", "client", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
 
-var peerDevKeys = []string{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
+type peerDevKeys struct {
+	Name            string
+	PeerNodeID      string
+	ConnName        string
+	Volume          string
+	Replication     string
+	PeerDisk        string
+	ResyncSuspended string
+	Received        string
+	Sent            string
+	OutOfSync       string
+	Pending         string
+	Unacked         string
+}
 
-const (
-	peerDevName = iota
-	peerDevNodeID
-	peerDevConnName
-	peerDevVolume
-	peerDevReplication
-	peerDevPeerDisk
-	peerDevResyncSuspended
-	peerDevReceived
-	peerDevSent
-	peerDevOutOfSync
-	peerDevPending
-	peerDevUnacked
-)
+// PeerDevKeys is a data container for the field keys of device Events.
+var PeerDevKeys = peerDevKeys{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
 
 var connDangerScores = map[string]uint64{
 	"Connected":  0,
@@ -308,12 +311,12 @@ func (c *Connection) Update(e Event) {
 	c.Lock()
 	defer c.Unlock()
 
-	c.Resource = e.Fields[connKeys[connName]]
-	c.PeerNodeID = e.Fields[connKeys[connPeerNodeID]]
-	c.ConnectionName = e.Fields[connKeys[connConnName]]
-	c.ConnectionStatus = e.Fields[connKeys[connConnection]]
-	c.Role = e.Fields[connKeys[connRole]]
-	c.Congested = e.Fields[connKeys[connCongested]]
+	c.Resource = e.Fields[ConnKeys.Name]
+	c.PeerNodeID = e.Fields[ConnKeys.PeerNodeID]
+	c.ConnectionName = e.Fields[ConnKeys.ConnName]
+	c.ConnectionStatus = e.Fields[ConnKeys.Connection]
+	c.Role = e.Fields[ConnKeys.Role]
+	c.Congested = e.Fields[ConnKeys.Congested]
 	c.updateTimes(e.TimeStamp)
 	c.Danger = c.getDanger()
 	c.connStatusExplination()
@@ -391,35 +394,35 @@ func (d *Device) Update(e Event) {
 	d.Lock()
 	defer d.Unlock()
 
-	d.Resource = e.Fields[devKeys[devName]]
+	d.Resource = e.Fields[DevKeys.Name]
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := d.Volumes[e.Fields[devKeys[devVolume]]]
+	_, ok := d.Volumes[e.Fields[DevKeys.Volume]]
 	if !ok {
-		d.Volumes[e.Fields[devKeys[devVolume]]] = NewDevVolume(200)
+		d.Volumes[e.Fields[DevKeys.Volume]] = NewDevVolume(200)
 	}
 
-	vol := d.Volumes[e.Fields[devKeys[devVolume]]]
+	vol := d.Volumes[e.Fields[DevKeys.Volume]]
 
 	vol.uptimer.updateTimes(e.TimeStamp)
-	vol.Minor = e.Fields[devKeys[devMinor]]
-	vol.DiskState = e.Fields[devKeys[devDisk]]
-	vol.Client = e.Fields[devKeys[devClient]]
+	vol.Minor = e.Fields[DevKeys.Minor]
+	vol.DiskState = e.Fields[DevKeys.Disk]
+	vol.Client = e.Fields[DevKeys.Client]
 	vol.diskStateExplination()
-	vol.ActivityLogSuspended = e.Fields[devKeys[devALSuspended]]
-	vol.Blocked = e.Fields[devKeys[devBlocked]]
+	vol.ActivityLogSuspended = e.Fields[DevKeys.ALSuspended]
+	vol.Blocked = e.Fields[DevKeys.Blocked]
 
 	// Only update size if we can parse the field correctly.
-	if size, err := strconv.ParseUint(e.Fields[devKeys[devSize]], 10, 64); err == nil {
+	if size, err := strconv.ParseUint(e.Fields[DevKeys.Size], 10, 64); err == nil {
 		vol.Size = size
 	}
 
-	vol.ReadKiB.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devRead]])
-	vol.WrittenKiB.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devWritten]])
-	vol.ActivityLogUpdates.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devALWrites]])
-	vol.BitMapUpdates.calculate(vol.uptimer.Uptime, e.Fields[devKeys[devBMWrites]])
-	vol.UpperPending.calculate(e.Fields[devKeys[devUpperPending]])
-	vol.LowerPending.calculate(e.Fields[devKeys[devLowerPending]])
+	vol.ReadKiB.calculate(vol.uptimer.Uptime, e.Fields[DevKeys.Read])
+	vol.WrittenKiB.calculate(vol.uptimer.Uptime, e.Fields[DevKeys.Written])
+	vol.ActivityLogUpdates.calculate(vol.uptimer.Uptime, e.Fields[DevKeys.ALWrites])
+	vol.BitMapUpdates.calculate(vol.uptimer.Uptime, e.Fields[DevKeys.BMWrites])
+	vol.UpperPending.calculate(e.Fields[DevKeys.UpperPending])
+	vol.LowerPending.calculate(e.Fields[DevKeys.LowerPending])
 
 	d.Danger = d.getDanger()
 }
@@ -516,32 +519,32 @@ func (p *PeerDevice) Update(e Event) {
 	p.Lock()
 	defer p.Unlock()
 
-	p.Resource = e.Fields[peerDevKeys[peerDevName]]
-	p.PeerNodeID = e.Fields[peerDevKeys[peerDevNodeID]]
-	p.ConnectionName = e.Fields[peerDevKeys[peerDevConnName]]
+	p.Resource = e.Fields[PeerDevKeys.Name]
+	p.PeerNodeID = e.Fields[PeerDevKeys.PeerNodeID]
+	p.ConnectionName = e.Fields[PeerDevKeys.ConnName]
 	p.updateTimes(e.TimeStamp)
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
+	_, ok := p.Volumes[e.Fields[PeerDevKeys.Volume]]
 	if !ok {
-		p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]] = NewPeerDevVol(200)
+		p.Volumes[e.Fields[PeerDevKeys.Volume]] = NewPeerDevVol(200)
 	}
 
-	vol := p.Volumes[e.Fields[peerDevKeys[peerDevVolume]]]
+	vol := p.Volumes[e.Fields[PeerDevKeys.Volume]]
 
 	vol.updateTimes(e.TimeStamp)
 
-	vol.ReplicationStatus = e.Fields[peerDevKeys[peerDevReplication]]
+	vol.ReplicationStatus = e.Fields[PeerDevKeys.Replication]
 	vol.ReplicationHint = p.replicationExplination(vol)
-	vol.DiskState = e.Fields[peerDevKeys[peerDevPeerDisk]]
-	vol.ResyncSuspended = e.Fields[peerDevKeys[peerDevResyncSuspended]]
+	vol.DiskState = e.Fields[PeerDevKeys.PeerDisk]
+	vol.ResyncSuspended = e.Fields[PeerDevKeys.ResyncSuspended]
 
-	vol.OutOfSyncKiB.calculate(e.Fields[peerDevKeys[peerDevOutOfSync]])
-	vol.PendingWrites.calculate(e.Fields[peerDevKeys[peerDevPending]])
-	vol.UnackedWrites.calculate(e.Fields[peerDevKeys[peerDevUnacked]])
+	vol.OutOfSyncKiB.calculate(e.Fields[PeerDevKeys.OutOfSync])
+	vol.PendingWrites.calculate(e.Fields[PeerDevKeys.Pending])
+	vol.UnackedWrites.calculate(e.Fields[PeerDevKeys.Unacked])
 
-	vol.ReceivedKiB.calculate(vol.Uptime, e.Fields[peerDevKeys[peerDevReceived]])
-	vol.SentKiB.calculate(vol.Uptime, e.Fields[peerDevKeys[peerDevSent]])
+	vol.ReceivedKiB.calculate(vol.Uptime, e.Fields[PeerDevKeys.Received])
+	vol.SentKiB.calculate(vol.Uptime, e.Fields[PeerDevKeys.Sent])
 
 	p.Danger = p.getDanger()
 }

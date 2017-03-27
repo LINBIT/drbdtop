@@ -249,22 +249,22 @@ func TestConnectionUpdate(t *testing.T) {
 	// Update should create a new connection if there isn't one.
 	conn.Update(event)
 
-	name := event.Fields[connKeys[connConnName]]
+	name := event.Fields[ConnKeys.ConnName]
 
-	if conn.ConnectionName != event.Fields[connKeys[connConnName]] {
-		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.Fields[connKeys[connName]], conn.ConnectionName)
+	if conn.ConnectionName != event.Fields[ConnKeys.ConnName] {
+		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.Fields[ConnKeys.ConnName], conn.ConnectionName)
 	}
-	if conn.PeerNodeID != event.Fields[connKeys[connPeerNodeID]] {
-		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.Fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
+	if conn.PeerNodeID != event.Fields[ConnKeys.PeerNodeID] {
+		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.Fields[ConnKeys.PeerNodeID], conn.PeerNodeID)
 	}
-	if conn.ConnectionStatus != event.Fields[connKeys[connConnection]] {
-		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.Fields[connKeys[connConnection]], conn.ConnectionStatus)
+	if conn.ConnectionStatus != event.Fields[ConnKeys.Connection] {
+		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.Fields[ConnKeys.Connection], conn.ConnectionStatus)
 	}
-	if conn.Role != event.Fields[connKeys[connRole]] {
-		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.Fields[connKeys[connRole]], conn.Role)
+	if conn.Role != event.Fields[ConnKeys.Role] {
+		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.Fields[ConnKeys.Role], conn.Role)
 	}
-	if conn.Congested != event.Fields[connKeys[connCongested]] {
-		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[connKeys[connCongested]], conn.Congested)
+	if conn.Congested != event.Fields[ConnKeys.Congested] {
+		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[ConnKeys.Congested], conn.Congested)
 	}
 	if conn.updateCount != 1 {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
@@ -278,22 +278,22 @@ func TestConnectionUpdate(t *testing.T) {
 	// Update should update a new connection if one exists.
 	conn.Update(event)
 
-	name = event.Fields[connKeys[connConnName]]
+	name = event.Fields[ConnKeys.ConnName]
 
-	if conn.ConnectionName != event.Fields[connKeys[connConnName]] {
-		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.Fields[connKeys[connName]], conn.ConnectionName)
+	if conn.ConnectionName != event.Fields[ConnKeys.ConnName] {
+		t.Errorf("Expected status.Connections[%q].connectionName to be %q, got %q", name, event.Fields[ConnKeys.ConnName], conn.ConnectionName)
 	}
-	if conn.PeerNodeID != event.Fields[connKeys[connPeerNodeID]] {
-		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.Fields[connKeys[connPeerNodeID]], conn.PeerNodeID)
+	if conn.PeerNodeID != event.Fields[ConnKeys.PeerNodeID] {
+		t.Errorf("Expected status.Connections[%q].peerNodeID to be %q, got %q", name, event.Fields[ConnKeys.PeerNodeID], conn.PeerNodeID)
 	}
-	if conn.ConnectionStatus != event.Fields[connKeys[connConnection]] {
-		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.Fields[connKeys[connConnection]], conn.ConnectionStatus)
+	if conn.ConnectionStatus != event.Fields[ConnKeys.Connection] {
+		t.Errorf("Expected status.Connections[%q].connectionStatus to be %q, got %q", name, event.Fields[ConnKeys.Connection], conn.ConnectionStatus)
 	}
-	if conn.Role != event.Fields[connKeys[connRole]] {
-		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.Fields[connKeys[connRole]], conn.Role)
+	if conn.Role != event.Fields[ConnKeys.Role] {
+		t.Errorf("Expected status.Connections[%q].role to be %q, got %q", name, event.Fields[ConnKeys.Role], conn.Role)
 	}
-	if conn.Congested != event.Fields[connKeys[connCongested]] {
-		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[connKeys[connCongested]], conn.Congested)
+	if conn.Congested != event.Fields[ConnKeys.Congested] {
+		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[ConnKeys.Congested], conn.Congested)
 	}
 	if conn.updateCount != 2 {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
@@ -313,23 +313,23 @@ func TestDeviceUpdate(t *testing.T) {
 
 	dev.Update(event)
 
-	vol := event.Fields[devKeys[devVolume]]
+	vol := event.Fields[DevKeys.Volume]
 
-	if dev.Resource != event.Fields[devKeys[devName]] {
-		t.Errorf("Expected dev.resource to be %q, got %q", event.Fields[devKeys[devName]], dev.Resource)
+	if dev.Resource != event.Fields[DevKeys.Name] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.Fields[DevKeys.Name], dev.Resource)
 	}
-	if dev.Volumes[vol].Minor != event.Fields[devKeys[devMinor]] {
-		t.Errorf("Expected dev.volumes[%q].minor to be %q, got %q", vol, event.Fields[devKeys[devMinor]], dev.Volumes[vol].Minor)
+	if dev.Volumes[vol].Minor != event.Fields[DevKeys.Minor] {
+		t.Errorf("Expected dev.volumes[%q].minor to be %q, got %q", vol, event.Fields[DevKeys.Minor], dev.Volumes[vol].Minor)
 	}
-	if dev.Volumes[vol].DiskState != event.Fields[devKeys[devDisk]] {
-		t.Errorf("Expected dev.volumes[%q].DiskState to be %q, got %q", vol, event.Fields[devKeys[devDisk]], dev.Volumes[vol].DiskState)
+	if dev.Volumes[vol].DiskState != event.Fields[DevKeys.Disk] {
+		t.Errorf("Expected dev.volumes[%q].DiskState to be %q, got %q", vol, event.Fields[DevKeys.Disk], dev.Volumes[vol].DiskState)
 	}
 
-	size, _ := strconv.ParseUint(event.Fields[devKeys[devSize]], 10, 64)
+	size, _ := strconv.ParseUint(event.Fields[DevKeys.Size], 10, 64)
 	if dev.Volumes[vol].Size != size {
-		t.Errorf("Expected dev.volumes[%q].size to be %q, got %d", vol, event.Fields[devKeys[devSize]], dev.Volumes[vol].Size)
+		t.Errorf("Expected dev.volumes[%q].size to be %q, got %d", vol, event.Fields[DevKeys.Size], dev.Volumes[vol].Size)
 	}
-	if dev.Volumes[event.Fields[devKeys[devVolume]]].ReadKiB.Total != 0 {
+	if dev.Volumes[event.Fields[DevKeys.Volume]].ReadKiB.Total != 0 {
 		t.Errorf("Expected dev.volumes[%q].ReadKib.Total to be %q, got %q", vol, 0, dev.Volumes[vol].ReadKiB.Total)
 	}
 }
@@ -347,15 +347,15 @@ func TestPeerDeviceUpdate(t *testing.T) {
 
 	dev.Update(event)
 
-	vol := event.Fields[peerDevKeys[peerDevVolume]]
+	vol := event.Fields[PeerDevKeys.Volume]
 
-	if dev.Resource != event.Fields[devKeys[devName]] {
-		t.Errorf("Expected dev.resource to be %q, got %q", event.Fields[peerDevKeys[peerDevName]], dev.Resource)
+	if dev.Resource != event.Fields[DevKeys.Name] {
+		t.Errorf("Expected dev.resource to be %q, got %q", event.Fields[PeerDevKeys.Name], dev.Resource)
 	}
-	if dev.Volumes[vol].ReplicationStatus != event.Fields[peerDevKeys[peerDevReplication]] {
-		t.Errorf("Expected dev.volumes[%q].replicationStatus to be %q, got %q", vol, event.Fields[peerDevKeys[peerDevReplication]], dev.Volumes[vol].ReplicationStatus)
+	if dev.Volumes[vol].ReplicationStatus != event.Fields[PeerDevKeys.Replication] {
+		t.Errorf("Expected dev.volumes[%q].replicationStatus to be %q, got %q", vol, event.Fields[PeerDevKeys.Replication], dev.Volumes[vol].ReplicationStatus)
 	}
-	oos, _ := strconv.ParseUint(event.Fields[peerDevKeys[peerDevOutOfSync]], 10, 64)
+	oos, _ := strconv.ParseUint(event.Fields[PeerDevKeys.OutOfSync], 10, 64)
 	if dev.Volumes[vol].OutOfSyncKiB.Current != oos {
 		t.Errorf("Expected dev.volumes[%q].OutOfSyncKiB.Current to be %d, got %d", vol, oos, dev.Volumes[vol].OutOfSyncKiB.Current)
 	}
@@ -389,12 +389,12 @@ func TestNewEvent(t *testing.T) {
 				EventType: "exists",
 				Target:    "connection",
 				Fields: map[string]string{
-					connKeys[connName]:       "test3",
-					connKeys[connPeerNodeID]: "1",
-					connKeys[connConnName]:   "tom",
-					connKeys[connConnection]: "Connected",
-					connKeys[connRole]:       "Secondary",
-					connKeys[connCongested]:  "no",
+					ConnKeys.Name:       "test3",
+					ConnKeys.PeerNodeID: "1",
+					ConnKeys.ConnName:   "tom",
+					ConnKeys.Connection: "Connected",
+					ConnKeys.Role:       "Secondary",
+					ConnKeys.Congested:  "no",
 				}},
 		},
 		{"2017-02-22T19:53:58.445263-08:00 exists device name:test3 volume:0 minor:150 disk:UpToDate size:1048576 read:912 written:0 al-writes:0 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no",
@@ -403,19 +403,19 @@ func TestNewEvent(t *testing.T) {
 				EventType: "exists",
 				Target:    "device",
 				Fields: map[string]string{
-					devKeys[devName]:         "test3",
-					devKeys[devVolume]:       "0",
-					devKeys[devMinor]:        "150",
-					devKeys[devDisk]:         "UpToDate",
-					devKeys[devSize]:         "1048576",
-					devKeys[devRead]:         "912",
-					devKeys[devWritten]:      "0",
-					devKeys[devALWrites]:     "0",
-					devKeys[devBMWrites]:     "0",
-					devKeys[devUpperPending]: "0",
-					devKeys[devLowerPending]: "0",
-					devKeys[devALSuspended]:  "no",
-					devKeys[devBlocked]:      "no",
+					DevKeys.Name:         "test3",
+					DevKeys.Volume:       "0",
+					DevKeys.Minor:        "150",
+					DevKeys.Disk:         "UpToDate",
+					DevKeys.Size:         "1048576",
+					DevKeys.Read:         "912",
+					DevKeys.Written:      "0",
+					DevKeys.ALWrites:     "0",
+					DevKeys.BMWrites:     "0",
+					DevKeys.UpperPending: "0",
+					DevKeys.LowerPending: "0",
+					DevKeys.ALSuspended:  "no",
+					DevKeys.Blocked:      "no",
 				}},
 		},
 		{"2017-02-22T19:53:58.445263-08:00 exists peer-device name:test3 peer-node-id:1 conn-name:tom volume:0 replication:Established peer-disk:UpToDate resync-suspended:no received:10 sent:100 out-of-sync:1000 pending:10000 unacked:100000",
@@ -424,18 +424,18 @@ func TestNewEvent(t *testing.T) {
 				EventType: "exists",
 				Target:    "peer-device",
 				Fields: map[string]string{
-					peerDevKeys[peerDevName]:            "test3",
-					peerDevKeys[peerDevNodeID]:          "1",
-					peerDevKeys[peerDevConnName]:        "tom",
-					peerDevKeys[peerDevVolume]:          "0",
-					peerDevKeys[peerDevReplication]:     "Established",
-					peerDevKeys[peerDevPeerDisk]:        "UpToDate",
-					peerDevKeys[peerDevResyncSuspended]: "no",
-					peerDevKeys[peerDevReceived]:        "10",
-					peerDevKeys[peerDevSent]:            "100",
-					peerDevKeys[peerDevOutOfSync]:       "1000",
-					peerDevKeys[peerDevPending]:         "10000",
-					peerDevKeys[peerDevUnacked]:         "100000",
+					PeerDevKeys.Name:            "test3",
+					PeerDevKeys.PeerNodeID:      "1",
+					PeerDevKeys.ConnName:        "tom",
+					PeerDevKeys.Volume:          "0",
+					PeerDevKeys.Replication:     "Established",
+					PeerDevKeys.PeerDisk:        "UpToDate",
+					PeerDevKeys.ResyncSuspended: "no",
+					PeerDevKeys.Received:        "10",
+					PeerDevKeys.Sent:            "100",
+					PeerDevKeys.OutOfSync:       "1000",
+					PeerDevKeys.Pending:         "10000",
+					PeerDevKeys.Unacked:         "100000",
 				}},
 		},
 	}
@@ -459,9 +459,9 @@ func TestConnectionDanger(t *testing.T) {
 		TimeStamp: timeStamp,
 		Target:    "connection",
 		Fields: map[string]string{
-			connKeys[connConnection]: "StandAlone",
-			connKeys[connRole]:       "Secondary",
-			connKeys[connCongested]:  "no",
+			ConnKeys.Connection: "StandAlone",
+			ConnKeys.Role:       "Secondary",
+			ConnKeys.Congested:  "no",
 		},
 	}
 
@@ -478,9 +478,9 @@ func TestConnectionDanger(t *testing.T) {
 		TimeStamp: timeStamp,
 		Target:    "connection",
 		Fields: map[string]string{
-			connKeys[connConnection]: "Connected",
-			connKeys[connRole]:       "Unknown",
-			connKeys[connCongested]:  "yes",
+			ConnKeys.Connection: "Connected",
+			ConnKeys.Role:       "Unknown",
+			ConnKeys.Congested:  "yes",
 		},
 	}
 

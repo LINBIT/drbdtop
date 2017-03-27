@@ -220,11 +220,15 @@ func (p *previousFloat64) Push(i float64) {
 	}
 }
 
+// Event is a serialized update from the DRBD kernel module."
 type Event struct {
 	TimeStamp time.Time
+	// EventType is the kind of update being relayed from DRBD: exists, change, call, etc.
 	EventType string
-	Target    string
-	Fields    map[string]string
+	// Target is the kind of data contained within the Event: peer-device, connection, etc.
+	Target string
+	// Key/Value pairs separated by a ":"
+	Fields map[string]string
 }
 
 // NewEvent parses the normal string output of drbdsetup events2 and returns an Event.
@@ -259,14 +263,17 @@ func NewEvent(e string) (Event, error) {
 	}, nil
 }
 
+// NewEOF returns a special Event signaling that no further input should be expected.
 func NewEOF() Event {
 	return Event{Target: EOF}
 }
 
+// Updater modify their data based on incoming Events.
 type Updater interface {
 	Update(Event)
 }
 
+// Resource represents basic resource info.
 type Resource struct {
 	sync.RWMutex
 	uptimer
@@ -279,6 +286,7 @@ type Resource struct {
 	updateCount int
 }
 
+// Update the values of Resource with a new Event.
 func (r *Resource) Update(e Event) {
 	r.Lock()
 	defer r.Unlock()
@@ -291,6 +299,7 @@ func (r *Resource) Update(e Event) {
 	r.updateCount++
 }
 
+// Connection represents the connection from the local resource to a remote resource.
 type Connection struct {
 	sync.RWMutex
 	uptimer
@@ -298,15 +307,17 @@ type Connection struct {
 	PeerNodeID       string
 	ConnectionName   string
 	ConnectionStatus string
-	ConnectionHint   string
-	Role             string
-	Congested        string
-	// Calculated Values
+	// Long form explination of ConnectionStatus.
+	ConnectionHint string
+	Role           string
+	Congested      string
 
+	// Calculated Values
 	Danger      uint64
 	updateCount int
 }
 
+// Update the Connection with a new Event.
 func (c *Connection) Update(e Event) {
 	c.Lock()
 	defer c.Unlock()
@@ -375,6 +386,7 @@ func (c *Connection) connStatusExplination() {
 	}
 }
 
+// Device represents a local DRBD virtual block device.
 type Device struct {
 	sync.RWMutex
 	Resource string
@@ -384,12 +396,14 @@ type Device struct {
 	Danger uint64
 }
 
+// NewDevice returns a blank device with maps initialized.
 func NewDevice() *Device {
 	return &Device{
 		Volumes: make(map[string]*DevVolume),
 	}
 }
 
+// Update the devices data with a new Event.
 func (d *Device) Update(e Event) {
 	d.Lock()
 	defer d.Unlock()
@@ -443,10 +457,12 @@ func (d *Device) getDanger() uint64 {
 	return score
 }
 
+// DevVolume represents a single volume of a local DRBD virtual block device.
 type DevVolume struct {
 	uptimer
-	Minor                string
-	DiskState            string
+	Minor     string
+	DiskState string
+	// Long from explination of DiskState.
 	DiskHint             string
 	Client               string
 	Size                 uint64
@@ -463,6 +479,7 @@ type DevVolume struct {
 	LowerPending *minMaxAvgCurrent
 }
 
+// NewDevVolume returns a DevVolume with internal structures initialized.
 func NewDevVolume(maxLen int) *DevVolume {
 	return &DevVolume{
 		ReadKiB:            &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
@@ -498,6 +515,7 @@ func (v *DevVolume) diskStateExplination() {
 	}
 }
 
+// PeerDevice represents the virtual DRBD block device of a remote resource.
 type PeerDevice struct {
 	sync.RWMutex
 	uptimer
@@ -510,12 +528,14 @@ type PeerDevice struct {
 	Danger uint64
 }
 
+// NewPweerDevice returns a PeerDevice with internal maps initialized.
 func NewPeerDevice() *PeerDevice {
 	return &PeerDevice{
 		Volumes: make(map[string]*PeerDevVol),
 	}
 }
 
+// Update the PeerDevice with a new Event.
 func (p *PeerDevice) Update(e Event) {
 	p.Lock()
 	defer p.Unlock()
@@ -607,12 +627,14 @@ func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
 	}
 }
 
+// PeerDevVol represents a single volume of a remote resources virtual block device.
 type PeerDevVol struct {
 	uptimer
 	ReplicationStatus string
-	ReplicationHint   string
-	DiskState         string
-	ResyncSuspended   string
+	// Long form explination of Replication Status.
+	ReplicationHint string
+	DiskState       string
+	ResyncSuspended string
 
 	// Calulated Values
 	OutOfSyncKiB  *minMaxAvgCurrent
@@ -623,6 +645,7 @@ type PeerDevVol struct {
 	SentKiB     *rate
 }
 
+// NewPeerDevVol returns a PeerDevVol with internal structs initialized.
 func NewPeerDevVol(maxLen int) *PeerDevVol {
 	return &PeerDevVol{
 		OutOfSyncKiB:  newMinMaxAvgCurrent(),

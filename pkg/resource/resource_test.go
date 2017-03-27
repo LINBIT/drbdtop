@@ -335,29 +335,14 @@ func TestDeviceUpdate(t *testing.T) {
 }
 
 func TestPeerDeviceUpdate(t *testing.T) {
-	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
-	if err != nil {
-		t.Error(err)
-	}
-
 	dev := PeerDevice{Volumes: make(map[string]*PeerDevVol)}
 
-	event := Event{
-		TimeStamp: timeStamp,
-		Target:    "peer-device",
-		Fields: map[string]string{
-			peerDevKeys[peerDevName]:            "test0",
-			peerDevKeys[peerDevConnName]:        "peer",
-			peerDevKeys[peerDevVolume]:          "0",
-			peerDevKeys[peerDevReplication]:     "SyncSource",
-			peerDevKeys[peerDevPeerDisk]:        "Inconsistent",
-			peerDevKeys[peerDevResyncSuspended]: "no",
-			peerDevKeys[peerDevReceived]:        "100",
-			peerDevKeys[peerDevSent]:            "500",
-			peerDevKeys[peerDevOutOfSync]:       "200000",
-			peerDevKeys[peerDevPending]:         "0",
-			peerDevKeys[peerDevUnacked]:         "0",
-		},
+	event, err := NewEvent(
+		"2017-02-15T14:43:16.688437+00:00 exists peer-device name:test0 conn-name:peer " +
+			"volume:0 replication:SyncSource peer-disk:Inconsistent resync-suspended:no " +
+			"received:0 sent:2050743348 out-of-sync:205655500 pending:0 unacked:0")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	dev.Update(event)

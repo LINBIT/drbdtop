@@ -33,10 +33,10 @@ const timeFormat = "2006-01-02T15:04:05.000000-07:00"
 const EOF = "EOF"
 
 type resKeys struct {
-	name          string
-	role          string
-	suspended     string
-	writeOrdering string
+	Name          string
+	Role          string
+	Suspended     string
+	WriteOrdering string
 }
 
 // ResKeys is a data container for the field keys of resource Events.
@@ -291,10 +291,10 @@ func (r *Resource) Update(e Event) {
 	r.Lock()
 	defer r.Unlock()
 
-	r.Name = e.Fields[ResKeys.name]
-	r.Role = e.Fields[ResKeys.role]
-	r.Suspended = e.Fields[ResKeys.suspended]
-	r.WriteOrdering = e.Fields[ResKeys.writeOrdering]
+	r.Name = e.Fields[ResKeys.Name]
+	r.Role = e.Fields[ResKeys.Role]
+	r.Suspended = e.Fields[ResKeys.Suspended]
+	r.WriteOrdering = e.Fields[ResKeys.WriteOrdering]
 	r.updateTimes(e.TimeStamp)
 	r.updateCount++
 }

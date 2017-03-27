@@ -204,16 +204,16 @@ func TestResourceUpdate(t *testing.T) {
 	// Update should populate an empty Status.
 	status.Update(event)
 
-	if status.Name != event.Fields[ResKeys.name] {
+	if status.Name != event.Fields[ResKeys.Name] {
 		t.Errorf("Expected status.Name to be %q, got %q", event.Fields["name"], status.Name)
 	}
-	if status.Role != event.Fields[ResKeys.role] {
+	if status.Role != event.Fields[ResKeys.Role] {
 		t.Errorf("Expected status.Role to be %q, got %q", event.Fields["role"], status.Role)
 	}
-	if status.Suspended != event.Fields[ResKeys.suspended] {
+	if status.Suspended != event.Fields[ResKeys.Suspended] {
 		t.Errorf("Expected status.Suspended to be %q, got %q", event.Fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.Fields[ResKeys.writeOrdering] {
+	if status.WriteOrdering != event.Fields[ResKeys.WriteOrdering] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
 
@@ -225,16 +225,16 @@ func TestResourceUpdate(t *testing.T) {
 
 	status.Update(event)
 
-	if status.Name != event.Fields[ResKeys.name] {
+	if status.Name != event.Fields[ResKeys.Name] {
 		t.Errorf("Expected status.Name to be %q, got %q", event.Fields["name"], status.Name)
 	}
-	if status.Role != event.Fields[ResKeys.role] {
+	if status.Role != event.Fields[ResKeys.Role] {
 		t.Errorf("Expected status.Role to be %q, got %q", event.Fields["role"], status.Role)
 	}
-	if status.Suspended != event.Fields[ResKeys.suspended] {
+	if status.Suspended != event.Fields[ResKeys.Suspended] {
 		t.Errorf("Expected status.Suspended to be %q, got %q", event.Fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.Fields[ResKeys.writeOrdering] {
+	if status.WriteOrdering != event.Fields[ResKeys.WriteOrdering] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
 }
@@ -377,10 +377,10 @@ func TestNewEvent(t *testing.T) {
 				EventType: "exists",
 				Target:    "resource",
 				Fields: map[string]string{
-					ResKeys.name:          "test3",
-					ResKeys.role:          "Secondary",
-					ResKeys.suspended:     "no",
-					ResKeys.writeOrdering: "flush",
+					ResKeys.Name:          "test3",
+					ResKeys.Role:          "Secondary",
+					ResKeys.Suspended:     "no",
+					ResKeys.WriteOrdering: "flush",
 				}},
 		},
 		{"2017-02-22T19:53:58.445263-08:00 exists connection name:test3 peer-node-id:1 conn-name:tom connection:Connected role:Secondary congested:no",

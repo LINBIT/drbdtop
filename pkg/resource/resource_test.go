@@ -449,20 +449,11 @@ func TestNewEvent(t *testing.T) {
 }
 
 func TestConnectionDanger(t *testing.T) {
-	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
-	if err != nil {
-		t.Error(err)
-	}
-
 	conn := Connection{}
-	event := Event{
-		TimeStamp: timeStamp,
-		Target:    "connection",
-		Fields: map[string]string{
-			ConnKeys.Connection: "StandAlone",
-			ConnKeys.Role:       "Secondary",
-			ConnKeys.Congested:  "no",
-		},
+	event, err := NewEvent("2017-02-15T14:43:16.688437+00:00 exists connection " +
+		"name:test0 conn-name:peer connection:StandAlone role:Secondary congested:no")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// Update should update the danger level.
@@ -474,16 +465,11 @@ func TestConnectionDanger(t *testing.T) {
 		t.Errorf("Expected connection to have a danger level of %d, got %d", expectedDanger, conn.Danger)
 	}
 
-	event = Event{
-		TimeStamp: timeStamp,
-		Target:    "connection",
-		Fields: map[string]string{
-			ConnKeys.Connection: "Connected",
-			ConnKeys.Role:       "Unknown",
-			ConnKeys.Congested:  "yes",
-		},
+	event, err = NewEvent("2017-02-15T14:43:16.688437+00:00 exists connection " +
+		"name:test0 conn-name:peer connection:Connected role:Unknown congested:yes")
+	if err != nil {
+		t.Fatal(err)
 	}
-
 	conn.Update(event)
 
 	expectedDanger = 2

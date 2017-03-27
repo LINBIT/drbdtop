@@ -15,10 +15,13 @@ RM_FLAGS = -rvf
 
 .PHONY: make_directories
 
-all: make_directories
+all: make_directories test build
 
 make_directories:
 	$(MKDIR) $(MKDIR_FLAGS) $(DIRECTORIES)  
+
+test:
+	$(GO) test "./pkg/..."
 
 build: make_directories
 	$(GO) $(BUILD_CMD)

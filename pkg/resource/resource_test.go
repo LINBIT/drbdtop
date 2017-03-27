@@ -468,10 +468,10 @@ func TestConnectionDanger(t *testing.T) {
 	// Update should update the danger level.
 	conn.Update(event)
 
-	expectedDanger := uint64(2500000)
+	expectedDanger := uint64(30)
 
 	if conn.Danger != expectedDanger {
-		t.Errorf("Expected StandAlone to have a danger level of %d, got %d", expectedDanger, conn.Danger)
+		t.Errorf("Expected connection to have a danger level of %d, got %d", expectedDanger, conn.Danger)
 	}
 
 	event = Event{
@@ -486,9 +486,27 @@ func TestConnectionDanger(t *testing.T) {
 
 	conn.Update(event)
 
-	expectedDanger = 1400
+	expectedDanger = 2
 
 	if conn.Danger != expectedDanger {
-		t.Errorf("Expected StandAlone to have a danger level of %d, got %d", expectedDanger, conn.Danger)
+		t.Errorf("Expected connection to have a danger level of %d, got %d", expectedDanger, conn.Danger)
+	}
+}
+
+func TestDeviceDanger(t *testing.T) {
+	dev := NewDevice()
+
+	event, err := NewEvent("2017-03-27T08:28:17.072611-07:00 exists device name:test0 " +
+		"volume:0 minor:0 disk:Diskless client:yes size:4056 read:1340 written:16 " +
+		"al-writes:1 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dev.Update(event)
+
+	expectedDanger := uint64(0)
+
+	if dev.Danger != expectedDanger {
+		t.Errorf("Expected intentionally diskless device to have a danger level of %d, got %d", expectedDanger, dev.Danger)
 	}
 }

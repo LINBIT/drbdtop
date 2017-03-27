@@ -94,29 +94,29 @@ var PeerDevKeys = peerDevKeys{"name", "peer-node-id", "conn-name", "volume", "re
 
 var connDangerScores = map[string]uint64{
 	"Connected":  0,
-	"SyncSource": 500,
-	"SyncTarget": 600,
-	"StandAlone": 2500000,
+	"SyncSource": 1,
+	"SyncTarget": 1,
+	"StandAlone": 30,
 
-	"default": 1000,
+	"default": 1,
 }
 
 var diskDangerScores = map[string]uint64{
 	"UpToDate":   0,
-	"Consistent": 100,
-	"Diskless":   250,
-	"Outdated":   400,
-	"DUnknown":   2000,
+	"Consistent": 1,
+	"Diskless":   16,
+	"Outdated":   1,
+	"DUnknown":   2,
 
-	"default": 1000,
+	"default": 1,
 }
 
 var roleDangerScores = map[string]uint64{
 	"Primary":   0,
 	"Secondary": 0,
-	"Unknown":   1000,
+	"Unknown":   1,
 
-	"default": 1000,
+	"default": 1,
 }
 
 type uptimer struct {
@@ -341,7 +341,7 @@ func (c *Connection) getDanger() uint64 {
 	}
 
 	if c.Congested != "no" {
-		d += 400
+		d++
 	}
 
 	return d
@@ -434,7 +434,8 @@ func (d *Device) getDanger() uint64 {
 		i, ok := diskDangerScores[v.DiskState]
 		if !ok {
 			score += diskDangerScores["default"]
-		} else {
+			// If we're diskless on purpose, then everything is normal.
+		} else if !(v.DiskState == "Diskless" && v.Client == "yes") {
 			score += i
 		}
 	}
@@ -560,8 +561,8 @@ func (p *PeerDevice) getDanger() uint64 {
 			score += i
 		}
 
-		// One point of danger per Mebibyte Out of Sync
-		score += v.OutOfSyncKiB.Current / 1024
+		// Resources can be up to 1 PiB, so this will be at most 12.
+		score += uint64(math.Log(float64(v.OutOfSyncKiB.Current)))
 	}
 
 	return score

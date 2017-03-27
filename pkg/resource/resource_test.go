@@ -510,3 +510,22 @@ func TestDeviceDanger(t *testing.T) {
 		t.Errorf("Expected intentionally diskless device to have a danger level of %d, got %d", expectedDanger, dev.Danger)
 	}
 }
+
+func TestPeerDeviceDanger(t *testing.T) {
+	dev := NewPeerDevice()
+
+	event, err := NewEvent("2017-03-27T12:39:29.346495-07:00 exists peer-device " +
+		"name:r0 peer-node-id:1 conn-name:mussorgsky volume:0 replication:Established " +
+		"peer-disk:UpToDate peer-client:no resync-suspended:no received:0 sent:6278868 " +
+		"out-of-sync:0 pending:0 unacked:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dev.Update(event)
+
+	expectedDanger := uint64(0)
+
+	if dev.Danger != expectedDanger {
+		t.Errorf("Expected healthy device to have a danger level of %d, got %d", expectedDanger, dev.Danger)
+	}
+}

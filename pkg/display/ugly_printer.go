@@ -96,7 +96,7 @@ func printByRes(r *update.ByRes) {
 }
 
 func printRes(r *update.ByRes) {
-	fmt.Printf("%s: ", r.Res.Name)
+	fmt.Printf("%s: (%d) ", r.Res.Name, r.Danger)
 
 	if r.Res.Suspended != "no" {
 		c := color.New(color.FgHiRed)

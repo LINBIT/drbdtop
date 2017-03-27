@@ -562,7 +562,9 @@ func (p *PeerDevice) getDanger() uint64 {
 		}
 
 		// Resources can be up to 1 PiB, so this will be at most 12.
-		score += uint64(math.Log(float64(v.OutOfSyncKiB.Current)))
+		if v.OutOfSyncKiB.Current != 0 {
+			score += uint64(math.Log(float64(v.OutOfSyncKiB.Current)))
+		}
 	}
 
 	return score

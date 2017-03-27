@@ -27,19 +27,20 @@ import (
 	"time"
 )
 
+// ResKeys is a data container for the field keys of resource Events.
+var ResKeys = resKeys{"name", "role", "suspended", "write-ordering"}
+
 const timeFormat = "2006-01-02T15:04:05.000000-07:00"
 
 // EOF is the End Of File sentinel to signal no further Events are expected.
 const EOF = "EOF"
 
-var resKeys = []string{"name", "role", "suspended", "write-ordering"}
-
-const (
-	resName = iota
-	resRole
-	resSuspended
-	resWriteOrdering
-)
+type resKeys struct {
+	name          string
+	role          string
+	suspended     string
+	writeOrdering string
+}
 
 var connKeys = []string{"name", "peer-node-id", "conn-name", "connection", "role", "congested"}
 
@@ -279,10 +280,10 @@ func (r *Resource) Update(e Event) {
 	r.Lock()
 	defer r.Unlock()
 
-	r.Name = e.Fields[resKeys[resName]]
-	r.Role = e.Fields[resKeys[resRole]]
-	r.Suspended = e.Fields[resKeys[resSuspended]]
-	r.WriteOrdering = e.Fields[resKeys[resWriteOrdering]]
+	r.Name = e.Fields[ResKeys.name]
+	r.Role = e.Fields[ResKeys.role]
+	r.Suspended = e.Fields[ResKeys.suspended]
+	r.WriteOrdering = e.Fields[ResKeys.writeOrdering]
 	r.updateTimes(e.TimeStamp)
 	r.updateCount++
 }

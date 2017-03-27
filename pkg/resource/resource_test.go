@@ -206,16 +206,16 @@ func TestResourceUpdate(t *testing.T) {
 	// Update should populate an empty Status.
 	status.Update(event)
 
-	if status.Name != event.Fields[resKeys[resName]] {
+	if status.Name != event.Fields[ResKeys.name] {
 		t.Errorf("Expected status.Name to be %q, got %q", event.Fields["name"], status.Name)
 	}
-	if status.Role != event.Fields[resKeys[resRole]] {
+	if status.Role != event.Fields[ResKeys.role] {
 		t.Errorf("Expected status.Role to be %q, got %q", event.Fields["role"], status.Role)
 	}
-	if status.Suspended != event.Fields[resKeys[resSuspended]] {
+	if status.Suspended != event.Fields[ResKeys.suspended] {
 		t.Errorf("Expected status.Suspended to be %q, got %q", event.Fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.Fields[resKeys[resWriteOrdering]] {
+	if status.WriteOrdering != event.Fields[ResKeys.writeOrdering] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
 	if status.StartTime != event.TimeStamp {
@@ -240,16 +240,16 @@ func TestResourceUpdate(t *testing.T) {
 
 	status.Update(event)
 
-	if status.Name != event.Fields[resKeys[resName]] {
+	if status.Name != event.Fields[ResKeys.name] {
 		t.Errorf("Expected status.Name to be %q, got %q", event.Fields["name"], status.Name)
 	}
-	if status.Role != event.Fields[resKeys[resRole]] {
+	if status.Role != event.Fields[ResKeys.role] {
 		t.Errorf("Expected status.Role to be %q, got %q", event.Fields["role"], status.Role)
 	}
-	if status.Suspended != event.Fields[resKeys[resSuspended]] {
+	if status.Suspended != event.Fields[ResKeys.suspended] {
 		t.Errorf("Expected status.Suspended to be %q, got %q", event.Fields["suspended"], status.Suspended)
 	}
-	if status.WriteOrdering != event.Fields[resKeys[resWriteOrdering]] {
+	if status.WriteOrdering != event.Fields[ResKeys.writeOrdering] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
 	if status.StartTime != timeStamp {
@@ -455,10 +455,10 @@ func TestNewEvent(t *testing.T) {
 				EventType: "exists",
 				Target:    "resource",
 				Fields: map[string]string{
-					resKeys[resName]:          "test3",
-					resKeys[resRole]:          "Secondary",
-					resKeys[resSuspended]:     "no",
-					resKeys[resWriteOrdering]: "flush",
+					ResKeys.name:          "test3",
+					ResKeys.role:          "Secondary",
+					ResKeys.suspended:     "no",
+					ResKeys.writeOrdering: "flush",
 				}},
 		},
 		{"2017-02-22T19:53:58.445263-08:00 exists connection name:test3 peer-node-id:1 conn-name:tom connection:Connected role:Secondary congested:no",

@@ -188,7 +188,7 @@ func TestPreviousFloat64(t *testing.T) {
 /*
  * New Events are created from strings generated from drbdsetup events2 such as:
  * 2017-03-27T08:28:17.072611-07:00 exists resource name:test0 role:Primary suspended:no write-ordering:flush
- * 2017-03-27T08:28:17.072611-07:00 exists device name: volume:0 minor:0 disk:UpToDate client:no size:4056 read:1340 written:16 al-writes:1 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no
+ * 2017-03-27T08:28:17.072611-07:00 exists device name:test0 volume:0 minor:0 disk:UpToDate client:no size:4056 read:1340 written:16 al-writes:1 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no
  * 2017-02-15T14:43:16.688437+00:00 exists connection name:test0 conn-name:peer connection:Connected role:Secondary congested:no
  * 2017-02-15T14:43:16.688437+00:00 exists peer-device name:test0 conn-name:peer volume:0 replication:SyncSource peer-disk:Inconsistent resync-suspended:no received:0 sent:2050743348 out-of-sync:205655500 pending:0 unacked:0
  */
@@ -240,23 +240,10 @@ func TestResourceUpdate(t *testing.T) {
 }
 
 func TestConnectionUpdate(t *testing.T) {
-	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
-	if err != nil {
-		t.Error(err)
-	}
-
 	conn := Connection{}
-	event := Event{
-		TimeStamp: timeStamp,
-		Target:    "connection",
-		Fields: map[string]string{
-			connKeys[connName]:       "test0",
-			connKeys[connPeerNodeID]: "1",
-			connKeys[connConnName]:   "bob",
-			connKeys[connConnection]: "connected",
-			connKeys[connRole]:       "secondary",
-			connKeys[connCongested]:  "no",
-		},
+	event, err := NewEvent("2017-02-15T14:43:16.688437+00:00 exists connection name:test0 conn-name:bob connection:Connected role:Secondary congested:no")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// Update should create a new connection if there isn't one.
@@ -283,17 +270,9 @@ func TestConnectionUpdate(t *testing.T) {
 		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
 	}
 
-	event = Event{
-		TimeStamp: timeStamp,
-		Target:    "connection",
-		Fields: map[string]string{
-			connKeys[connName]:       "test0",
-			connKeys[connPeerNodeID]: "1",
-			connKeys[connConnName]:   "bob",
-			connKeys[connConnection]: "connected",
-			connKeys[connRole]:       "Primary",
-			connKeys[connCongested]:  "yes",
-		},
+	event, err = NewEvent("2017-02-15T14:43:26.688437+00:00 exists connection name:test0 conn-name:bob connection:Connected role:Primary congested:yes")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// Update should update a new connection if one exists.
@@ -322,31 +301,14 @@ func TestConnectionUpdate(t *testing.T) {
 }
 
 func TestDeviceUpdate(t *testing.T) {
-	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
-	if err != nil {
-		t.Error(err)
-	}
-
 	dev := Device{Volumes: make(map[string]*DevVolume)}
 
-	event := Event{
-		TimeStamp: timeStamp,
-		Target:    "device",
-		Fields: map[string]string{
-			devKeys[devName]:         "test0",
-			devKeys[devVolume]:       "0",
-			devKeys[devMinor]:        "0",
-			devKeys[devDisk]:         "UpToDate",
-			devKeys[devSize]:         "5533366723",
-			devKeys[devRead]:         "100001",
-			devKeys[devWritten]:      "10012",
-			devKeys[devALWrites]:     "30032",
-			devKeys[devBMWrites]:     "0",
-			devKeys[devUpperPending]: "2",
-			devKeys[devLowerPending]: "2",
-			devKeys[devALSuspended]:  "no",
-			devKeys[devBlocked]:      "no",
-		},
+	event, err := NewEvent(
+		"2017-03-27T08:28:17.072611-07:00 exists device name:test0 volume:0 minor:0 disk:UpToDate " +
+			"client:no size:4056 read:1340 written:16 al-writes:1 bm-writes:0 upper-pending:0 " +
+			"lower-pending:0 al-suspended:no blocked:no")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	dev.Update(event)

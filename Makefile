@@ -2,6 +2,7 @@ PROJECT_NAME = drbdtop
 MAIN = main.go
 VERSION=`git describe --tags --always --dirty`
 PREFIX=/usr/local
+BIN_DIR = bin
 
 BUILD_DIR =_build
 
@@ -38,7 +39,7 @@ build: make_directories
 	$(GO) $(BUILD_CMD)
 
 install: build
-	$(CP) $(CP_FLAGS) $(BUILD_DIR)/$(PROJECT_NAME) $(PREFIX) && $(CHMOD) $(CHMOD_FLAGS) $(PREFIX)/$(PROJECT_NAME)
+	$(CP) $(CP_FLAGS) $(BUILD_DIR)/$(PROJECT_NAME) $(PREFIX)/$(BIN_DIR) && $(CHMOD) $(CHMOD_FLAGS) $(PREFIX)/$(BIN_DIR)/$(PROJECT_NAME)
 
 clean:
 	$(RM) $(RM_FLAGS) $(DIRECTORIES)

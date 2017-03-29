@@ -2,13 +2,13 @@ package display
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"os/exec"
 	"sort"
 	"strings"
 	"time"
 
+	"drbdtop.io/drbdtop/pkg/convert"
 	"drbdtop.io/drbdtop/pkg/resource"
 	"drbdtop.io/drbdtop/pkg/update"
 	"github.com/fatih/color"
@@ -148,9 +148,9 @@ func printLocalDisk(r *update.ByRes) {
 
 		fmt.Printf("\n")
 		fmt.Printf("\t\t\tsize: %s total-read:%s read/Sec:%s total-written:%s written/Sec:%s ",
-			kib2Human(float64(v.Size)),
-			kib2Human(float64(v.ReadKiB.Total)), kib2Human(v.ReadKiB.PerSecond),
-			kib2Human(float64(v.WrittenKiB.Total)), kib2Human(v.WrittenKiB.PerSecond))
+			convert.KiB2Human(float64(v.Size)),
+			convert.KiB2Human(float64(v.ReadKiB.Total)), convert.KiB2Human(v.ReadKiB.PerSecond),
+			convert.KiB2Human(float64(v.WrittenKiB.Total)), convert.KiB2Human(v.WrittenKiB.PerSecond))
 
 		fmt.Printf("\n")
 	}
@@ -218,20 +218,20 @@ func printPeerDev(r *update.ByRes, conn string) {
 		fmt.Printf("\n")
 
 		fmt.Printf("\t\t\tSent: total:%s Per/Sec:%s\n",
-			kib2Human(float64(v.SentKiB.Total)), kib2Human(v.SentKiB.PerSecond))
+			convert.KiB2Human(float64(v.SentKiB.Total)), convert.KiB2Human(v.SentKiB.PerSecond))
 
 		fmt.Printf("\t\t\tReceived: total:%s Per/Sec:%s\n",
-			kib2Human(float64(v.ReceivedKiB.Total)), kib2Human(v.ReceivedKiB.PerSecond))
+			convert.KiB2Human(float64(v.ReceivedKiB.Total)), convert.KiB2Human(v.ReceivedKiB.PerSecond))
 
 		oosCl := dangerColor(v.OutOfSyncKiB.Current / uint64(1024)).SprintFunc()
 		oosAvgCl := dangerColor(uint64(v.OutOfSyncKiB.Avg) / uint64(1024)).SprintFunc()
 		oosMinCl := dangerColor(v.OutOfSyncKiB.Min / uint64(1024)).SprintFunc()
 		oosMaxCl := dangerColor(v.OutOfSyncKiB.Max / uint64(1024)).SprintFunc()
 		fmt.Printf("\t\t\tOutOfSync: current:%s average:%s min:%s max:%s\n",
-			oosCl(kib2Human(float64(v.OutOfSyncKiB.Current))),
-			oosAvgCl(kib2Human(v.OutOfSyncKiB.Avg)),
-			oosMinCl(kib2Human(float64(v.OutOfSyncKiB.Min))),
-			oosMaxCl(kib2Human(float64(v.OutOfSyncKiB.Max))))
+			oosCl(convert.KiB2Human(float64(v.OutOfSyncKiB.Current))),
+			oosAvgCl(convert.KiB2Human(v.OutOfSyncKiB.Avg)),
+			oosMinCl(convert.KiB2Human(float64(v.OutOfSyncKiB.Min))),
+			oosMaxCl(convert.KiB2Human(float64(v.OutOfSyncKiB.Max))))
 
 		penCl := dangerColor(v.PendingWrites.Current).SprintFunc()
 		penAvgCl := dangerColor(uint64(v.PendingWrites.Avg)).SprintFunc()
@@ -265,16 +265,4 @@ func dangerColor(danger uint64) *color.Color {
 	} else {
 		return color.New(color.FgHiRed)
 	}
-}
-
-// kib2Human takes a size in KiB and returns a human readable size with suffix.
-func kib2Human(kiBytes float64) string {
-	sizes := []string{"K", "M", "G", "T", "P", "E", "Z", "Y"}
-	unit := float64(1024)
-	if kiBytes < unit {
-		return fmt.Sprintf("%.1f%s", kiBytes, sizes[0])
-	}
-
-	exp := int(math.Log(kiBytes) / math.Log(unit))
-	return fmt.Sprintf("%.1f%siB", (kiBytes / (math.Pow(unit, float64(exp)))), sizes[exp])
 }

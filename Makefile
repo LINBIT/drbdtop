@@ -1,11 +1,14 @@
 PROJECT_NAME = drbdtop
 MAIN = main.go
+VERSION=`git describe --tags --always --dirty`
+
 BUILD_DIR =_build
 
 DIRECTORIES = $(BUILD_DIR)
 
 GO = go
-BUILD_CMD = build -o $(BUILD_DIR)/$(PROJECT_NAME) $(PROJECT_NAME)/$(MAIN)
+LDFLAGS = -ldflags "-X main.Version=${VERSION}"
+BUILD_CMD = build $(LDFLAGS) -o $(BUILD_DIR)/$(PROJECT_NAME) $(PROJECT_NAME)/$(MAIN)
 
 MKDIR = mkdir
 MKDIR_FLAGS = -pv
@@ -18,7 +21,7 @@ RM_FLAGS = -rvf
 all: make_directories test build
 
 make_directories:
-	$(MKDIR) $(MKDIR_FLAGS) $(DIRECTORIES)  
+	$(MKDIR) $(MKDIR_FLAGS) $(DIRECTORIES)
 
 test:
 	$(GO) test "./pkg/..."

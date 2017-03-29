@@ -28,6 +28,9 @@ import (
 	"drbdtop.io/drbdtop/pkg/resource"
 )
 
+// Version defines the version of the program and gets set via ldflags
+var Version string
+
 func main() {
 	file := flag.String("file", "", "Path to a file containing output gathered from polling `drbdsetup events2 --timestamps --statistics --now`")
 	interval := flag.String("interval", "500ms",

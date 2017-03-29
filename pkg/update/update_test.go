@@ -89,3 +89,21 @@ func TestResourceCollection(t *testing.T) {
 		t.Errorf("TestResourceCollection: Expected test100 to be sorted last. Got %s", rc.List[1].Res.Name)
 	}
 }
+
+func TestName(t *testing.T) {
+	var nameTests = []struct {
+		n1  *ByRes
+		n2  *ByRes
+		out bool
+	}{
+		{&ByRes{Res: &resource.Resource{Name: "z2a"}}, &ByRes{Res: &resource.Resource{Name: "z1a"}}, false},
+		{&ByRes{Res: &resource.Resource{Name: "test10"}}, &ByRes{Res: &resource.Resource{Name: "test100"}}, true},
+		{NewByRes(), &ByRes{Res: &resource.Resource{Name: "test100"}}, false},
+	}
+	for _, tt := range nameTests {
+		b := Name(tt.n1, tt.n2)
+		if b != tt.out {
+			t.Errorf("Expected %q < %q to be %v", tt.n1.Res.Name, tt.n2.Res.Name, tt.out)
+		}
+	}
+}

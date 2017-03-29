@@ -61,3 +61,31 @@ func TestByRes(t *testing.T) {
 		t.Error("TestByRes: Expected byres's connection to peer to be pruned")
 	}
 }
+
+// Spot checks for ResourceCollections.
+func TestResourceCollection(t *testing.T) {
+
+	evt, err := resource.NewEvent("8000-02-15T14:44:16.688437+00:00 exists resource name:test10 " +
+		"role:Primary suspended:no write-ordering:flush")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rc := NewResourceCollection(0) // Turn off pruning with zero.
+	rc.Update(evt)
+
+	if _, ok := rc.Map["test10"]; !ok {
+		t.Error("TestResourceCollection: Expected test10 to exist")
+	}
+
+	evt, err = resource.NewEvent("8000-02-15T14:44:16.688437+00:00 exists resource name:test100 " +
+		"role:Primary suspended:no write-ordering:flush")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rc.Update(evt)
+
+	if rc.List[1].Res.Name != "test100" {
+		t.Errorf("TestResourceCollection: Expected test100 to be sorted last. Got %s", rc.List[1].Res.Name)
+	}
+}

@@ -128,17 +128,17 @@ func NewResourceCollection(d time.Duration) *ResourceCollection {
 func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Lock()
 
+	// Clean up old data.
+	if rc.updateInterval != 0 {
+		rc.prune(e.TimeStamp.Add(-3 * rc.updateInterval))
+	}
+
 	resName := e.Fields[resource.ResKeys.Name]
 	if resName != "" {
 		if _, ok := rc.Map[resName]; !ok {
 			rc.Map[resName] = NewByRes()
 		}
 		rc.Map[resName].Update(e)
-	}
-
-	// Clean up old data.
-	if rc.updateInterval != 0 {
-		rc.prune(e.TimeStamp.Add(-3 * rc.updateInterval))
 	}
 
 	// Rebuild list from map values.

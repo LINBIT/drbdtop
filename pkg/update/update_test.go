@@ -105,5 +105,11 @@ func TestName(t *testing.T) {
 		if b != tt.out {
 			t.Errorf("Expected %q < %q to be %v", tt.n1.Res.Name, tt.n2.Res.Name, tt.out)
 		}
+
+		// Check the reverse sort too.
+		b = NameReverse(tt.n1, tt.n2)
+		if !b != tt.out {
+			t.Errorf("Expected %q < %q to be %v", tt.n1.Res.Name, tt.n2.Res.Name, tt.out)
+		}
 	}
 }

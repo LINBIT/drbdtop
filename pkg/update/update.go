@@ -229,7 +229,7 @@ func Name(r1, r2 *ByRes) bool {
 func NameReverse(r1, r2 *ByRes) bool {
 	// If we simply negate the comparison function, we'll swap elements that are equal.
 	// Names have to be unique, so we can get away with it here.
-	return !natsort.Compare(r1.Res.Name, r2.Res.Name)
+	return !Name(r1, r2)
 }
 
 // Size sorts resource names by local disk size.

@@ -1,6 +1,7 @@
 PROJECT_NAME = drbdtop
 MAIN = main.go
 VERSION=`git describe --tags --always --dirty`
+PREFIX=/usr/local
 
 BUILD_DIR =_build
 
@@ -12,6 +13,12 @@ BUILD_CMD = build $(LDFLAGS) -o $(BUILD_DIR)/$(PROJECT_NAME) $(PROJECT_NAME)/$(M
 
 MKDIR = mkdir
 MKDIR_FLAGS = -pv
+
+CP = cp
+CP_FLAGS = --interactive
+
+CHMOD = chmod
+CHMOD_FLAGS = a+x
 
 RM = rm
 RM_FLAGS = -rvf
@@ -28,6 +35,9 @@ test:
 
 build: make_directories
 	$(GO) $(BUILD_CMD)
+
+install: build
+	$(CP) $(CP_FLAGS) $(BUILD_DIR)/$(PROJECT_NAME) $(PREFIX) && $(CHMOD) $(CHMOD_FLAGS) $(PREFIX)/$(PROJECT_NAME)
 
 clean:
 	$(RM) $(RM_FLAGS) $(DIRECTORIES)

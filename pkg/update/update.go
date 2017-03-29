@@ -16,7 +16,8 @@ type ByRes struct {
 	Connections map[string]*resource.Connection
 	Device      *resource.Device
 	PeerDevices map[string]*resource.PeerDevice
-	Danger      uint64
+	// Aggregate danger score from all connections, peer devices, and the local device.
+	Danger uint64
 }
 
 // NewByRes returns an empty ByRes that's ready to be Updated.
@@ -77,6 +78,8 @@ func (b *ByRes) Update(evt resource.Event) {
 	b.Danger = dangerScore
 }
 
+// Remove old connections, devices, and peer devices and their volumes
+// that haven't been updated since time.
 func (b *ByRes) prune(t time.Time) {
 	for k, c := range b.Connections {
 		if c.CurrentTime.Before(t) {
@@ -150,6 +153,7 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Sort()
 }
 
+// Remove old fields that haven't been updated since time.
 func (rc *ResourceCollection) prune(t time.Time) {
 	for k, v := range rc.Map {
 		if v.Res.CurrentTime.Before(t) {

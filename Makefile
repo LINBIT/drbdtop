@@ -10,6 +10,7 @@ DIRECTORIES = $(BUILD_DIR)
 GO = go
 LDFLAGS = -ldflags "-X main.Version=${VERSION}"
 BUILD_CMD = build $(LDFLAGS) -o $(BUILD_DIR)/$(PROJECT_NAME) $(PROJECT_NAME)/$(MAIN)
+TEST_CMD = test "./pkg/..."
 
 MKDIR = mkdir
 MKDIR_FLAGS = -pv
@@ -31,7 +32,7 @@ make_directories:
 	$(MKDIR) $(MKDIR_FLAGS) $(DIRECTORIES)
 
 test:
-	$(GO) test "./pkg/..."
+	$(GO) $(TEST_CMD)
 
 build: make_directories
 	$(GO) $(BUILD_CMD)

@@ -235,24 +235,27 @@ type Event struct {
 func NewEvent(e string) (Event, error) {
 	e = strings.TrimSpace(e)
 
-	data := strings.Split(e, " ")
-	if len(data) < 3 {
-		return Event{Fields: make(map[string]string)}, fmt.Errorf("Couldn't create an Event from %v", data)
-	}
-
 	// Dynamically assign event fields for all events, reguardless of event target.
 	fields := make(map[string]string)
-	for _, d := range data[3:] {
-		f := strings.Split(d, ":")
-		if len(f) != 2 {
-			return Event{Fields: make(map[string]string)}, fmt.Errorf("Couldn't parse key/value pair from %q", d)
-		}
-		fields[f[0]] = f[1]
+
+	data := strings.Split(e, " ")
+	if len(data) < 3 {
+		return Event{Fields: fields}, fmt.Errorf("Couldn't create an Event from %v", data)
 	}
 
 	timeStamp, err := time.Parse(timeFormat, data[0])
 	if err != nil {
-		return Event{Fields: make(map[string]string)}, err
+		return Event{Fields: fields}, err
+	}
+
+	for _, d := range data[3:] {
+		// Splitting strings is expensive and this loop runs a lot, so we use the
+		// index of ":" to break up the key value pairs.
+		i := strings.Index(d, ":")
+		if i < 0 {
+			return Event{Fields: fields}, fmt.Errorf("Couldn't parse key/value pair from %q", d)
+		}
+		fields[d[:i]] = d[i+1:]
 	}
 
 	return Event{

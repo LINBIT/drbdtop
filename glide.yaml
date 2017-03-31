@@ -3,3 +3,5 @@ import:
 - package: github.com/facette/natsort
 - package: github.com/fatih/color
   version: ^1.4.1
+- package: gopkg.in/alecthomas/kingpin.v2
+  version: ^2.2.3

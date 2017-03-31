@@ -1,5 +1,5 @@
-hash: 8243a65e10392d45b8aca0967423db7570a889124414693ffd2bc934953f9133
-updated: 2017-03-27T13:54:57.930474149-07:00
+hash: 3170581a903a12c70685c6b8f7fdfc0644f64f7c5c221e7179281c121169244b
+updated: 2017-03-31T13:05:01.18438278-07:00
 imports:
 - name: github.com/facette/natsort
   version: 3769c5fd310020fdd04779443fd9255c8cf04e34
@@ -16,4 +16,6 @@ imports:
   repo: https://go.googlesource.com/sys
   subpackages:
   - unix
+- name: gopkg.in/alecthomas/kingpin.v2
+  version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 testImports: []

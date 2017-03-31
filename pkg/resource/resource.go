@@ -27,8 +27,6 @@ import (
 	"time"
 )
 
-const timeFormat = "2006-01-02T15:04:05.000000-07:00"
-
 // EOF is the End Of File sentinel to signal no further Events are expected.
 const EOF = "EOF"
 
@@ -243,11 +241,6 @@ func NewEvent(e string) (Event, error) {
 		return Event{Fields: fields}, fmt.Errorf("Couldn't create an Event from %v", data)
 	}
 
-	timeStamp, err := time.Parse(timeFormat, data[0])
-	if err != nil {
-		return Event{Fields: fields}, err
-	}
-
 	for _, d := range data[3:] {
 		// Splitting strings is expensive and this loop runs a lot, so we use the
 		// index of ":" to break up the key value pairs.
@@ -256,6 +249,11 @@ func NewEvent(e string) (Event, error) {
 			return Event{Fields: fields}, fmt.Errorf("Couldn't parse key/value pair from %q", d)
 		}
 		fields[d[:i]] = d[i+1:]
+	}
+
+	timeStamp, err := fastTimeParse(data[0])
+	if err != nil {
+		return Event{Fields: fields}, err
 	}
 
 	return Event{
@@ -658,4 +656,22 @@ func NewPeerDevVol(maxLen int) *PeerDevVol {
 		ReceivedKiB: &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
 		SentKiB:     &rate{Previous: &previousFloat64{maxLen: maxLen}, new: true},
 	}
+}
+
+// Significantly faster than using time.Parse since we have a fixed format: "2006-01-02T15:04:05.000000-07:00"
+// Adapted from http://stackoverflow.com/questions/27216457/best-way-of-parsing-date-and-time-in-golang
+func fastTimeParse(date string) (time.Time, error) {
+	// Our time format is 32 characters long, even if we only use chars 0-25
+	// we should make sure the date string at least conforms to that.
+	if len(date) != 32 {
+		return time.Time{}, fmt.Errorf("can't parse a date from %q", date)
+	}
+	year := (((int(date[0])-'0')*10+int(date[1])-'0')*10+int(date[2])-'0')*10 + int(date[3]) - '0'
+	month := time.Month((int(date[5])-'0')*10 + int(date[6]) - '0')
+	day := (int(date[8])-'0')*10 + int(date[9]) - '0'
+	hour := (int(date[11])-'0')*10 + int(date[12]) - '0'
+	minute := (int(date[14])-'0')*10 + int(date[15]) - '0'
+	second := (int(date[17])-'0')*10 + int(date[18]) - '0'
+	nano := (((((int(date[20])-'0')*10+int(date[21])-'0')*10+int(date[22])-'0')*10+int(date[23])-'0')*10+int(date[24])-'0')*10 + int(date[25]) - '0'
+	return time.Date(year, month, day, hour, minute, second, nano, time.UTC), nil
 }

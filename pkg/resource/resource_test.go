@@ -26,7 +26,7 @@ import (
 )
 
 func TestUpdateTime(t *testing.T) {
-	timeStamp, err := time.Parse(timeFormat, "2017-02-15T12:57:53.000000-08:00")
+	timeStamp, err := fastTimeParse("2017-02-15T12:57:53.000000-08:00")
 	if err != nil {
 		t.Error(err)
 	}
@@ -363,7 +363,7 @@ func TestPeerDeviceUpdate(t *testing.T) {
 
 func TestNewEvent(t *testing.T) {
 
-	resTimeStamp0, err := time.Parse(timeFormat, "2017-02-22T19:53:58.445263-08:00")
+	resTimeStamp0, err := fastTimeParse("2017-02-22T19:53:58.445263-08:00")
 	if err != nil {
 		t.Fatal("Unable to parse time format")
 	}
@@ -513,5 +513,21 @@ func TestPeerDeviceDanger(t *testing.T) {
 
 	if dev.Danger != expectedDanger {
 		t.Errorf("Expected healthy device to have a danger level of %d, got %d", expectedDanger, dev.Danger)
+	}
+}
+
+func TestFastTimeParse(t *testing.T) {
+	var timeTests = []struct {
+		in  string
+		out time.Time
+	}{
+		{"2017-03-27T12:39:29.346495-07:00", time.Date(2017, 3, 27, 12, 39, 29, 346495, time.UTC)},
+		{"2017-03-31T16:40:04.989135+02:00", time.Date(2017, 3, 31, 16, 40, 04, 989135, time.UTC)},
+	}
+	for _, tt := range timeTests {
+		time, _ := fastTimeParse(tt.in)
+		if time != tt.out {
+			t.Errorf("fastTimeParse: Expected %s to parse into %v, got %v", tt.in, tt.out, time)
+		}
 	}
 }

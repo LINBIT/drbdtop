@@ -19,10 +19,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"os"
 	"time"
+
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	"drbdtop.io/drbdtop/pkg/collect"
 	"drbdtop.io/drbdtop/pkg/display"
@@ -33,17 +33,19 @@ import (
 var Version string
 
 func main() {
-	file := flag.String("file", "", "Path to a `file` containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'")
-	interval := flag.String("interval", "500ms",
-		"Time to wait between updating DRBD status. Valid `time` units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'. Default: 500ms")
-	printVersion := flag.Bool("version", false, "Print Version and exit")
+	file := kingpin.Flag(
+		"file", "Path to a file containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'.").PlaceHolder("/path/to/file").Short('f').String()
+	interval := kingpin.Flag(
+		"interval", "Time to wait between updating DRBD status. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("500ms").String()
 
-	flag.Parse()
+	// Prints the version.
+	kingpin.Version(Version)
 
-	if *printVersion {
-		fmt.Println(Version)
-		os.Exit(0)
-	}
+	// Enable short flags for help and version.
+	kingpin.CommandLine.VersionFlag.Short('v')
+	kingpin.CommandLine.HelpFlag.Short('h')
+
+	kingpin.Parse()
 
 	errors := make(chan error, 100)
 

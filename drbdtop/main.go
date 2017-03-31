@@ -35,7 +35,7 @@ var Version string
 func main() {
 	file := flag.String("file", "", "Path to a `file` containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'")
 	interval := flag.String("interval", "500ms",
-		"Time to wait between updating drbd status. Valid `time` units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'. Defualt: 500ms")
+		"Time to wait between updating DRBD status. Valid `time` units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'. Default: 500ms")
 	printVersion := flag.Bool("version", false, "Print Version and exit")
 
 	flag.Parse()

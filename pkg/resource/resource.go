@@ -364,7 +364,7 @@ func (c *Connection) getDanger() uint64 {
 func (c *Connection) connStatusExplination() {
 	switch c.ConnectionStatus {
 	case "StandAlone":
-		c.ConnectionHint = fmt.Sprintf("dropped connection or disconnected manually. try running drbdadm connect %s", c.ConnectionName)
+		c.ConnectionHint = fmt.Sprintf("dropped connection or disconnected manually. try running drbdadm connect %s", c.Resource)
 	case "Disconnecting":
 		c.ConnectionHint = fmt.Sprintf("disconnecting from %s", c.ConnectionName)
 	case "Unconnected":

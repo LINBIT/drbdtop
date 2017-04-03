@@ -20,6 +20,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
@@ -33,19 +34,20 @@ import (
 var Version string
 
 func main() {
-	file := kingpin.Flag(
+	app := kingpin.New("drbdtop", "Statistics for DRBD")
+	file := app.Flag(
 		"file", "Path to a file containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'.").PlaceHolder("/path/to/file").Short('f').String()
-	interval := kingpin.Flag(
+	interval := app.Flag(
 		"interval", "Time to wait between updating DRBD status, minimum 400ms. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("500ms").String()
 
 	// Prints the version.
-	kingpin.Version(Version)
+	app.Version(Version)
 
 	// Enable short flags for help and version.
-	kingpin.CommandLine.VersionFlag.Short('v')
-	kingpin.CommandLine.HelpFlag.Short('h')
+	app.VersionFlag.Short('v')
+	app.HelpFlag.Short('h')
 
-	kingpin.Parse()
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	errors := make(chan error, 100)
 

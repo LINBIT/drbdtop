@@ -231,35 +231,91 @@ type Event struct {
 
 // NewEvent parses the normal string output of drbdsetup events2 and returns an Event.
 func NewEvent(e string) (Event, error) {
-	e = strings.TrimSpace(e)
+	// This function is in a critical path and has been optimized. If you modify it,
+	// please update the comments accordingly and make sure you're not degrading
+	// performance.
 
 	// Dynamically assign event fields for all events, reguardless of event target.
 	fields := make(map[string]string)
 
-	data := strings.Split(e, " ")
-	if len(data) < 3 {
-		return Event{Fields: fields}, fmt.Errorf("Couldn't create an Event from %v", data)
-	}
+	// Save a copy of the string we were passed for error reporting.
+	original := e
 
-	for _, d := range data[3:] {
-		// Splitting strings is expensive and this loop runs a lot, so we use the
-		// index of ":" to break up the key value pairs.
-		i := strings.Index(d, ":")
-		if i < 0 {
-			return Event{Fields: fields}, fmt.Errorf("Couldn't parse key/value pair from %q", d)
-		}
-		fields[d[:i]] = d[i+1:]
-	}
-
-	timeStamp, err := fastTimeParse(data[0])
+	timeStamp, err := fastTimeParse(e)
 	if err != nil {
 		return Event{Fields: fields}, err
 	}
 
+	if len(e) < 33 {
+		return Event{Fields: fields}, fmt.Errorf("Couldn't parse event from %q: too short", original)
+	}
+
+	// Chop off the date and the following space from the start of the string and use the rest of it.
+	e = e[33:]
+
+	// The event type is followed by a space, get the index of that space so we
+	// know which index to assign to eType.
+	end := strings.Index(e, " ")
+	if end < 0 {
+		return Event{Fields: fields}, fmt.Errorf("Couldn't parse event type from %q", original)
+	}
+	eType := e[:end]
+
+	// Chop off the type and the following space from the start of the string and use the rest of it.
+	e = e[end+1:]
+
+	// This is an empty event without fields, we should return now.
+	if e == "-" {
+		return Event{TimeStamp: timeStamp, EventType: eType, Target: e}, nil
+	}
+
+	// The event target is also followed by a space, get the index of that space so we
+	// know which index to assign to eTarget.
+	end = strings.Index(e, " ")
+	if end < 0 {
+		return Event{Fields: fields}, fmt.Errorf("Couldn't parse event target from %q", original)
+	}
+	eTarget := e[:end]
+
+	// Chop off the target and the following space from the start of the string and use the rest of it.
+	// Now only the fields should be left.
+	e = e[end+1:]
+	end = strings.Index(e, " ")
+	if end < 0 {
+		return Event{Fields: fields}, fmt.Errorf("Couldn't parse event fields from %q", original)
+	}
+
+	// Loop until we can't find the next kvPair.
+	for end != -1 {
+		kvPair := e[:end]
+
+		// Splitting strings is expensive and this loop runs a lot, so we use the
+		// index of ":" to break up the key value pairs.
+		i := strings.Index(kvPair, ":")
+		if i < 0 {
+			return Event{Fields: fields}, fmt.Errorf("Couldn't parse key/value pair from %q", kvPair)
+		}
+		fields[kvPair[:i]] = kvPair[i+1:]
+
+		// Chop off the kvPair we just added to the fields and the following space
+		// from the start of the string and use the rest of it.
+		e = e[end+1:]
+
+		end = strings.Index(e, " ")
+	}
+
+	// Parse the last kvPair.
+	kvPair := e
+	i := strings.Index(kvPair, ":")
+	if i < 0 {
+		return Event{Fields: fields}, fmt.Errorf("Couldn't parse key/value pair from %q", kvPair)
+	}
+	fields[kvPair[:i]] = kvPair[i+1:]
+
 	return Event{
 		TimeStamp: timeStamp,
-		EventType: data[1],
-		Target:    data[2],
+		EventType: eType,
+		Target:    eTarget,
 		Fields:    fields,
 	}, nil
 }
@@ -661,10 +717,10 @@ func NewPeerDevVol(maxLen int) *PeerDevVol {
 // Significantly faster than using time.Parse since we have a fixed format: "2006-01-02T15:04:05.000000-07:00"
 // Adapted from http://stackoverflow.com/questions/27216457/best-way-of-parsing-date-and-time-in-golang
 func fastTimeParse(date string) (time.Time, error) {
-	// Our time format is 32 characters long, even if we only use chars 0-25
+	// Our time format is 32 characters long, even if we only use chars 0-25 to parse it
 	// we should make sure the date string at least conforms to that.
-	if len(date) != 32 {
-		return time.Time{}, fmt.Errorf("can't parse a date from %q", date)
+	if len(date) < 32 {
+		return time.Time{}, fmt.Errorf("Can't parse date from %q", date)
 	}
 	year := (((int(date[0])-'0')*10+int(date[1])-'0')*10+int(date[2])-'0')*10 + int(date[3]) - '0'
 	month := time.Month((int(date[5])-'0')*10 + int(date[6]) - '0')

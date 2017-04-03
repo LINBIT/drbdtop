@@ -46,6 +46,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 	}()
 
 	u.resources.OrderBy(update.Danger, update.Size, update.Name)
+	ticker := time.NewTicker(time.Millisecond * 50)
 	for {
 		c := exec.Command("clear")
 		c.Stdout = os.Stdout
@@ -64,7 +65,7 @@ func (u *UglyPrinter) Display(event <-chan resource.Event, err <-chan error) {
 			return
 		}
 		u.resources.RUnlock()
-		time.Sleep(time.Millisecond * 50)
+		<-ticker.C
 	}
 }
 

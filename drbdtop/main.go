@@ -20,9 +20,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"runtime/pprof"
 	"time"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
@@ -39,7 +36,7 @@ func main() {
 	file := kingpin.Flag(
 		"file", "Path to a file containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'.").PlaceHolder("/path/to/file").Short('f').String()
 	interval := kingpin.Flag(
-		"interval", "Time to wait between updating DRBD status. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("500ms").String()
+		"interval", "Time to wait between updating DRBD status, minimum 400ms. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("500ms").String()
 
 	// Prints the version.
 	kingpin.Version(Version)
@@ -50,19 +47,16 @@ func main() {
 
 	kingpin.Parse()
 
-	f, err := os.Create("profile")
-	if err != nil {
-		log.Fatal(err)
-	}
-	pprof.StartCPUProfile(f)
-	defer pprof.StopCPUProfile()
-
 	errors := make(chan error, 100)
 
 	duration, err := time.ParseDuration(*interval)
 	if err != nil {
 		errors <- fmt.Errorf("defaulting to 500ms polling interval: %v", err)
 		duration = time.Millisecond * 500
+	}
+	if duration < time.Millisecond*400 {
+		errors <- fmt.Errorf("interval %s is too quick, switching to 400ms minimum polling interval", duration.String())
+		duration = time.Millisecond * 400
 	}
 
 	var input collect.Collector

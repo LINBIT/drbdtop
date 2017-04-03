@@ -47,6 +47,7 @@ type Events2Poll struct {
 }
 
 func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) {
+	ticker := time.NewTicker(c.Interval)
 	for {
 		out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
 		if err != nil {
@@ -65,6 +66,6 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 				}
 			}
 		}
-		time.Sleep(c.Interval)
+		<-ticker.C
 	}
 }

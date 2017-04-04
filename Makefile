@@ -38,7 +38,7 @@ test:
 build: make_directories
 	$(GO) $(BUILD_CMD)
 
-install: build
+install:
 	$(CP) $(CP_FLAGS) $(BUILD_DIR)/$(PROJECT_NAME) $(PREFIX)/$(BIN_DIR) && $(CHMOD) $(CHMOD_FLAGS) $(PREFIX)/$(BIN_DIR)/$(PROJECT_NAME)
 
 clean:

@@ -478,8 +478,8 @@ func (d *Device) Update(e Event) {
 	vol.uptimer.updateTimes(e.TimeStamp)
 	vol.Minor = e.Fields[DevKeys.Minor]
 	vol.DiskState = e.Fields[DevKeys.Disk]
+	vol.DiskHint = diskStateExplination(vol.DiskState)
 	vol.Client = e.Fields[DevKeys.Client]
-	vol.diskStateExplination()
 	vol.ActivityLogSuspended = e.Fields[DevKeys.ALSuspended]
 	vol.Blocked = e.Fields[DevKeys.Blocked]
 
@@ -549,26 +549,26 @@ func NewDevVolume(maxLen int) *DevVolume {
 	}
 }
 
-func (v *DevVolume) diskStateExplination() {
-	switch v.DiskState {
+func diskStateExplination(dState string) string {
+	switch dState {
 	case "Diskless":
-		v.DiskHint = "detached from local backing disk"
+		return "detached from backing disk"
 	case "Attaching":
-		v.DiskHint = "reading metadata"
+		return "reading metadata"
 	case "Failed":
-		v.DiskHint = "I/O failure reported by local backing disk"
+		return "I/O failure reported by backing disk"
 	case "Negotiating":
-		v.DiskHint = "communicating with peer..."
+		return "communicating with peer..."
 	case "Inconsistent":
-		v.DiskHint = "local data is not accessible or usable until resync is complete"
+		return "data is not accessible or usable until resync is complete"
 	case "Outdated":
-		v.DiskHint = "data is usable, but a peer has newer data"
+		return "data is usable, but a peer has newer data"
 	case "Consistent":
-		v.DiskHint = "data is usable, but we have no network connection"
+		return "data is usable, but we have no network connection"
 	case "UpToDate":
-		v.DiskHint = "normal disk state"
+		return "normal disk state"
 	default:
-		v.DiskHint = "unknown disk state!"
+		return "unknown disk state!"
 	}
 }
 
@@ -615,6 +615,7 @@ func (p *PeerDevice) Update(e Event) {
 	vol.ReplicationStatus = e.Fields[PeerDevKeys.Replication]
 	vol.ReplicationHint = p.replicationExplination(vol)
 	vol.DiskState = e.Fields[PeerDevKeys.PeerDisk]
+	vol.DiskHint = diskStateExplination(vol.DiskState)
 	vol.ResyncSuspended = e.Fields[PeerDevKeys.ResyncSuspended]
 
 	vol.OutOfSyncKiB.calculate(e.Fields[PeerDevKeys.OutOfSync])
@@ -691,6 +692,7 @@ type PeerDevVol struct {
 	// Long form explination of Replication Status.
 	ReplicationHint string
 	DiskState       string
+	DiskHint        string
 	ResyncSuspended string
 
 	// Calulated Values

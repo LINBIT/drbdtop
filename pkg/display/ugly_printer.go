@@ -201,9 +201,15 @@ func printPeerDev(r *update.ByRes, conn string) {
 		fmt.Printf("\t\tvolume %s: ", k)
 		cl := color.New(color.FgWhite)
 
+		if v.ResyncSuspended != "no" {
+			cl = color.New(color.FgHiYellow)
+			cl.Printf(" ResyncSuspended:%s ", v.ResyncSuspended)
+		}
+		fmt.Printf("\n")
+
 		if v.ReplicationStatus != "Established" {
 			cl = color.New(color.FgHiYellow)
-			cl.Printf("Replication:%s", v.ReplicationStatus)
+			cl.Printf("\t\t\tReplication:%s", v.ReplicationStatus)
 			fmt.Printf("(%s)", v.ReplicationHint)
 		}
 
@@ -212,10 +218,13 @@ func printPeerDev(r *update.ByRes, conn string) {
 				(float64(v.OutOfSyncKiB.Current)/float64(r.Device.Volumes[k].Size))*100)
 		}
 
-		if v.ResyncSuspended != "no" {
-			cl = color.New(color.FgHiYellow)
-			cl.Printf(" ResyncSuspended:%s ", v.ResyncSuspended)
+		if v.DiskState != "UpToDate" {
+			c := color.New(color.FgHiYellow)
+			c.Printf("\n\t\t\t%s", v.DiskState)
+
+			fmt.Printf("(%s)", v.DiskHint)
 		}
+
 		fmt.Printf("\n")
 
 		fmt.Printf("\t\t\tSent: total:%s Per/Sec:%s\n",

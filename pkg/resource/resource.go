@@ -651,7 +651,7 @@ func (p *PeerDevice) getDanger() uint64 {
 func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
 	switch v.ReplicationStatus {
 	case "Off":
-		return fmt.Sprintf("not replicating to %s", p.Resource)
+		return fmt.Sprintf("not replicating to %s", p.ConnectionName)
 	case "Established":
 		return fmt.Sprintf("healthy connection to %s — mirroring active", p.ConnectionName)
 	case "StartingSyncS":

@@ -127,6 +127,7 @@ func NewResourceCollection(d time.Duration) *ResourceCollection {
 // Update a collection of ByRes from an Event.
 func (rc *ResourceCollection) Update(e resource.Event) {
 	rc.Lock()
+	defer rc.Unlock()
 
 	// Clean up old data.
 	if rc.updateInterval != 0 {
@@ -147,10 +148,7 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 		rc.List = append(rc.List, v)
 	}
 
-	// Sort locks the rc as well, so we need to release it here to avoid deadlock.
-	rc.Unlock()
-
-	rc.Sort()
+	rc.sort()
 }
 
 // Remove old fields that haven't been updated since time.
@@ -169,11 +167,16 @@ func (rc *ResourceCollection) prune(t time.Time) {
 // LessFunc determines if p1 should come before p2 during a sort.
 type LessFunc func(p1, p2 *ByRes) bool
 
+// The actual sorting, call this one *only* if you already hold the lock
+func (rc *ResourceCollection) sort() {
+	sort.Sort(rc)
+}
+
 // Sort sorts the argument slice according to the less functions passed to OrderedBy.
 func (rc *ResourceCollection) Sort() {
 	rc.Lock()
-	defer rc.Unlock()
-	sort.Sort(rc)
+	rc.sort()
+	rc.Unlock()
 }
 
 // OrderBy replaces the less functions used to sort, in order.

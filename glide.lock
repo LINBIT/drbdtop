@@ -1,21 +1,39 @@
-hash: 3170581a903a12c70685c6b8f7fdfc0644f64f7c5c221e7179281c121169244b
-updated: 2017-03-31T13:05:01.18438278-07:00
+hash: 490577ff5632e0359a6b5aed48a32a1391f52bac492de41b15c6372dfca762f2
+updated: 2017-05-05T07:42:33.222383642-07:00
 imports:
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/facette/natsort
   version: 3769c5fd310020fdd04779443fd9255c8cf04e34
 - name: github.com/fatih/color
   version: 9131ab34cf20d2f6d83fdc67168a5430d1c7dc23
+- name: github.com/linbit/termui
+  version: 8b646353167856a2223834251dcc5e876208ed40
+- name: github.com/maruel/panicparse
+  version: 25bcac0d793cf4109483505a0d66e066a3a90a80
+  subpackages:
+  - stack
 - name: github.com/mattn/go-colorable
   version: 5411d3eea5978e6cdc258b30de592b60df6aba96
   repo: https://github.com/mattn/go-colorable
 - name: github.com/mattn/go-isatty
   version: 57fdcb988a5c543893cc61bce354a6e24ab70022
   repo: https://github.com/mattn/go-isatty
+- name: github.com/mattn/go-runewidth
+  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
+- name: github.com/mitchellh/go-wordwrap
+  version: ad45545899c7b13c020ea92b2072220eefad42b8
+- name: github.com/nsf/termbox-go
+  version: 91bae1bb5fa9ee504905ecbe7043fa30e92feaa3
 - name: golang.org/x/sys
   version: e24f485414aeafb646f6fca458b0bf869c0880a1
   repo: https://go.googlesource.com/sys
   subpackages:
   - unix
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
+  version: 7f0871f2e17818990e4eed73f9b5c2f429501228
 testImports: []

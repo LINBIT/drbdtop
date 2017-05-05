@@ -5,3 +5,5 @@ import:
   version: ^1.4.1
 - package: gopkg.in/alecthomas/kingpin.v2
   version: ^2.2.3
+- package: github.com/linbit/termui
+  version: master

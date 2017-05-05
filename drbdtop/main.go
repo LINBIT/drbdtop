@@ -41,6 +41,8 @@ func main() {
 		"file", "Path to a file containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'.").PlaceHolder("/path/to/file").Short('f').String()
 	interval := app.Flag(
 		"interval", "Time to wait between updating DRBD status, minimum 400ms. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("500ms").String()
+	tui := app.Flag(
+		"tui", "Set the TUI (ugly/fancy)").Short('t').Default("ugly").String()
 
 	// Prints the version.
 	app.Version(Version)
@@ -82,7 +84,12 @@ func main() {
 	events := make(chan resource.Event, 5)
 	go input.Collect(events, errors)
 
-	display := display.NewUglyPrinter(duration)
-	display.Display(events, errors)
-
+	if *tui == "fancy" {
+		display := display.NewFancyTUI(duration)
+		display.SetVersion(Version)
+		display.Display(events, errors)
+	} else {
+		display := display.NewUglyPrinter(duration)
+		display.Display(events, errors)
+	}
 }

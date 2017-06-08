@@ -2,6 +2,7 @@ package display
 
 import (
 	"fmt"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -342,15 +343,7 @@ func (f *FancyTUI) initHandlers() {
 	})
 
 	termui.Handle("/sys/kbd/<escape>", func(termui.Event) {
-		f.cmode = ex
-		commandstr = ""
-		commandFinished = false
-		if f.dmode == overview {
-			f.overview.setLockedStr()
-		} else if f.dmode == detail {
-			f.dmode = overview
-			f.overview.UpdateGUI()
-		}
+		f.reset()
 	})
 
 	termui.Handle("/sys/kbd/<enter>", func(termui.Event) {
@@ -411,6 +404,18 @@ func insertMode(e termui.Event, p *termui.Par) {
 	termui.Render(p)
 }
 
+func (f *FancyTUI) reset() {
+	f.cmode = ex
+	commandstr = ""
+	commandFinished = false
+	if f.dmode == overview {
+		f.overview.setLockedStr()
+	} else if f.dmode == detail {
+		f.dmode = overview
+		f.overview.UpdateGUI()
+	}
+}
+
 func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	k, _ := e.Data.(termui.EvtKbd)
 	keyStr := k.KeyStr
@@ -456,43 +461,65 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	p.Text += " | <esc>: Abort command"
 
 	if commandFinished {
-		p.Text = "Would execute (" + commandstr + "): "
+		var finalCmd string
 		switch commandstr {
 		/* adjust */
 		case "aa":
-			p.Text += "drbdadm adjust " + f.overview.selres
+			finalCmd = "drbdadm adjust " + f.overview.selres
 		case "aA":
-			p.Text += "drbdadm adjust all"
+			finalCmd = "drbdadm adjust all"
 		/* disk */
 		case "da":
-			p.Text += "drbdadm attach " + f.overview.selres
+			finalCmd = "drbdadm attach " + f.overview.selres
 		case "dA":
-			p.Text += "drbdadm attach all"
+			finalCmd = "drbdadm attach all"
 		case "dd":
-			p.Text += "drbdadm detach " + f.overview.selres
+			finalCmd = "drbdadm detach " + f.overview.selres
 		case "dD":
-			p.Text += "drbdadm detach all"
+			finalCmd = "drbdadm detach all"
 		/* connection */
 		case "cc":
-			p.Text += "drbdadm connect " + f.overview.selres
+			finalCmd = "drbdadm connect " + f.overview.selres
 		case "cC":
-			p.Text += "drbdadm connect all"
+			finalCmd = "drbdadm connect all"
 		case "cd":
-			p.Text += "drbdadm disconnect " + f.overview.selres
+			finalCmd = "drbdadm disconnect " + f.overview.selres
 		case "cD":
-			p.Text += "drbdadm disconnect all"
+			finalCmd = "drbdadm disconnect all"
 		/* role */
 		case "rp":
-			p.Text += "drbdadm primary " + f.overview.selres
+			finalCmd = "drbdadm primary " + f.overview.selres
 		case "rs":
-			p.Text += "drbdadm secondary " + f.overview.selres
+			finalCmd = "drbdadm secondary " + f.overview.selres
 		case "rP":
-			p.Text += "drbdadm primary all"
+			finalCmd = "drbdadm primary all"
 		case "rS":
-			p.Text += "drbdadm secondary all"
+			finalCmd = "drbdadm secondary all"
 		}
-		p.Text += " | TBD: now press <esc>"
-		commandFinished = false
+
+		if finalCmd != "" {
+			p.Text = fmt.Sprintf("Executing '%s'... ", finalCmd)
+			termui.Render(p)
+			args := strings.Split(finalCmd, " ")
+			if len(args) > 1 {
+				cmd := exec.Command(args[0], args[1:]...)
+				cmd.Start()
+				if err := cmd.Wait(); err != nil {
+					p.Text += fmt.Sprintf("%v", err)
+				} else {
+					p.Text += setOK()
+				}
+			} else {
+				p.Text = "Aborting: Valid command, but too few arguments?!"
+			}
+		} else {
+			p.Text = "Aborting: Your input was not a valid command!"
+		}
+
+		// hard sleep here, IMO it makes more sense than tmpFooterMsg()
+		termui.Render(p)
+		time.Sleep(4 * time.Second)
+		f.reset()
 	}
 	termui.Render(p)
 }

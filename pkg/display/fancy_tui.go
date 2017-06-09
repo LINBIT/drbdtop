@@ -178,6 +178,9 @@ func (f *FancyTUI) initHandlers() {
 				insertMode(e, p)
 				return
 			}
+			if f.dmode == detail {
+				f.detail.setWindow(e)
+			}
 		})
 	}
 
@@ -191,6 +194,8 @@ func (f *FancyTUI) initHandlers() {
 			if f.dmode == overview && f.overview.locked {
 				f.cmode = command
 				f.cmdMode(e, p)
+			} else if f.dmode == detail {
+				f.detail.setWindow(e)
 			}
 		})
 	}
@@ -555,5 +560,20 @@ func setFail(danger uint64) string {
 }
 
 func setOK() string {
-	return "[" + "✓ " + "](fg-green)"
+	return colGreen("✓ ", false)
 }
+
+func setColor(s, name string, bold bool) string {
+	c := "(fg-" + name
+	if bold {
+		c += ",fg-bold"
+	}
+	c += ")"
+	return "[" + s + "]" + c
+
+}
+
+func colRed(s string, bold bool) string     { return setColor(s, "red", bold) }
+func colGreen(s string, bold bool) string   { return setColor(s, "green", bold) }
+func colBlue(s string, bold bool) string    { return setColor(s, "blue", bold) }
+func colDefault(s string, bold bool) string { return setColor(s, "default", bold) }

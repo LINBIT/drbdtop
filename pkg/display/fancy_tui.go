@@ -195,12 +195,12 @@ func (f *FancyTUI) initHandlers() {
 		})
 	}
 	/* THINK: find a better way */
-	defHandlers := "befghilmnotuvwxyz" + "BEFGHIJKLMNOQRTUVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
+	defHandlers := "befghilnotuvwxyz" + "BEFGHIJKLMNOQRTUVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
 	for _, h := range defHandlers {
 		registerDefaultHandler(string(h), f.overview.footer)
 	}
 
-	cmdHandlers := "acdprs" + "ACDPS"
+	cmdHandlers := "acdmprs" + "ACDPS"
 	for _, h := range cmdHandlers {
 		registerCmdHandler(string(h), f.overview.footer)
 	}
@@ -425,7 +425,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	case "d":
 		switch commandstr {
 		case "": // disk menu
-			p.Text = "a: attach selected | d: detach selected | A: attach all | D: detach all"
+			p.Text = "a/d: attach/detach selected | A/D: attach/detach all"
 		default:
 			commandFinished = true
 		}
@@ -439,16 +439,16 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	case "c":
 		switch commandstr {
 		case "": // connection menu
-			p.Text = "c: connect selected | d: disconnect selected | C: connect all | D: disconnect all"
+			p.Text = "c/d/m: connect/disconnect/discard my data selected | C/D: connect/disconnect all"
 		case "c":
 			commandFinished = true
 		}
 	case "r":
 		switch commandstr {
 		case "": // role menu
-			p.Text = "p: primary selected | s: secondary selected | P: primary all | S: secondary all"
+			p.Text = "p/s: primary/secondary selected | P/S: primary/secondary all"
 		}
-	case "A", "C", "D", "P", "S", "p", "s":
+	case "A", "C", "D", "P", "S", "p", "s", "m":
 		commandFinished = true
 	default:
 		valid = false
@@ -486,6 +486,8 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 			finalCmd = "drbdadm disconnect " + f.overview.selres
 		case "cD":
 			finalCmd = "drbdadm disconnect all"
+		case "cm":
+			finalCmd = "drbdadm connect --discard-my-data " + f.overview.selres
 		/* role */
 		case "rp":
 			finalCmd = "drbdadm primary " + f.overview.selres

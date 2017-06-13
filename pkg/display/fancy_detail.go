@@ -244,45 +244,44 @@ func (d *detailView) UpdateOOS() {
 	defer db.RUnlock()
 
 	for _, rname := range db.keys {
-		if rname == d.selres {
-			res := db.buf[rname]
-			dev := res.Device
-			vols := dev.Volumes
-			if d.selres != d.oldselres {
-				/* THINK or empty the old one? */
-				d.volGauges = make(map[string]uiGauge)
+		if rname != d.selres {
+			continue
+		}
+		res := db.buf[rname]
+		dev := res.Device
+		vols := dev.Volumes
+		if d.selres != d.oldselres {
+			/* THINK or empty the old one? */
+			d.volGauges = make(map[string]uiGauge)
+		}
+		for k, v := range vols {
+			if _, ok := d.volGauges[k]; !ok {
+				g := termui.NewGauge()
+				g.Height = 3
+				g.BorderLabel = "Out of sync"
+				g.BorderLabelFg = termui.ColorRed
+
+				ps := fmt.Sprintf("Vol %s (/dev/drbd%s)", k, v.Minor)
+				p := termui.NewPar(ps)
+				p.Height = 3
+				var vg uiGauge
+				vg.g, vg.p = g, p
+				d.volGauges[k] = vg
 			}
-			for k, v := range vols {
-				if _, ok := d.volGauges[k]; !ok {
-					g := termui.NewGauge()
-					g.Height = 3
-					g.BorderLabel = "Out of sync"
-					g.BorderLabelFg = termui.ColorRed
 
-					var oos, nrPeerDevs uint64
-					for _, pdev := range res.PeerDevices {
-						pvol := pdev.Volumes[k]
-						oos += pvol.OutOfSyncKiB.Current
-						nrPeerDevs++
-					}
-
-					// oosp is oos over *all* peers, sizes are (roughly) the same, so multiply v.Size by nrPeerDevs, to get sane percentage
-					oosp := int(float64(oos*100) / float64(v.Size*nrPeerDevs))
-					if oosp == 0 && oos > 0 {
-						oosp = 1 // make it visable that something is oos
-					}
-					g.Percent = oosp
-
-					ps := fmt.Sprintf("Vol %s (/dev/drbd%s)", k, v.Minor)
-					p := termui.NewPar(ps)
-					p.Height = 3
-
-					e := d.volGauges[k]
-					e.g, e.p = g, p
-					d.volGauges[k] = e
-				}
+			var oos, nrPeerDevs uint64
+			for _, pdev := range res.PeerDevices {
+				pvol := pdev.Volumes[k]
+				oos += pvol.OutOfSyncKiB.Current
+				nrPeerDevs++
 			}
-			break
+
+			// oosp is oos over *all* peers, sizes are (roughly) the same, so multiply v.Size by nrPeerDevs, to get sane percentage
+			oosp := int(float64(oos*100) / float64(v.Size*nrPeerDevs))
+			if oosp == 0 && oos > 0 {
+				oosp = 1 // make it visable that something is oos
+			}
+			d.volGauges[k].g.Percent = oosp
 		}
 	}
 	d.oldselres = d.selres

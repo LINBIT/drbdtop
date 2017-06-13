@@ -171,6 +171,17 @@ func (f *FancyTUI) setLocked() {
 	}
 }
 
+func (f *FancyTUI) toggleLocked() {
+	if f.dmode == overview {
+		f.overview.SetIdx(home)
+		f.overview.ToggleLocked()
+		f.overview.ResetIdxHighlight()
+		if f.overview.locked {
+			f.overview.SetIdx(home)
+		}
+	}
+}
+
 func (f *FancyTUI) initHandlers() {
 	registerDefaultHandler := func(key string, p *termui.Par) {
 		termui.Handle("/sys/kbd/"+key, func(e termui.Event) {
@@ -261,14 +272,7 @@ func (f *FancyTUI) initHandlers() {
 
 	termui.Handle("/sys/kbd/<tab>", func(termui.Event) {
 		f.cmode = ex
-		if f.dmode == overview {
-			f.overview.SetIdx(home)
-			f.overview.ToggleLocked()
-			f.overview.ResetIdxHighlight()
-			if f.overview.locked {
-				f.overview.SetIdx(home)
-			}
-		}
+		f.toggleLocked()
 	})
 
 	termui.Handle("/sys/kbd/<home>", func(termui.Event) {
@@ -504,6 +508,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 			finalCmd = "drbdadm secondary all"
 		}
 
+		cmdOK := false
 		if finalCmd != "" {
 			p.Text = fmt.Sprintf("Executing '%s'... ", finalCmd)
 			termui.Render(p)
@@ -515,6 +520,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 					p.Text += fmt.Sprintf("%v", err)
 				} else {
 					p.Text += setOK()
+					cmdOK = true
 				}
 			} else {
 				p.Text = "Aborting: Valid command, but too few arguments?!"
@@ -525,7 +531,14 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 
 		// hard sleep here, IMO it makes more sense than tmpFooterMsg()
 		termui.Render(p)
-		time.Sleep(4 * time.Second)
+
+		sl := 4 * time.Second // give user to read the error message
+		if cmdOK {
+			sl = 2 * time.Second // user is happy, make time shorter
+		}
+		time.Sleep(sl)
+
+		f.toggleLocked()
 		f.reset()
 	}
 	termui.Render(p)

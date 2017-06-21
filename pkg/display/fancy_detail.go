@@ -61,7 +61,7 @@ func NewDetailView() *detailView {
 }
 
 func (d *detailView) printRes(r *update.ByRes) {
-	d.status.Text += fmt.Sprintf("%s: %s: (%d) ", colDefault("Resource", true), r.Res.Name, r.Danger)
+	d.status.Text += fmt.Sprintf("%s: %s: (Overall danger score: %d) ", colDefault("Resource", true), r.Res.Name, r.Danger)
 
 	if r.Res.Suspended != "no" {
 		d.status.Text += fmt.Sprintf("(Suspended)")
@@ -87,11 +87,14 @@ func (dv *detailView) printLocalDisk(r *update.ByRes) {
 		st += fmt.Sprintf("  volume %s (/dev/drbd%s):", k, v.Minor)
 		dState := v.DiskState
 
-		if dState != "UpToDate" {
-			st += fmt.Sprintf(" %s", dState)
-
-			st += fmt.Sprintf("(%s)", v.DiskHint)
+		if dState == "UpToDate" {
+			dState = colGreen(dState, false)
+		} else {
+			dState = colRed(dState, true)
 		}
+		st += fmt.Sprintf(" %s", dState)
+
+		st += fmt.Sprintf("(%s)", v.DiskHint)
 
 		if dv.window == detailedstatus {
 			if v.Blocked != "no" {
@@ -119,10 +122,14 @@ func (d *detailView) printConn(c *resource.Connection) {
 
 	st += fmt.Sprintf("(%s):", c.Role)
 
-	if c.ConnectionStatus != "Connected" {
-		st += fmt.Sprintf("%s", c.ConnectionStatus)
-		st += fmt.Sprintf("(%s)", c.ConnectionHint)
+	status := c.ConnectionStatus
+	if status == "Connected" {
+		status = colGreen(status, false)
+	} else {
+		status = colRed(status, true)
 	}
+	st += fmt.Sprintf(" %s", status)
+	st += fmt.Sprintf("(%s)", c.ConnectionHint)
 
 	if c.Congested != "no" {
 		st += fmt.Sprintf(" Congested ")
@@ -161,10 +168,14 @@ func (dv *detailView) printPeerDev(r *update.ByRes, conn string) {
 				(float64(v.OutOfSyncKiB.Current)/float64(r.Device.Volumes[k].Size))*100)
 		}
 
-		if v.DiskState != "UpToDate" {
-			st += fmt.Sprintf("\n   %s", v.DiskState)
-			st += fmt.Sprintf("(%s)", v.DiskHint)
+		status := v.DiskState
+		if status == "UpToDate" {
+			status = colGreen(status, false)
+		} else {
+			status = colRed(status, true)
 		}
+		st += fmt.Sprintf("   %s", status)
+		st += fmt.Sprintf("(%s)", v.DiskHint)
 
 		st += fmt.Sprintf("\n")
 
@@ -177,21 +188,21 @@ func (dv *detailView) printPeerDev(r *update.ByRes, conn string) {
 
 			st += fmt.Sprintf("   OutOfSync: current:%s average:%s min:%s max:%s\n",
 				convert.KiB2Human(float64(v.OutOfSyncKiB.Current)),
-				convert.KiB2Human(v.OutOfSyncKiB.Avg),
+				convert.KiB2Human(float64(v.OutOfSyncKiB.Avg)),
 				convert.KiB2Human(float64(v.OutOfSyncKiB.Min)),
 				convert.KiB2Human(float64(v.OutOfSyncKiB.Max)))
 
 			st += fmt.Sprintf("   PendingWrites: current:%s average:%s min:%s max:%s\n",
-				fmt.Sprintf("%.1f", v.PendingWrites.Current),
-				fmt.Sprintf("%.1f", v.PendingWrites.Avg),
-				fmt.Sprintf("%.1f", v.PendingWrites.Min),
-				fmt.Sprintf("%.1f", v.PendingWrites.Max))
+				fmt.Sprintf("%.1f", float64(v.PendingWrites.Current)),
+				fmt.Sprintf("%.1f", float64(v.PendingWrites.Avg)),
+				fmt.Sprintf("%.1f", float64(v.PendingWrites.Min)),
+				fmt.Sprintf("%.1f", float64(v.PendingWrites.Max)))
 
 			st += fmt.Sprintf("   UnackedWrites: current:%s average:%s min:%s max:%s\n",
-				fmt.Sprintf("%.1f", v.UnackedWrites.Current),
-				fmt.Sprintf("%.1f", v.UnackedWrites.Avg),
-				fmt.Sprintf("%.1f", v.UnackedWrites.Min),
-				fmt.Sprintf("%.1f", v.UnackedWrites.Max))
+				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Current)),
+				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Avg)),
+				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Min)),
+				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Max)))
 
 			st += fmt.Sprintf("\n")
 		}

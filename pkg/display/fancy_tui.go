@@ -2,7 +2,6 @@ package display
 
 import (
 	"fmt"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,6 +10,7 @@ import (
 
 	"drbdtop.io/drbdtop/pkg/resource"
 	"drbdtop.io/drbdtop/pkg/update"
+	drbdutils "github.com/linbit/godrbdutils"
 	"github.com/linbit/termui"
 )
 
@@ -470,69 +470,60 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	p.Text += " | <esc>: Abort command"
 
 	if commandFinished {
-		var finalCmd string
+		valid = true
+		cmd := drbdutils.Drbdadm
+		res := f.overview.selres
+		var action drbdutils.Action
+		var arg []string
 		switch commandstr {
 		/* adjust */
-		case "aa":
-			finalCmd = "drbdadm adjust " + f.overview.selres
-		case "aA":
-			finalCmd = "drbdadm adjust all"
+		case "aa", "aA":
+			action = drbdutils.Adjust
 		/* disk */
-		case "da":
-			finalCmd = "drbdadm attach " + f.overview.selres
-		case "dA":
-			finalCmd = "drbdadm attach all"
-		case "dd":
-			finalCmd = "drbdadm detach " + f.overview.selres
-		case "dD":
-			finalCmd = "drbdadm detach all"
+		case "da", "dA":
+			action = drbdutils.Attach
+		case "dd", "dD":
+			action = drbdutils.Detach
 		/* connection */
-		case "cc":
-			finalCmd = "drbdadm connect " + f.overview.selres
-		case "cC":
-			finalCmd = "drbdadm connect all"
-		case "cd":
-			finalCmd = "drbdadm disconnect " + f.overview.selres
-		case "cD":
-			finalCmd = "drbdadm disconnect all"
+		case "cc", "cC":
+			action = drbdutils.Connect
+		case "cd", "cD":
+			action = drbdutils.Disconnect
 		case "cm":
-			finalCmd = "drbdadm connect --discard-my-data " + f.overview.selres
+			action = drbdutils.Connect
+			arg = append(arg, "--discard-my-data")
 		/* role */
-		case "rp":
-			finalCmd = "drbdadm primary " + f.overview.selres
-		case "rs":
-			finalCmd = "drbdadm secondary " + f.overview.selres
-		case "rP":
-			finalCmd = "drbdadm primary all"
-		case "rS":
-			finalCmd = "drbdadm secondary all"
+		case "rp", "rP":
+			action = drbdutils.Primary
+		case "rs", "rS":
+			action = drbdutils.Secondary
+		default:
+			valid = false
+			p.Text = "Aborting: Your input was not a valid command!"
 		}
 
 		cmdOK := false
-		if finalCmd != "" {
-			p.Text = fmt.Sprintf("Executing '%s'... ", finalCmd)
-			termui.Render(p)
-			args := strings.Split(finalCmd, " ")
-			if len(args) > 1 {
-				cmd := exec.Command(args[0], args[1:]...)
-				cmd.Start()
-				if err := cmd.Wait(); err != nil {
-					p.Text += fmt.Sprintf("%v", err)
-				} else {
-					p.Text += setOK()
-					cmdOK = true
-				}
-			} else {
-				p.Text = "Aborting: Valid command, but too few arguments?!"
+		if valid {
+			last := string(commandstr[1])
+			if last == strings.ToUpper(last) {
+				res = "all"
 			}
-		} else {
-			p.Text = "Aborting: Your input was not a valid command!"
+			cmd, _ := drbdutils.NewDrbdCmd(cmd, action, res, arg...)
+			cmd.SetTimeout(10 * time.Second)
+			p.Text = fmt.Sprintf("Executing '%s'... ", cmd)
+			termui.Render(p)
+			if comb, err := cmd.CombinedOutput(); err != nil {
+				p.Text += fmt.Sprintf("%s", comb)
+			} else {
+				p.Text += setOK()
+				cmdOK = true
+			}
 		}
 
 		// hard sleep here, IMO it makes more sense than tmpFooterMsg()
 		termui.Render(p)
 
-		sl := 4 * time.Second // give user to read the error message
+		sl := 4 * time.Second // give user time to read the error message
 		if cmdOK {
 			sl = 2 * time.Second // user is happy, make time shorter
 		}

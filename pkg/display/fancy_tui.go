@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"drbdtop.io/drbdtop/pkg/resource"
-	"drbdtop.io/drbdtop/pkg/update"
+	"github.com/linbit/drbdtop/pkg/resource"
+	"github.com/linbit/drbdtop/pkg/update"
 	drbdutils "github.com/linbit/godrbdutils"
 	"github.com/linbit/termui"
 )

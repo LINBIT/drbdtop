@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"drbdtop.io/drbdtop/pkg/resource"
+	"github.com/linbit/drbdtop/pkg/resource"
 )
 
 /*

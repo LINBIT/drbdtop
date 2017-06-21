@@ -1,4 +1,4 @@
-package: drbdtop.io/drbdtop
+package: github.com/linbit/drbdtop
 import:
 - package: github.com/facette/natsort
 - package: github.com/fatih/color

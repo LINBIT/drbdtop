@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"drbdtop.io/drbdtop/pkg/convert"
-	"drbdtop.io/drbdtop/pkg/resource"
-	"drbdtop.io/drbdtop/pkg/update"
+	"github.com/linbit/drbdtop/pkg/convert"
+	"github.com/linbit/drbdtop/pkg/resource"
+	"github.com/linbit/drbdtop/pkg/update"
 
 	"github.com/linbit/termui"
 )

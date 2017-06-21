@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"drbdtop.io/drbdtop/pkg/resource"
+	"github.com/linbit/drbdtop/pkg/resource"
 )
 
 // Collector sends raw event strings into a channel.

@@ -40,9 +40,9 @@ func main() {
 	file := app.Flag(
 		"file", "Path to a file containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'.").PlaceHolder("/path/to/file").Short('f').String()
 	interval := app.Flag(
-		"interval", "Time to wait between updating DRBD status, minimum 400ms. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("500ms").String()
+		"interval", "Time to wait between updating DRBD status, minimum 400ms. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("1s").String()
 	tui := app.Flag(
-		"tui", "Set the TUI (ugly/fancy)").Short('t').Default("ugly").String()
+		"tui", "Set the TUI (ugly/fancy)").Short('t').Default("fancy").String()
 
 	// Prints the version.
 	app.Version(Version)
@@ -64,8 +64,8 @@ func main() {
 
 	duration, err := time.ParseDuration(*interval)
 	if err != nil {
-		errors <- fmt.Errorf("defaulting to 500ms polling interval: %v", err)
-		duration = time.Millisecond * 500
+		errors <- fmt.Errorf("defaulting to 1s polling interval: %v", err)
+		duration = time.Second * 1
 	}
 	if duration < time.Millisecond*400 {
 		errors <- fmt.Errorf("interval %s is too quick, switching to 400ms minimum polling interval", duration.String())

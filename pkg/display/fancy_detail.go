@@ -16,7 +16,7 @@ import (
 type win int
 
 const (
-	oos win = iota
+	insync win = iota
 	status
 	detailedstatus
 )
@@ -51,7 +51,7 @@ func NewDetailView() *detailView {
 	d.status.Height = 3
 	d.status.TextFgColor = termui.ColorWhite
 
-	d.footer = termui.NewPar("q: overview | o: oos | s: status | d: detailed status")
+	d.footer = termui.NewPar("q: overview | i: inSync | s: status | d: detailed status")
 	d.footer.Height = 1
 	d.footer.TextFgColor = termui.ColorWhite
 	d.footer.Border = false
@@ -250,7 +250,7 @@ func (d *detailView) UpdateStatus() {
 	d.oldselres = d.selres
 }
 
-func (d *detailView) UpdateOOS() {
+func (d *detailView) UpdateInSync() {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -269,8 +269,8 @@ func (d *detailView) UpdateOOS() {
 			if _, ok := d.volGauges[k]; !ok {
 				g := termui.NewGauge()
 				g.Height = 3
-				g.BorderLabel = "Out of sync"
-				g.BorderLabelFg = termui.ColorRed
+				g.BorderLabel = "In Sync"
+				g.BorderLabelFg = termui.ColorGreen
 
 				ps := fmt.Sprintf("Vol %s (/dev/drbd%s)", k, v.Minor)
 				p := termui.NewPar(ps)
@@ -289,10 +289,11 @@ func (d *detailView) UpdateOOS() {
 
 			// oosp is oos over *all* peers, sizes are (roughly) the same, so multiply v.Size by nrPeerDevs, to get sane percentage
 			oosp := int(float64(oos*100) / float64(v.Size*nrPeerDevs))
-			if oosp == 0 && oos > 0 {
-				oosp = 1 // make it visable that something is oos
+			inSyncp := 100 - oosp
+			if inSyncp == 100 && oos > 0 {
+				inSyncp = 99 // make it visable that something is oos
 			}
-			d.volGauges[k].g.Percent = oosp
+			d.volGauges[k].g.Percent = inSyncp
 		}
 	}
 	d.oldselres = d.selres
@@ -300,8 +301,8 @@ func (d *detailView) UpdateOOS() {
 
 func (d *detailView) updateContent() {
 	switch d.window {
-	case oos:
-		d.UpdateOOS()
+	case insync:
+		d.UpdateInSync()
 	case status, detailedstatus:
 		d.UpdateStatus()
 	default:
@@ -323,7 +324,7 @@ func (d *detailView) updateGUI(updateContent bool) {
 	var heights int
 
 	switch d.window {
-	case oos:
+	case insync:
 		for _, uig := range d.volGauges {
 			d.grid.AddRows(
 				termui.NewRow(
@@ -370,8 +371,8 @@ func (d *detailView) setWindow(e termui.Event) {
 	k, _ := e.Data.(termui.EvtKbd)
 	old := d.window
 	switch k.KeyStr {
-	case "o":
-		d.window = oos
+	case "i":
+		d.window = insync
 	case "s":
 		d.window = status
 	case "d":
@@ -386,9 +387,9 @@ func (d *detailView) setWindow(e termui.Event) {
 func (d *detailView) Update() {
 	// TODO: move that switch bodies to functions
 	switch d.window {
-	case oos:
+	case insync:
 		was := len(d.volGauges)
-		d.UpdateOOS()
+		d.UpdateInSync()
 		is := len(d.volGauges)
 		if was != is {
 			d.updateGUI(false)

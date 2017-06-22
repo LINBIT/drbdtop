@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blogs on drbdtop</title>
+    <link>https://linbit.github.io/drbdtop/blog/</link>
+    <description>Recent content in Blogs on drbdtop</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 23 Jun 2017 13:17:22 +0200</lastBuildDate>
+    
+	<atom:link href="https://linbit.github.io/drbdtop/blog/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Help us finding a logo</title>
+      <link>https://linbit.github.io/drbdtop/blog/finding-a-logo/</link>
+      <pubDate>Fri, 23 Jun 2017 13:17:22 +0200</pubDate>
+      
+      <guid>https://linbit.github.io/drbdtop/blog/finding-a-logo/</guid>
+      <description>Dear users, help us finding a logo for drbdtop. Maybe a gopher juggling DRBD logos? A gopher from gopherize.me wearing a DRBD t-shirt? A gopher watching a monitor with the DRBD logo? Not a gopher at all? I (rck) am totally useless when it comes to graphics/design ;-)
+Thanks in advance.</description>
+    </item>
+    
+  </channel>
+</rss>

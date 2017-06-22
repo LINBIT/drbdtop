@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>drbdtop</title>
+    <link>https://linbit.github.io/drbdtop/</link>
+    <description>Recent content on drbdtop</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 23 Jun 2017 13:17:22 +0200</lastBuildDate>
+    
+	<atom:link href="https://linbit.github.io/drbdtop/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Help us finding a logo</title>
+      <link>https://linbit.github.io/drbdtop/blog/finding-a-logo/</link>
+      <pubDate>Fri, 23 Jun 2017 13:17:22 +0200</pubDate>
+      
+      <guid>https://linbit.github.io/drbdtop/blog/finding-a-logo/</guid>
+      <description>Dear users, help us finding a logo for drbdtop. Maybe a gopher juggling DRBD logos? A gopher from gopherize.me wearing a DRBD t-shirt? A gopher watching a monitor with the DRBD logo? Not a gopher at all? I (rck) am totally useless when it comes to graphics/design ;-)
+Thanks in advance.</description>
+    </item>
+    
+    <item>
+      <title>Resolving split-brains</title>
+      <link>https://linbit.github.io/drbdtop/guides/resolving-splitbrain/</link>
+      <pubDate>Fri, 23 Jun 2017 09:27:24 +0200</pubDate>
+      
+      <guid>https://linbit.github.io/drbdtop/guides/resolving-splitbrain/</guid>
+      <description>In this guide we describe how to resolve a split-brain situation in three steps. First of all you have to decide which node(s) will be the split-brain victim(s) and which node will be the split-brain survivor. In this guide we show these steps for a two-node cluster. We assume that drbdtop is started on all nodes and that the resource to act on is selected.
+tl;tr  on all nodes: &#39;c&#39;,&#39;d&#39; (connection, disconnect) on the victim(s): &#39;c&#39;,&#39;m&#39; (connection, discard-my-data) on the survivor: &#39;c&#39;,&#39;c&#39; (connection, connect resource) be happy ;-)  Detailed version In this section we present a step-by-step guide illustrated with screenshots.</description>
+    </item>
+    
+    <item>
+      <title>What is drbdtop?</title>
+      <link>https://linbit.github.io/drbdtop/guides/intro/</link>
+      <pubDate>Fri, 23 Jun 2017 09:10:04 +0200</pubDate>
+      
+      <guid>https://linbit.github.io/drbdtop/guides/intro/</guid>
+      <description>drbdtop is a software that allows monitoring DRBD resources in real-time and executing actions on DRBD resources (e.g., switching a resource to Primary role, disconnecting a resource,&amp;hellip;).
+drbdtop has two views:
+ Overview Detailed  Overview When drbdtop is started, its default is the overview mode as depicted in the following screenshot: That view presents a live overview about the used DRBD kernel module, the used drbd-utils version, and a compact overview about the state of your DRBD resources.</description>
+    </item>
+    
+  </channel>
+</rss>

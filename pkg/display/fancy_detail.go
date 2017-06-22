@@ -312,7 +312,7 @@ func (d *detailView) updateContent() {
 }
 
 func (d *detailView) updateGUI(updateContent bool) {
-	d.header.Text = drbdtopversion + " - Detail View for " + d.selres
+	d.header.Text = drbdtopversion + " - Details for " + d.selres
 	if updateContent {
 		d.updateContent()
 	}

@@ -74,6 +74,11 @@ func printByRes(r *update.ByRes) {
 	printRes(r)
 	fmt.Printf("\n")
 
+	// Nothing more to do if the resource is down, exit.
+	if r.Res.Unconfigured {
+		return
+	}
+
 	printLocalDisk(r)
 	fmt.Printf("\n")
 
@@ -99,9 +104,13 @@ func printByRes(r *update.ByRes) {
 func printRes(r *update.ByRes) {
 	fmt.Printf("%s: (%d) ", r.Res.Name, r.Danger)
 
-	if r.Res.Suspended != "no" {
-		c := color.New(color.FgHiRed)
+	c := color.New(color.FgHiRed)
+	if r.Res.Suspended == "yes" {
 		c.Printf("(Suspended)")
+	}
+
+	if r.Res.Unconfigured {
+		c.Printf("(Down)")
 	}
 
 	fmt.Printf("\n")

@@ -332,7 +332,7 @@ func NewUnconfiguredRes(name string) Event {
 		TimeStamp: time.Now(),
 		EventType: "exists",
 		Target:    "resource",
-		Fields:    map[string]string{"unconfigured": "true"},
+		Fields:    map[string]string{ResKeys.Unconfigured: "true", ResKeys.Name: name},
 	}
 }
 

@@ -1,5 +1,5 @@
-hash: 490577ff5632e0359a6b5aed48a32a1391f52bac492de41b15c6372dfca762f2
-updated: 2017-05-05T07:42:33.222383642-07:00
+hash: 11239fb509112db84a058f1c974f2cef14809e7c3b1bded51580fe9089f7ce86
+updated: 2017-07-11T13:29:29.931082539-07:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -10,7 +10,9 @@ imports:
 - name: github.com/facette/natsort
   version: 3769c5fd310020fdd04779443fd9255c8cf04e34
 - name: github.com/fatih/color
-  version: 9131ab34cf20d2f6d83fdc67168a5430d1c7dc23
+  version: 570b54cabe6b8eb0bc2dfce68d964677d63b5260
+- name: github.com/linbit/godrbdutils
+  version: 3e5ba8bf98b81313e967509fa3da330e9a4e469b
 - name: github.com/linbit/termui
   version: 8b646353167856a2223834251dcc5e876208ed40
 - name: github.com/maruel/panicparse

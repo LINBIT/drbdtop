@@ -326,6 +326,16 @@ func NewEOF() Event {
 	return Event{Target: EOF}
 }
 
+// NewUnconfiguredRes returns a special Event signaling that this resource is down(unconfigured).
+func NewUnconfiguredRes(name string) Event {
+	return Event{
+		TimeStamp: time.Now(),
+		EventType: "exists",
+		Target:    "resource",
+		Fields:    map[string]string{"unconfigured": "true"},
+	}
+}
+
 // Updater modify their data based on incoming Events.
 type Updater interface {
 	Update(Event)

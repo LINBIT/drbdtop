@@ -2,12 +2,14 @@ package collect
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/linbit/drbdtop/pkg/resource"
+	"github.com/linbit/godrbdutils"
 )
 
 // Collector sends raw event strings into a channel.
@@ -49,6 +51,10 @@ type Events2Poll struct {
 func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) {
 	ticker := time.NewTicker(c.Interval)
 	for {
+		remainingResources, err := allResources()
+		if err != nil {
+			errors <- err
+		}
 		out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
 		if err != nil {
 			errors <- err
@@ -61,11 +67,39 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 					if err != nil {
 						errors <- err
 					} else {
+						delete(remainingResources, evt.Fields[resource.ResKeys.Name])
 						events <- evt
 					}
 				}
 			}
 		}
+		for res := range remainingResources {
+			events <- resource.NewUnconfiguredRes(res)
+		}
 		<-ticker.C
 	}
+}
+
+func allResources() (map[string]bool, error) {
+	cmd, err := godrbdutils.NewDrbdCmd(godrbdutils.Drbdadm, godrbdutils.Connect, "all", "-d")
+	if err != nil {
+		return nil, fmt.Errorf("unable to find all reources: %v", err)
+	}
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("unable to find all reources: %v", err)
+	}
+	return doAllResources(string(out))
+}
+
+func doAllResources(s string) (map[string]bool, error) {
+	ret := map[string]bool{}
+	for _, line := range strings.Split(s, "\n") {
+		f := strings.Fields(line)
+		if len(f) == 4 {
+			ret[f[2]] = true
+		}
+	}
+	return ret, nil
 }

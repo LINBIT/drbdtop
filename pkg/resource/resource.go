@@ -35,10 +35,11 @@ type resKeys struct {
 	Role          string
 	Suspended     string
 	WriteOrdering string
+	Unconfigured  string
 }
 
 // ResKeys is a data container for the field keys of resource Events.
-var ResKeys = resKeys{"name", "role", "suspended", "write-ordering"}
+var ResKeys = resKeys{"name", "role", "suspended", "write-ordering", "unconfigured"}
 
 type connKeys struct {
 	Name       string
@@ -338,6 +339,7 @@ type Resource struct {
 	Role          string
 	Suspended     string
 	WriteOrdering string
+	Unconfigured  bool
 
 	// Calulated Values
 	updateCount int
@@ -352,6 +354,9 @@ func (r *Resource) Update(e Event) {
 	r.Role = e.Fields[ResKeys.Role]
 	r.Suspended = e.Fields[ResKeys.Suspended]
 	r.WriteOrdering = e.Fields[ResKeys.WriteOrdering]
+	if _, ok := e.Fields[ResKeys.Unconfigured]; ok {
+		r.Unconfigured = true
+	}
 	r.updateTimes(e.TimeStamp)
 	r.updateCount++
 }

@@ -1,6 +1,6 @@
 /*
- *drbdtop - continously update stats on drbd
- *Copyright © 2017 Hayley Swimelar
+ *drbdtop - statistics for DRBD
+ *Copyright © 2017 Hayley Swimelar and Roland Kammerer
  *
  *This program is free software; you can redistribute it and/or modify
  *it under the terms of the GNU General Public License as published by

@@ -35,10 +35,11 @@ type resKeys struct {
 	Role          string
 	Suspended     string
 	WriteOrdering string
+	Unconfigured  string
 }
 
 // ResKeys is a data container for the field keys of resource Events.
-var ResKeys = resKeys{"name", "role", "suspended", "write-ordering"}
+var ResKeys = resKeys{"name", "role", "suspended", "write-ordering", "unconfigured"}
 
 type connKeys struct {
 	Name       string
@@ -325,6 +326,16 @@ func NewEOF() Event {
 	return Event{Target: EOF}
 }
 
+// NewUnconfiguredRes returns a special Event signaling that this resource is down(unconfigured).
+func NewUnconfiguredRes(name string) Event {
+	return Event{
+		TimeStamp: time.Now(),
+		EventType: "exists",
+		Target:    "resource",
+		Fields:    map[string]string{ResKeys.Unconfigured: "true", ResKeys.Name: name},
+	}
+}
+
 // Updater modify their data based on incoming Events.
 type Updater interface {
 	Update(Event)
@@ -338,6 +349,7 @@ type Resource struct {
 	Role          string
 	Suspended     string
 	WriteOrdering string
+	Unconfigured  bool
 
 	// Calulated Values
 	updateCount int
@@ -352,6 +364,9 @@ func (r *Resource) Update(e Event) {
 	r.Role = e.Fields[ResKeys.Role]
 	r.Suspended = e.Fields[ResKeys.Suspended]
 	r.WriteOrdering = e.Fields[ResKeys.WriteOrdering]
+	if _, ok := e.Fields[ResKeys.Unconfigured]; ok {
+		r.Unconfigured = true
+	}
 	r.updateTimes(e.TimeStamp)
 	r.updateCount++
 }
@@ -731,5 +746,5 @@ func fastTimeParse(date string) (time.Time, error) {
 	minute := (int(date[14])-'0')*10 + int(date[15]) - '0'
 	second := (int(date[17])-'0')*10 + int(date[18]) - '0'
 	nano := (((((int(date[20])-'0')*10+int(date[21])-'0')*10+int(date[22])-'0')*10+int(date[23])-'0')*10+int(date[24])-'0')*10 + int(date[25]) - '0'
-	return time.Date(year, month, day, hour, minute, second, nano, time.UTC), nil
+	return time.Date(year, month, day, hour, minute, second, nano, time.Local), nil
 }

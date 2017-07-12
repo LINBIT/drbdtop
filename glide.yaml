@@ -7,3 +7,4 @@ import:
   version: ^2.2.3
 - package: github.com/linbit/termui
   version: master
+- package: github.com/linbit/godrbdutils

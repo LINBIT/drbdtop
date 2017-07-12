@@ -237,6 +237,31 @@ func TestResourceUpdate(t *testing.T) {
 	if status.WriteOrdering != event.Fields[ResKeys.WriteOrdering] {
 		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
 	}
+
+	// Update should handle resources that are unconfigured.
+	event, err = NewEvent("2017-02-15T12:57:55.000000-08:00 exists resource name:test0 unconfigured:true")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	status.Update(event)
+
+	if status.Name != event.Fields[ResKeys.Name] {
+		t.Errorf("Expected status.Name to be %q, got %q", event.Fields["name"], status.Name)
+	}
+	if status.Role != "" {
+		t.Errorf("Expected status.Role to be %q, got %q", event.Fields["role"], status.Role)
+	}
+	if status.Suspended != "" {
+		t.Errorf("Expected status.Suspended to be %q, got %q", event.Fields["suspended"], status.Suspended)
+	}
+	if status.WriteOrdering != "" {
+		t.Errorf("Expected status.WriteOrdering to be %q, got %q", event.Fields["write-ordering"], status.WriteOrdering)
+	}
+	if status.Unconfigured != true {
+		t.Errorf("Expected status.Unconfigured to be %q, got %t", event.Fields[ResKeys.Unconfigured], status.Unconfigured)
+	}
+
 }
 
 func TestConnectionUpdate(t *testing.T) {

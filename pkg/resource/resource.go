@@ -746,5 +746,5 @@ func fastTimeParse(date string) (time.Time, error) {
 	minute := (int(date[14])-'0')*10 + int(date[15]) - '0'
 	second := (int(date[17])-'0')*10 + int(date[18]) - '0'
 	nano := (((((int(date[20])-'0')*10+int(date[21])-'0')*10+int(date[22])-'0')*10+int(date[23])-'0')*10+int(date[24])-'0')*10 + int(date[25]) - '0'
-	return time.Date(year, month, day, hour, minute, second, nano, time.UTC), nil
+	return time.Date(year, month, day, hour, minute, second, nano, time.Local), nil
 }

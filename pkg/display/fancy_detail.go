@@ -54,6 +54,8 @@ type detailView struct {
 	window         win
 }
 
+const txtUnconfigured = "This resource is Unconfigured, no further information available."
+
 func NewDetailView() *detailView {
 	d := detailView{
 		grid:      nil,
@@ -232,6 +234,10 @@ func (d *detailView) printByRes(r *update.ByRes) {
 
 	d.status.Text = ""
 	d.printRes(r)
+	if r.Res.Unconfigured {
+		d.status.Text += fmt.Sprintf("\n%s\n", txtUnconfigured)
+		return
+	}
 
 	d.printLocalDisk(r)
 	d.status.Text += fmt.Sprintf("\n")

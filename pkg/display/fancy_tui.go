@@ -229,12 +229,12 @@ func (f *FancyTUI) initHandlers() {
 		})
 	}
 	/* THINK: find a better way */
-	defHandlers := "befghilnotuvwxyz" + "BEFGHIJKLMNOQRTUVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
+	defHandlers := "befghilnotvwxyz" + "BEFGHIJKLMNOQRTVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
 	for _, h := range defHandlers {
 		registerDefaultHandler(string(h), f.overview.footer)
 	}
 
-	cmdHandlers := "acdmprs" + "ACDPS"
+	cmdHandlers := "acdmprus" + "ACDPUS"
 	for _, h := range cmdHandlers {
 		registerCmdHandler(string(h), f.overview.footer)
 	}
@@ -475,7 +475,12 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		case "": // role menu
 			p.Text = "p/s: primary/secondary selected | P/S: primary/secondary all"
 		}
-	case "A", "C", "D", "P", "S", "p", "s", "m":
+	case "s":
+		switch commandstr {
+		case "": // state menu
+			p.Text = "u/d: up/down selected | U/D: up/down all"
+		}
+	case "A", "C", "D", "P", "S", "U", "p", "m", "u":
 		commandFinished = true
 	default:
 		valid = false
@@ -515,6 +520,11 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 			action = drbdutils.Primary
 		case "rs", "rS":
 			action = drbdutils.Secondary
+		/* state */
+		case "sd", "sD":
+			action = drbdutils.Down
+		case "su", "sU":
+			action = drbdutils.Up
 		default:
 			valid = false
 			p.Text = "Aborting: Your input was not a valid command!"

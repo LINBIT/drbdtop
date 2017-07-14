@@ -20,7 +20,7 @@ package display
 
 import "github.com/linbit/termui"
 
-var lockedHelp string = "q: QUIT | j/k: down/up | /: find | r: role | a: adjust | d: disk | c: connection | <tab>: Toggle updates"
+var lockedHelp string = "q: QUIT | j/k: down/up | /: find | s: state | r: role | a: adjust | d: disk | c: conn | <tab>: Toggle"
 var unlockedHelp string = "q: QUIT | j/k: down/up | <tab>: Toggle updates"
 
 func window(selidx, maxItems, overall int) (from, to int) {

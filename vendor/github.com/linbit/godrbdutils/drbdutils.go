@@ -29,6 +29,7 @@ const (
 	Disconnect
 	Primary
 	Secondary
+	Create_md
 )
 
 type DrbdCmd struct {
@@ -75,6 +76,9 @@ func (a *DrbdAdm) Primary(arg ...string) ([]byte, error) {
 func (a *DrbdAdm) Secondary(arg ...string) ([]byte, error) {
 	return utilExec(Drbdadm, Secondary, a.res, a.timeout, arg...)
 }
+func (a *DrbdAdm) CreateMetaData(arg ...string) ([]byte, error) {
+	return utilExec(Drbdadm, Create_md, a.res, a.timeout, arg...)
+}
 
 func (a *DrbdAdm) SetTimeout(timeout time.Duration) {
 	a.timeout = timeout
@@ -113,7 +117,7 @@ func (c *DrbdCmd) String() string {
 func (c *DrbdCmd) cmdSlice() []string {
 	var s = []string{
 		strings.ToLower(c.cmd.String()),
-		strings.ToLower(c.action.String()),
+		strings.Replace(strings.ToLower(c.action.String()), "_", "-", -1),
 	}
 	s = append(s, c.arg...)
 	s = append(s, c.res)

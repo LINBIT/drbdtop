@@ -4,9 +4,9 @@ package godrbdutils
 
 import "fmt"
 
-const _Action_name = "UpDownAdjustAttachDetachConnectDisconnectPrimarySecondary"
+const _Action_name = "UpDownAdjustAttachDetachConnectDisconnectPrimarySecondaryCreate_md"
 
-var _Action_index = [...]uint8{0, 2, 6, 12, 18, 24, 31, 41, 48, 57}
+var _Action_index = [...]uint8{0, 2, 6, 12, 18, 24, 31, 41, 48, 57, 66}
 
 func (i Action) String() string {
 	if i < 0 || i >= Action(len(_Action_index)-1) {

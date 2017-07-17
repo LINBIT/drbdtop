@@ -38,6 +38,14 @@ var drbdtopversion string
 var commandstr string
 var commandFinished bool
 
+type confirmed int
+
+const (
+	unknown confirmed = iota
+	yes
+	no
+)
+
 type commandMode int
 
 const (
@@ -229,12 +237,12 @@ func (f *FancyTUI) initHandlers() {
 		})
 	}
 	/* THINK: find a better way */
-	defHandlers := "beghilnotvwxyz" + "BEFGHIJKLMNOQRTVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
+	defHandlers := "beghilotvwxz" + "BEFGHIJKLMNOQRTVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
 	for _, h := range defHandlers {
 		registerDefaultHandler(string(h), f.overview.footer)
 	}
 
-	cmdHandlers := "acdfmprus" + "ACDPUS"
+	cmdHandlers := "acdfmnprusy" + "ACDPUS"
 	for _, h := range cmdHandlers {
 		registerCmdHandler(string(h), f.overview.footer)
 	}
@@ -446,6 +454,8 @@ func (f *FancyTUI) reset() {
 func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	k, _ := e.Data.(termui.EvtKbd)
 	keyStr := k.KeyStr
+	isDangerous := false
+	var confirmed confirmed = unknown
 
 	valid := true
 	switch keyStr {
@@ -487,18 +497,23 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		case "": // meta-data menu
 			p.Text = "c: create-md --force selected"
 		}
+	case "y":
+		confirmed = yes
+	case "n":
+		confirmed = no
 	case "A", "C", "D", "P", "S", "U", "f", "p", "u":
 		commandFinished = true
 	default:
 		valid = false
 	}
 
-	if valid {
+	if valid && confirmed == unknown {
 		commandstr += keyStr
 	}
 
 	p.Text += " | <esc>: Abort command"
 
+	defer termui.Render(p)
 	if commandFinished {
 		valid = true
 		cmd := drbdutils.Drbdadm
@@ -522,12 +537,14 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		case "cm":
 			action = drbdutils.Connect
 			arg = append(arg, "--discard-my-data")
+			isDangerous = true
 		/* role */
 		case "rp", "rP":
 			action = drbdutils.Primary
 		case "rf":
 			action = drbdutils.Primary
 			arg = append(arg, "--force")
+			isDangerous = true
 		case "rs", "rS":
 			action = drbdutils.Secondary
 		/* state */
@@ -539,26 +556,37 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		case "mc":
 			action = drbdutils.Create_md
 			arg = append(arg, "--force")
+			isDangerous = true
 		default:
 			valid = false
 			p.Text = "Aborting: Your input was not a valid command!"
 		}
 
-		cmdOK := false
-		if valid {
+		if !isDangerous {
+			confirmed = yes
+		}
+		utilscmd, _ := drbdutils.NewDrbdCmd(cmd, action, res, arg...)
+		if confirmed == unknown {
+			p.Text = fmt.Sprintf("Dangerous command: '%s'. Are you sure? (y/n) ", utilscmd)
+			return
+		} else if confirmed == no {
+			p.Text = fmt.Sprintf("Aborting '%s'.", utilscmd)
+		}
+
+		utilscmdOK := false
+		if valid && confirmed == yes {
 			last := string(commandstr[1])
 			if last == strings.ToUpper(last) {
 				res = "all"
 			}
-			cmd, _ := drbdutils.NewDrbdCmd(cmd, action, res, arg...)
-			cmd.SetTimeout(10 * time.Second)
-			p.Text = fmt.Sprintf("Executing '%s'... ", cmd)
+			utilscmd.SetTimeout(10 * time.Second)
+			p.Text = fmt.Sprintf("Executing '%s'... ", utilscmd)
 			termui.Render(p)
-			if comb, err := cmd.CombinedOutput(); err != nil {
+			if comb, err := utilscmd.CombinedOutput(); err != nil {
 				p.Text += fmt.Sprintf("%s", comb)
 			} else {
 				p.Text += setOK()
-				cmdOK = true
+				utilscmdOK = true
 			}
 		}
 
@@ -566,7 +594,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		termui.Render(p)
 
 		sl := 4 * time.Second // give user time to read the error message
-		if cmdOK {
+		if utilscmdOK {
 			sl = 2 * time.Second // user is happy, make time shorter
 		}
 		time.Sleep(sl)
@@ -574,7 +602,6 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		f.toggleLocked()
 		f.reset()
 	}
-	termui.Render(p)
 }
 
 func tmpFooterMsg(f *termui.Par, t string, d time.Duration) {

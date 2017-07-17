@@ -229,12 +229,12 @@ func (f *FancyTUI) initHandlers() {
 		})
 	}
 	/* THINK: find a better way */
-	defHandlers := "befghilnotvwxyz" + "BEFGHIJKLMNOQRTVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
+	defHandlers := "beghilnotvwxyz" + "BEFGHIJKLMNOQRTVWXYZ" + "0123456789" + "!§$%&()[],;-.:_+*~<>|"
 	for _, h := range defHandlers {
 		registerDefaultHandler(string(h), f.overview.footer)
 	}
 
-	cmdHandlers := "acdmprus" + "ACDPUS"
+	cmdHandlers := "acdfmprus" + "ACDPUS"
 	for _, h := range cmdHandlers {
 		registerCmdHandler(string(h), f.overview.footer)
 	}
@@ -473,19 +473,21 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	case "r":
 		switch commandstr {
 		case "": // role menu
-			p.Text = "p/s: primary/secondary selected | P/S: primary/secondary all"
+			p.Text = "p/f/s: primary/primary --force/secondary selected | P/S: primary/secondary all"
 		}
 	case "s":
 		switch commandstr {
 		case "": // state menu
 			p.Text = "u/d: up/down selected | U/D: up/down all"
+		default:
+			commandFinished = true
 		}
 	case "m":
 		switch commandstr {
 		case "": // meta-data menu
 			p.Text = "c: create-md --force selected"
 		}
-	case "A", "C", "D", "P", "S", "U", "p", "u":
+	case "A", "C", "D", "P", "S", "U", "f", "p", "u":
 		commandFinished = true
 	default:
 		valid = false
@@ -523,6 +525,9 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		/* role */
 		case "rp", "rP":
 			action = drbdutils.Primary
+		case "rf":
+			action = drbdutils.Primary
+			arg = append(arg, "--force")
 		case "rs", "rS":
 			action = drbdutils.Secondary
 		/* state */

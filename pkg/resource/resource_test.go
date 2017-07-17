@@ -546,8 +546,8 @@ func TestFastTimeParse(t *testing.T) {
 		in  string
 		out time.Time
 	}{
-		{"2017-03-27T12:39:29.346495-07:00", time.Date(2017, 3, 27, 12, 39, 29, 346495, time.UTC)},
-		{"2017-03-31T16:40:04.989135+02:00", time.Date(2017, 3, 31, 16, 40, 04, 989135, time.UTC)},
+		{"2017-03-27T12:39:29.346495-07:00", time.Date(2017, 3, 27, 12, 39, 29, 346495, time.Local)},
+		{"2017-03-31T16:40:04.989135+02:00", time.Date(2017, 3, 31, 16, 40, 04, 989135, time.Local)},
 	}
 	for _, tt := range timeTests {
 		time, _ := fastTimeParse(tt.in)

@@ -42,7 +42,7 @@ func main() {
 	interval := app.Flag(
 		"interval", "Time to wait between updating DRBD status, minimum 400ms. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("1s").String()
 	tui := app.Flag(
-		"tui", "Set the TUI (ugly/fancy)").Short('t').Default("fancy").String()
+		"tui", "Set the TUI (text/interactive)").Short('t').Default("interactive").String()
 
 	// Prints the version.
 	app.Version(Version)
@@ -84,7 +84,7 @@ func main() {
 	events := make(chan resource.Event, 5)
 	go input.Collect(events, errors)
 
-	if *tui == "fancy" {
+	if *tui == "interactive" {
 		display := display.NewFancyTUI(duration)
 		display.SetVersion(Version)
 		display.Display(events, errors)

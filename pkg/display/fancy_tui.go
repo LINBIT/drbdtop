@@ -467,7 +467,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		switch commandstr {
 		case "": // connection menu
 			p.Text = "c/d/m: connect/disconnect/discard my data selected | C/D: connect/disconnect all"
-		case "c":
+		case "c", "d", "m":
 			commandFinished = true
 		}
 	case "r":
@@ -480,7 +480,12 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		case "": // state menu
 			p.Text = "u/d: up/down selected | U/D: up/down all"
 		}
-	case "A", "C", "D", "P", "S", "U", "p", "m", "u":
+	case "m":
+		switch commandstr {
+		case "": // meta-data menu
+			p.Text = "c: create-md --force selected"
+		}
+	case "A", "C", "D", "P", "S", "U", "p", "u":
 		commandFinished = true
 	default:
 		valid = false
@@ -525,6 +530,10 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 			action = drbdutils.Down
 		case "su", "sU":
 			action = drbdutils.Up
+		/* meta data */
+		case "mc":
+			action = drbdutils.Create_md
+			arg = append(arg, "--force")
 		default:
 			valid = false
 			p.Text = "Aborting: Your input was not a valid command!"

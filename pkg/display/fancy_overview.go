@@ -21,7 +21,7 @@ package display
 import "github.com/linbit/termui"
 
 var lockedHelp string = "q: QUIT | /: find | s: state | r: role | a: adjust | d: disk | c: conn | m: meta | <tab>: Update"
-var unlockedHelp string = "q: QUIT | j/k: down/up | <tab>: Toggle updates"
+var unlockedHelp string = "q: QUIT | j/k: down/up | f: Toggle dangerous filter | <tab>: Toggle updates"
 
 func window(selidx, maxItems, overall int) (from, to int) {
 	block := 0
@@ -50,6 +50,7 @@ type overView struct {
 	selres              string
 	from, to            int
 	locked              bool // TODO maybe make this a propper lock
+	filterDanger        bool // probably going to be an actuall score/int
 }
 
 func NewOverView() *overView {
@@ -246,6 +247,9 @@ func (o *overView) setLockedStr() {
 		o.footer.Text = lockedHelp
 	} else {
 		o.tbl.BorderLabel = s + " (LIVE UPDATING)" + " Resource List"
+		if o.filterDanger {
+			o.tbl.BorderLabel += " (filtered)"
+		}
 		o.footer.Text = unlockedHelp
 	}
 	termui.Render(o.tbl, o.footer)

@@ -142,6 +142,9 @@ func (f *FancyTUI) UpdateDisp() {
 		if f.dmode == overview && !f.overview.locked { // full update
 			db.keys = []string{}
 			for _, r := range f.resources.List {
+				if f.overview.filterDanger && r.Danger == 0 {
+					continue
+				}
 				db.buf[r.Res.Name] = *r
 				db.keys = append(db.keys, r.Res.Name)
 			}
@@ -228,9 +231,14 @@ func (f *FancyTUI) initHandlers() {
 				return
 			}
 
-			if f.dmode == overview && f.overview.locked {
-				f.cmode = command
-				f.cmdMode(e, p)
+			if f.dmode == overview {
+				if f.overview.locked {
+					f.cmode = command
+					f.cmdMode(e, p)
+				} else if key == "f" {
+					f.overview.filterDanger = !f.overview.filterDanger
+					f.overview.setLockedStr()
+				}
 			} else if f.dmode == detail {
 				f.detail.setWindow(e)
 			}
@@ -598,6 +606,9 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 			sl = 2 * time.Second // user is happy, make time shorter
 		}
 		time.Sleep(sl)
+
+		/* in the best case the command fixed the resource, so remove the filter */
+		f.overview.filterDanger = false
 
 		f.toggleLocked()
 		f.reset()

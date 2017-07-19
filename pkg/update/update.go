@@ -80,7 +80,10 @@ func (b *ByRes) Update(evt resource.Event) {
 		_ = evt
 	}
 
-	// Calculate Danger.
+	b.setDanger()
+}
+
+func (b *ByRes) setDanger() {
 	var dangerScore uint64
 
 	for _, c := range b.Connections {

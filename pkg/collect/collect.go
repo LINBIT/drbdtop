@@ -99,7 +99,7 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 }
 
 func allResources() (map[string]bool, error) {
-	cmd, err := godrbdutils.NewDrbdCmd(godrbdutils.Drbdadm, godrbdutils.Connect, "all", "-d")
+	cmd, err := godrbdutils.NewDrbdCmd(godrbdutils.Drbdadm, godrbdutils.Connect, []string{"all"}, "-d")
 	if err != nil {
 		return nil, fmt.Errorf("unable to find all reources: %v", err)
 	}

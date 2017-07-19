@@ -20,7 +20,7 @@ package display
 
 import "github.com/linbit/termui"
 
-var lockedHelp string = "q: QUIT | /: find | s: state | r: role | a: adjust | d: disk | c: conn | m: meta | <tab>: Update"
+var lockedHelp string = "q: QUIT | /: find | t: tag | s: state | r: role | a: adjust | d: disk | c: conn | m: meta | <tab>: Update"
 var unlockedHelp string = "q: QUIT | j/k: down/up | f: Toggle dangerous filter | <tab>: Toggle updates"
 
 func window(selidx, maxItems, overall int) (from, to int) {
@@ -48,6 +48,7 @@ type overView struct {
 	header, footer      *termui.Par
 	selidx              int
 	selres              string
+	tagres              map[string]bool
 	from, to            int
 	locked              bool // TODO maybe make this a propper lock
 	filterDanger        bool // probably going to be an actuall score/int
@@ -59,6 +60,7 @@ func NewOverView() *overView {
 		from:   -1,
 		to:     -1,
 		locked: false,
+		tagres: make(map[string]bool),
 	}
 
 	o.header = termui.NewPar(drbdtopversion)
@@ -149,10 +151,19 @@ func (o *overView) UpdateTable() {
 					dangerToString(devdanger), dangerToString(pddanger), dangerToString(conndanger), dangerToString(r.Danger)}
 			}
 			o.tbl.SetRows(tblrows)
+			for i := 1; i < len(o.tbl.Rows); i++ { // skip header
+				o.tbl.BgColors[i] = termui.ColorDefault
+			}
 		}
 	}
 
 	if o.locked {
+		for i := 1; i < len(o.tbl.Rows); i++ { // skip header
+			resname := o.tbl.Rows[i][0]
+			if _, ok := o.tagres[resname]; ok {
+				o.tbl.BgColors[i] = termui.ColorRed
+			}
+		}
 		s := o.selidx % o.tblelems
 		if len(o.tbl.Rows) > s+1 {
 			o.tbl.BgColors[s+1] = termui.ColorBlue
@@ -233,6 +244,11 @@ func (o *overView) SetIdx(c changeIdx) {
 
 func (o *overView) SetLocked(l bool) {
 	o.locked = l
+	if l {
+		for k := range o.tagres { // THINK: let the GC do the work?
+			delete(o.tagres, k)
+		}
+	}
 	o.setLockedStr()
 }
 
@@ -253,4 +269,12 @@ func (o *overView) setLockedStr() {
 		o.footer.Text = unlockedHelp
 	}
 	termui.Render(o.tbl, o.footer)
+}
+
+func (o *overView) addToSelections() {
+	if _, ok := o.tagres[o.selres]; ok {
+		delete(o.tagres, o.selres)
+	} else {
+		o.tagres[o.selres] = true
+	}
 }

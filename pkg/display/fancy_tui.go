@@ -220,7 +220,13 @@ func (f *FancyTUI) initHandlers() {
 				insertMode(e, p)
 				return
 			}
-			if f.dmode == detail {
+			if f.dmode == overview {
+				if f.overview.locked {
+					if key == "t" {
+						f.overview.addToSelections()
+					}
+				}
+			} else if f.dmode == detail {
 				f.detail.setWindow(e)
 			}
 		})
@@ -527,7 +533,14 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 	if commandFinished {
 		valid = true
 		cmd := drbdutils.Drbdadm
-		res := f.overview.selres
+		var res []string
+		if len(f.overview.tagres) > 0 {
+			for k := range f.overview.tagres {
+				res = append(res, k)
+			}
+		} else {
+			res = append(res, f.overview.selres)
+		}
 		var action drbdutils.Action
 		var arg []string
 		switch commandstr {
@@ -587,7 +600,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		if valid && confirmed == yes {
 			last := string(commandstr[1])
 			if last == strings.ToUpper(last) {
-				res = "all"
+				res = []string{"all"}
 			}
 			utilscmd.SetTimeout(10 * time.Second)
 			p.Text = fmt.Sprintf("Executing '%s'... ", utilscmd)

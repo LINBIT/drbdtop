@@ -434,7 +434,7 @@ func (c *Connection) getDanger() uint64 {
 
 	i, ok = roleDangerScores[c.Role]
 	if !ok {
-		d += connDangerScores["default"]
+		d += roleDangerScores["default"]
 	} else {
 		d += i
 	}

@@ -35,17 +35,17 @@ const (
 type DrbdCmd struct {
 	cmd     Cmd
 	action  Action
-	res     string
+	res     []string
 	arg     []string
 	timeout time.Duration
 }
 
 type DrbdAdm struct {
-	res     string
+	res     []string
 	timeout time.Duration
 }
 
-func NewDrbdAdm(res string) (*DrbdAdm, error) {
+func NewDrbdAdm(res []string) (*DrbdAdm, error) {
 	return &DrbdAdm{res: res}, nil
 }
 
@@ -84,7 +84,7 @@ func (a *DrbdAdm) SetTimeout(timeout time.Duration) {
 	a.timeout = timeout
 }
 
-func NewDrbdCmd(cmd Cmd, action Action, res string, arg ...string) (*DrbdCmd, error) {
+func NewDrbdCmd(cmd Cmd, action Action, res []string, arg ...string) (*DrbdCmd, error) {
 	c := DrbdCmd{
 		cmd:    cmd,
 		action: action,
@@ -120,7 +120,9 @@ func (c *DrbdCmd) cmdSlice() []string {
 		strings.Replace(strings.ToLower(c.action.String()), "_", "-", -1),
 	}
 	s = append(s, c.arg...)
-	s = append(s, c.res)
+	for _, r := range c.res {
+		s = append(s, r)
+	}
 	return s
 }
 
@@ -140,7 +142,7 @@ func (c *DrbdCmd) combinedOutput(ctx context.Context) ([]byte, error) {
 	return cmd.CombinedOutput()
 }
 
-func utilExec(cmd Cmd, action Action, res string, to time.Duration, arg ...string) ([]byte, error) {
+func utilExec(cmd Cmd, action Action, res []string, to time.Duration, arg ...string) ([]byte, error) {
 	c, err := NewDrbdCmd(cmd, action, res, arg...)
 	if err != nil {
 		return nil, err

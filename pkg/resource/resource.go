@@ -114,6 +114,7 @@ var roleDangerScores = map[string]uint64{
 	"Primary":   0,
 	"Secondary": 0,
 	"Unknown":   1,
+	"Down":      10,
 
 	"default": 1,
 }
@@ -335,7 +336,7 @@ func NewUnconfiguredRes(name string) Event {
 		Fields: map[string]string{
 			ResKeys.Unconfigured: "true",
 			ResKeys.Name:         name,
-			ResKeys.Role:         "down",
+			ResKeys.Role:         "Down",
 		},
 	}
 }
@@ -357,6 +358,7 @@ type Resource struct {
 
 	// Calulated Values
 	updateCount int
+	Danger      uint64
 }
 
 // Update the values of Resource with a new Event.
@@ -374,6 +376,14 @@ func (r *Resource) Update(e Event) {
 		r.Unconfigured = false
 	}
 	r.updateTimes(e.TimeStamp)
+
+	i, ok := roleDangerScores[r.Role]
+	if !ok {
+		r.Danger = roleDangerScores["default"]
+	} else {
+		r.Danger = i
+	}
+
 	r.updateCount++
 }
 

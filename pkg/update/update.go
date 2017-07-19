@@ -86,6 +86,8 @@ func (b *ByRes) Update(evt resource.Event) {
 func (b *ByRes) setDanger() {
 	var dangerScore uint64
 
+	dangerScore += b.Res.Danger
+
 	for _, c := range b.Connections {
 		dangerScore += c.Danger
 	}

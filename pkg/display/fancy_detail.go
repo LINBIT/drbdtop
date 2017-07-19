@@ -85,19 +85,17 @@ func NewDetailView() *detailView {
 }
 
 func (d *detailView) printRes(r *update.ByRes) {
-	d.status.Text += fmt.Sprintf("%s: %s: (Overall danger score: %d) ", colDefault("Resource", true), r.Res.Name, r.Danger)
+	d.scratch += fmt.Sprintf("%s: %s: (Overall danger score: %d) ", colDefault("Resource", true), r.Res.Name, r.Danger)
 
 	if r.Res.Suspended != "no" {
-		d.status.Text += fmt.Sprintf("(Suspended)")
+		d.scratch += fmt.Sprintf("(Suspended)")
 	}
 
-	d.status.Text += fmt.Sprintf("\n")
+	d.scratch += fmt.Sprintf("\n")
 }
 
 func (dv *detailView) printLocalDisk(r *update.ByRes) {
-	st := dv.status.Text
-
-	st += fmt.Sprintf(" %s(%s):\n", colDefault("Local Disc", true), r.Res.Role)
+	dv.scratch += fmt.Sprintf(" %s(%s):\n", colDefault("Local Disc", true), r.Res.Role)
 
 	d := r.Device
 
@@ -108,7 +106,7 @@ func (dv *detailView) printLocalDisk(r *update.ByRes) {
 	sort.Strings(keys)
 	for _, k := range keys {
 		v := d.Volumes[k]
-		st += fmt.Sprintf("  volume %s (/dev/drbd%s):", k, v.Minor)
+		dv.scratch += fmt.Sprintf("  volume %s (/dev/drbd%s):", k, v.Minor)
 		dState := v.DiskState
 
 		if dState == "UpToDate" {
@@ -116,35 +114,33 @@ func (dv *detailView) printLocalDisk(r *update.ByRes) {
 		} else {
 			dState = colRed(dState, true)
 		}
-		st += fmt.Sprintf(" %s", dState)
+		dv.scratch += fmt.Sprintf(" %s", dState)
 
-		st += fmt.Sprintf("(%s)", v.DiskHint)
+		dv.scratch += fmt.Sprintf("(%s)", v.DiskHint)
 
 		if dv.window == detailedstatus {
 			if v.Blocked != "no" {
-				st += fmt.Sprintf(" Blocked: %s ", d.Volumes[k].Blocked)
+				dv.scratch += fmt.Sprintf(" Blocked: %s ", d.Volumes[k].Blocked)
 			}
 
 			if v.ActivityLogSuspended != "no" {
-				st += fmt.Sprintf(" Activity Log Suspended: %s ", d.Volumes[k].Blocked)
+				dv.scratch += fmt.Sprintf(" Activity Log Suspended: %s ", d.Volumes[k].Blocked)
 			}
 
-			st += fmt.Sprintf("\n")
-			st += fmt.Sprintf("    size: %s total-read:%s read/Sec:%s total-written:%s written/Sec:%s ",
+			dv.scratch += fmt.Sprintf("\n")
+			dv.scratch += fmt.Sprintf("    size: %s total-read:%s read/Sec:%s total-written:%s written/Sec:%s ",
 				convert.KiB2Human(float64(v.Size)),
 				convert.KiB2Human(float64(v.ReadKiB.Total)), convert.KiB2Human(v.ReadKiB.PerSecond),
 				convert.KiB2Human(float64(v.WrittenKiB.Total)), convert.KiB2Human(v.WrittenKiB.PerSecond))
 		}
-		st += fmt.Sprintf("\n")
+		dv.scratch += fmt.Sprintf("\n")
 	}
-	dv.status.Text = st
 }
 
 func (d *detailView) printConn(c *resource.Connection) {
-	st := d.status.Text
-	st += fmt.Sprintf("%s", colDefault(fmt.Sprintf(" Connection to %s", c.ConnectionName), true))
+	d.scratch += fmt.Sprintf("%s", colDefault(fmt.Sprintf(" Connection to %s", c.ConnectionName), true))
 
-	st += fmt.Sprintf("(%s):", c.Role)
+	d.scratch += fmt.Sprintf("(%s):", c.Role)
 
 	status := c.ConnectionStatus
 	if status == "Connected" {
@@ -152,20 +148,17 @@ func (d *detailView) printConn(c *resource.Connection) {
 	} else {
 		status = colRed(status, true)
 	}
-	st += fmt.Sprintf(" %s", status)
-	st += fmt.Sprintf("(%s)", c.ConnectionHint)
+	d.scratch += fmt.Sprintf(" %s", status)
+	d.scratch += fmt.Sprintf("(%s)", c.ConnectionHint)
 
 	if c.Congested != "no" {
-		st += fmt.Sprintf(" Congested ")
+		d.scratch += fmt.Sprintf(" Congested ")
 	}
 
-	st += fmt.Sprintf("\n")
-
-	d.status.Text = st
+	d.scratch += fmt.Sprintf("\n")
 }
 
 func (dv *detailView) printPeerDev(r *update.ByRes, conn string) {
-	st := dv.status.Text
 	d := r.PeerDevices[conn]
 
 	var keys []string
@@ -175,20 +168,20 @@ func (dv *detailView) printPeerDev(r *update.ByRes, conn string) {
 	sort.Strings(keys)
 	for _, k := range keys {
 		v := d.Volumes[k]
-		st += fmt.Sprintf("  volume %s: ", k)
+		dv.scratch += fmt.Sprintf("  volume %s: ", k)
 
 		if v.ResyncSuspended != "no" {
-			st += fmt.Sprintf(" ResyncSuspended:%s ", v.ResyncSuspended)
+			dv.scratch += fmt.Sprintf(" ResyncSuspended:%s ", v.ResyncSuspended)
 		}
-		st += fmt.Sprintf("\n")
+		dv.scratch += fmt.Sprintf("\n")
 
 		if v.ReplicationStatus != "Established" {
-			st += fmt.Sprintf("   Replication:%s", v.ReplicationStatus)
-			st += fmt.Sprintf("(%s)", v.ReplicationHint)
+			dv.scratch += fmt.Sprintf("   Replication:%s", v.ReplicationStatus)
+			dv.scratch += fmt.Sprintf("(%s)", v.ReplicationHint)
 		}
 
 		if strings.HasPrefix(v.ReplicationStatus, "Sync") {
-			st += fmt.Sprintf(" %.1f%% remaining",
+			dv.scratch += fmt.Sprintf(" %.1f%% remaining",
 				(float64(v.OutOfSyncKiB.Current)/float64(r.Device.Volumes[k].Size))*100)
 		}
 
@@ -198,53 +191,52 @@ func (dv *detailView) printPeerDev(r *update.ByRes, conn string) {
 		} else {
 			status = colRed(status, true)
 		}
-		st += fmt.Sprintf("   %s", status)
-		st += fmt.Sprintf("(%s)", v.DiskHint)
+		dv.scratch += fmt.Sprintf("   %s", status)
+		dv.scratch += fmt.Sprintf("(%s)", v.DiskHint)
 
-		st += fmt.Sprintf("\n")
+		dv.scratch += fmt.Sprintf("\n")
 
 		if dv.window == detailedstatus {
-			st += fmt.Sprintf("   Sent: total:%s Per/Sec:%s\n",
+			dv.scratch += fmt.Sprintf("   Sent: total:%s Per/Sec:%s\n",
 				convert.KiB2Human(float64(v.SentKiB.Total)), convert.KiB2Human(v.SentKiB.PerSecond))
 
-			st += fmt.Sprintf("   Received: total:%s Per/Sec:%s\n",
+			dv.scratch += fmt.Sprintf("   Received: total:%s Per/Sec:%s\n",
 				convert.KiB2Human(float64(v.ReceivedKiB.Total)), convert.KiB2Human(v.ReceivedKiB.PerSecond))
 
-			st += fmt.Sprintf("   OutOfSync: current:%s average:%s min:%s max:%s\n",
+			dv.scratch += fmt.Sprintf("   OutOfSync: current:%s average:%s min:%s max:%s\n",
 				convert.KiB2Human(float64(v.OutOfSyncKiB.Current)),
 				convert.KiB2Human(float64(v.OutOfSyncKiB.Avg)),
 				convert.KiB2Human(float64(v.OutOfSyncKiB.Min)),
 				convert.KiB2Human(float64(v.OutOfSyncKiB.Max)))
 
-			st += fmt.Sprintf("   PendingWrites: current:%s average:%s min:%s max:%s\n",
+			dv.scratch += fmt.Sprintf("   PendingWrites: current:%s average:%s min:%s max:%s\n",
 				fmt.Sprintf("%.1f", float64(v.PendingWrites.Current)),
 				fmt.Sprintf("%.1f", float64(v.PendingWrites.Avg)),
 				fmt.Sprintf("%.1f", float64(v.PendingWrites.Min)),
 				fmt.Sprintf("%.1f", float64(v.PendingWrites.Max)))
 
-			st += fmt.Sprintf("   UnackedWrites: current:%s average:%s min:%s max:%s\n",
+			dv.scratch += fmt.Sprintf("   UnackedWrites: current:%s average:%s min:%s max:%s\n",
 				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Current)),
 				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Avg)),
 				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Min)),
 				fmt.Sprintf("%.1f", float64(v.UnackedWrites.Max)))
 
-			st += fmt.Sprintf("\n")
+			dv.scratch += fmt.Sprintf("\n")
 		}
 	}
-	dv.status.Text = st
 }
 
 func (d *detailView) printByRes(r *update.ByRes) {
-
-	d.status.Text = ""
+	d.scratch = ""
 	d.printRes(r)
 	if r.Res.Unconfigured {
-		d.status.Text += fmt.Sprintf("\n%s\n", txtUnconfigured)
+		d.scratch += fmt.Sprintf("\n%s\n", txtUnconfigured)
+		d.UpdateStatusFromScratch()
 		return
 	}
 
 	d.printLocalDisk(r)
-	d.status.Text += fmt.Sprintf("\n")
+	d.scratch += fmt.Sprintf("\n")
 
 	var connKeys []string
 	for j := range r.Connections {
@@ -259,8 +251,17 @@ func (d *detailView) printByRes(r *update.ByRes) {
 			if _, ok := r.PeerDevices[conn]; ok {
 				d.printPeerDev(r, conn)
 			}
-			d.status.Text += fmt.Sprintf("\n")
+			d.scratch += fmt.Sprintf("\n")
 		}
+	}
+
+	d.UpdateStatusFromScratch()
+}
+
+func (d *detailView) UpdateStatusFromScratch() {
+	if d.scratch != d.buf {
+		d.buf = d.scratch
+		d.status.Text = d.scratch
 	}
 }
 
@@ -283,10 +284,7 @@ func (d *detailView) UpdateDmesg() {
 		d.scratch += lines[i] + "\n"
 	}
 
-	if d.scratch != d.buf {
-		d.buf = d.scratch
-		d.status.Text = d.scratch
-	}
+	d.UpdateStatusFromScratch()
 
 	d.oldselres = d.selres
 }

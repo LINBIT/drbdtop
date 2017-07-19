@@ -37,6 +37,7 @@ const (
 	insync win = iota
 	status
 	detailedstatus
+	dmesgw
 )
 
 type uiGauge struct {
@@ -50,8 +51,11 @@ type detailView struct {
 	oldselres      string
 	selres         string
 	volGauges      map[string]uiGauge // oos view
-	status         *termui.Par        // status view
+	status         *termui.Par        // status & dmesg view
 	window         win
+	// constantly updating status leads to flickering, especially for the dmesg output
+	scratch string // that is where you prepare you status
+	buf     string // the buffer that is set to scratch if scratch != buf
 }
 
 const txtUnconfigured = "This resource is Unconfigured, no further information available."
@@ -71,7 +75,7 @@ func NewDetailView() *detailView {
 	d.status.Height = 3
 	d.status.TextFgColor = termui.ColorWhite
 
-	d.footer = termui.NewPar("q: overview | i: inSync | s: status | d: detailed status")
+	d.footer = termui.NewPar("q: back | s: status | d: detailed status | m: dmesg | i: inSync")
 	d.footer.Height = 1
 	d.footer.TextFgColor = termui.ColorWhite
 	d.footer.Border = false
@@ -260,6 +264,33 @@ func (d *detailView) printByRes(r *update.ByRes) {
 	}
 }
 
+func (d *detailView) UpdateDmesg() {
+	d.scratch = fmt.Sprintf("%s %s:\n", colDefault("Dmesg output for resource", true), colDefault(d.selres, true))
+
+	lines, err := dmesg(d.selres)
+	if err != nil {
+		d.status.Text = err.Error()
+		return
+	}
+
+	start := 0
+	space := d.status.Height - 2
+	if space < len(lines) {
+		start = len(lines) - space
+
+	}
+	for i := start; i < len(lines); i++ {
+		d.scratch += lines[i] + "\n"
+	}
+
+	if d.scratch != d.buf {
+		d.buf = d.scratch
+		d.status.Text = d.scratch
+	}
+
+	d.oldselres = d.selres
+}
+
 func (d *detailView) UpdateStatus() {
 	db.RLock()
 	defer db.RUnlock()
@@ -269,7 +300,6 @@ func (d *detailView) UpdateStatus() {
 			d.printByRes(&res)
 		}
 	}
-	// d.status.Text = "rck\nrck2\nrck3"
 
 	d.oldselres = d.selres
 }
@@ -329,6 +359,8 @@ func (d *detailView) updateContent() {
 		d.UpdateInSync()
 	case status, detailedstatus:
 		d.UpdateStatus()
+	case dmesgw:
+		d.UpdateDmesg()
 	default:
 		panic("window")
 	}
@@ -356,7 +388,7 @@ func (d *detailView) updateGUI(updateContent bool) {
 					termui.NewCol(9, 0, uig.g)))
 		}
 		heights = len(d.volGauges)*3 + d.header.Height + d.footer.Height
-	case status, detailedstatus:
+	case status, detailedstatus, dmesgw:
 		statusheight := termui.TermHeight() - d.header.Height - d.footer.Height
 		d.status.Height = statusheight
 		d.grid.AddRows(
@@ -401,9 +433,12 @@ func (d *detailView) setWindow(e termui.Event) {
 		d.window = status
 	case "d":
 		d.window = detailedstatus
+	case "m":
+		d.window = dmesgw
 	}
 
 	if old != d.window {
+		d.buf = ""
 		d.updateGUI(true)
 	}
 }
@@ -430,6 +465,9 @@ func (d *detailView) Update() {
 		}
 	case status, detailedstatus:
 		d.UpdateStatus()
+		termui.Render(d.status)
+	case dmesgw:
+		d.UpdateDmesg()
 		termui.Render(d.status)
 	default:
 		panic("window")

@@ -84,3 +84,26 @@ func getVersionInfo() string {
 
 	return fmt.Sprintf("(kernel: %s/utils: %s)", kernel, utils)
 }
+
+func dmesg(res string) ([]string, error) {
+	dmesgCmd := exec.Command("dmesg")
+	grepCmd := exec.Command("grep", res)
+
+	var err error
+	if grepCmd.Stdin, err = dmesgCmd.StdoutPipe(); err != nil {
+		return nil, err
+	}
+
+	if err = dmesgCmd.Start(); err != nil {
+		return nil, err
+	}
+
+	defer dmesgCmd.Wait()
+
+	var buf []byte
+	if buf, err = grepCmd.Output(); err != nil {
+		return nil, err
+	}
+
+	return strings.Split(string(buf), "\n"), nil
+}

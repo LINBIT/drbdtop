@@ -370,6 +370,8 @@ func (r *Resource) Update(e Event) {
 	r.WriteOrdering = e.Fields[ResKeys.WriteOrdering]
 	if _, ok := e.Fields[ResKeys.Unconfigured]; ok {
 		r.Unconfigured = true
+	} else {
+		r.Unconfigured = false
 	}
 	r.updateTimes(e.TimeStamp)
 	r.updateCount++

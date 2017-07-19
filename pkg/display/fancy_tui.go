@@ -88,9 +88,10 @@ type FancyTUI struct {
 	overview   *overView
 	detail     *detailView
 	updateDisp chan struct{}
+	expert     bool
 }
 
-func NewFancyTUI(d time.Duration) FancyTUI {
+func NewFancyTUI(d time.Duration, expert bool) FancyTUI {
 	e := termui.Init()
 	if e != nil {
 		panic(e)
@@ -103,6 +104,7 @@ func NewFancyTUI(d time.Duration) FancyTUI {
 		dmode:      overview,
 		overview:   NewOverView(),
 		detail:     NewDetailView(),
+		expert:     expert,
 		updateDisp: make(chan struct{}),
 	}
 }
@@ -570,7 +572,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 			p.Text = "Aborting: Your input was not a valid command!"
 		}
 
-		if !isDangerous {
+		if !isDangerous || f.expert {
 			confirmed = yes
 		}
 		utilscmd, _ := drbdutils.NewDrbdCmd(cmd, action, res, arg...)

@@ -43,6 +43,8 @@ func main() {
 		"interval", "Time to wait between updating DRBD status, minimum 400ms. Valid units are 'ns', 'us' (or 'µs'), 'ms', 's', 'm', 'h'.").Short('i').Default("1s").String()
 	tui := app.Flag(
 		"tui", "Set the TUI (text/interactive)").Short('t').Default("interactive").String()
+	expert := app.Flag(
+		"expert", "Enable expert mode (e.g., does not print for confirmation)").Short('e').Bool()
 
 	// Prints the version.
 	app.Version(Version)
@@ -85,7 +87,7 @@ func main() {
 	go input.Collect(events, errors)
 
 	if *tui == "interactive" {
-		display := display.NewFancyTUI(duration)
+		display := display.NewFancyTUI(duration, *expert)
 		display.SetVersion(Version)
 		display.Display(events, errors)
 	} else {

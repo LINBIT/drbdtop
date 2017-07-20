@@ -142,6 +142,16 @@ func (f *FancyTUI) UpdateDisp() {
 
 		db.Lock()
 		if f.dmode == overview && !f.overview.locked { // full update
+			filtered := 0
+			for _, r := range f.resources.List {
+				if f.overview.filterDanger && r.Danger != 0 {
+					filtered++
+				}
+			}
+			if f.overview.filterDanger && filtered == 0 {
+				f.overview.setFiltered(false)
+			}
+
 			db.keys = []string{}
 			for _, r := range f.resources.List {
 				if f.overview.filterDanger && r.Danger == 0 {
@@ -244,8 +254,7 @@ func (f *FancyTUI) initHandlers() {
 					f.cmode = command
 					f.cmdMode(e, p)
 				} else if key == "f" {
-					f.overview.filterDanger = !f.overview.filterDanger
-					f.overview.setLockedStr()
+					f.overview.toggleFiltered()
 				}
 			} else if f.dmode == detail {
 				f.detail.setWindow(e)
@@ -508,6 +517,13 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		default:
 			commandFinished = true
 		}
+	case "f":
+		switch commandstr {
+		case "r": // currently only valid if coming from role menu
+			commandFinished = true
+		default:
+			valid = false
+		}
 	case "m":
 		switch commandstr {
 		case "": // meta-data menu
@@ -517,7 +533,7 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		confirmed = yes
 	case "n":
 		confirmed = no
-	case "A", "C", "D", "P", "S", "U", "f", "p", "u":
+	case "A", "C", "D", "P", "S", "U", "p", "u":
 		commandFinished = true
 	default:
 		valid = false

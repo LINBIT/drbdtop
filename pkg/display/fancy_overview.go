@@ -278,3 +278,13 @@ func (o *overView) addToSelections() {
 		o.tagres[o.selres] = true
 	}
 }
+
+func (o *overView) setFiltered(f bool) {
+	o.filterDanger = f
+	o.setLockedStr()
+}
+
+func (o *overView) toggleFiltered() {
+	o.setFiltered(!o.filterDanger)
+	o.setLockedStr()
+}

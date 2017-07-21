@@ -68,16 +68,19 @@ func NewDetailView() *detailView {
 
 	d.header = termui.NewPar("")
 	d.header.Height = 1
-	d.header.TextFgColor = termui.ColorWhite
+	d.header.TextFgColor = termui.ColorDefault
+	d.header.TextBgColor = termui.ColorDefault
 	d.header.Border = false
 
 	d.status = termui.NewPar("")
 	d.status.Height = 3
-	d.status.TextFgColor = termui.ColorWhite
+	d.status.TextFgColor = termui.ColorDefault
+	d.status.TextBgColor = termui.ColorDefault
 
 	d.footer = termui.NewPar("q: back | s: status | d: detailed status | m: dmesg | i: inSync")
 	d.footer.Height = 1
-	d.footer.TextFgColor = termui.ColorWhite
+	d.footer.TextFgColor = termui.ColorDefault
+	d.footer.TextBgColor = termui.ColorDefault
 	d.footer.Border = false
 	d.window = status
 

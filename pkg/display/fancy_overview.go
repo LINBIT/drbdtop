@@ -65,12 +65,14 @@ func NewOverView() *overView {
 
 	o.header = termui.NewPar(drbdtopversion)
 	o.header.Height = 1
-	o.header.TextFgColor = termui.ColorWhite
+	o.header.TextFgColor = termui.ColorDefault
+	o.header.TextBgColor = termui.ColorDefault
 	o.header.Border = false
 
 	o.footer = termui.NewPar(unlockedHelp)
 	o.footer.Height = 1
-	o.footer.TextFgColor = termui.ColorWhite
+	o.footer.TextFgColor = termui.ColorDefault
+	o.footer.TextBgColor = termui.ColorDefault
 	o.footer.Border = false
 
 	o.tblheight = termui.TermHeight() - o.header.Height - o.footer.Height
@@ -81,7 +83,7 @@ func NewOverView() *overView {
 
 	table := termui.NewTable()
 	table.Rows = tblrows
-	table.FgColor = termui.ColorWhite
+	table.FgColor = termui.ColorDefault
 	table.BgColor = termui.ColorDefault
 	table.TextAlign = termui.AlignLeft
 	table.Separator = false

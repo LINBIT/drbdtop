@@ -115,7 +115,15 @@ func doAllResources(s string) (map[string]bool, error) {
 	ret := map[string]bool{}
 	for _, line := range strings.Split(s, "\n") {
 		f := strings.Fields(line)
-		if len(f) == 4 {
+		valid := false
+
+		if len(f) == 4 && f[0] == "drbdsetup" { // drbd 9
+			valid = true
+		} else if len(f) == 5 && f[0] == "drbdsetup-84" { // drbd 8.4
+			valid = true
+		}
+
+		if valid {
 			ret[f[2]] = true
 		}
 	}

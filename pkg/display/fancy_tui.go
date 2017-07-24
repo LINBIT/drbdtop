@@ -528,6 +528,10 @@ func (f *FancyTUI) cmdMode(e termui.Event, p *termui.Par) {
 		switch commandstr {
 		case "": // meta-data menu
 			p.Text = "c: create-md --force selected"
+		case "c":
+			commandFinished = true
+		default:
+			valid = false
 		}
 	case "y":
 		confirmed = yes

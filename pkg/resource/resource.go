@@ -421,32 +421,32 @@ func (c *Connection) Update(e Event) {
 	c.Role = e.Fields[ConnKeys.Role]
 	c.Congested = e.Fields[ConnKeys.Congested]
 	c.updateTimes(e.TimeStamp)
-	c.Danger = c.getDanger()
+	c.setDanger()
 	c.connStatusExplination()
 }
 
-func (c *Connection) getDanger() uint64 {
-	var d uint64
+func (c *Connection) setDanger() {
+	var score uint64
 
 	i, ok := connDangerScores[c.ConnectionStatus]
 	if !ok {
-		d += connDangerScores["default"]
+		score += connDangerScores["default"]
 	} else {
-		d += i
+		score += i
 	}
 
 	i, ok = roleDangerScores[c.Role]
 	if !ok {
-		d += roleDangerScores["default"]
+		score += roleDangerScores["default"]
 	} else {
-		d += i
+		score += i
 	}
 
 	if c.Congested != "no" {
-		d++
+		score++
 	}
 
-	return d
+	c.Danger = score
 }
 
 func (c *Connection) connStatusExplination() {
@@ -529,10 +529,10 @@ func (d *Device) Update(e Event) {
 	vol.UpperPending.calculate(e.Fields[DevKeys.UpperPending])
 	vol.LowerPending.calculate(e.Fields[DevKeys.LowerPending])
 
-	d.Danger = d.getDanger()
+	d.setDanger()
 }
 
-func (d *Device) getDanger() uint64 {
+func (d *Device) setDanger() {
 	var score uint64
 
 	for _, v := range d.Volumes {
@@ -545,7 +545,7 @@ func (d *Device) getDanger() uint64 {
 		}
 	}
 
-	return score
+	d.Danger = score
 }
 
 // DevVolume represents a single volume of a local DRBD virtual block device.
@@ -659,10 +659,10 @@ func (p *PeerDevice) Update(e Event) {
 	vol.ReceivedKiB.calculate(vol.Uptime, e.Fields[PeerDevKeys.Received])
 	vol.SentKiB.calculate(vol.Uptime, e.Fields[PeerDevKeys.Sent])
 
-	p.Danger = p.getDanger()
+	p.setDanger()
 }
 
-func (p *PeerDevice) getDanger() uint64 {
+func (p *PeerDevice) setDanger() {
 	var score uint64
 
 	for _, v := range p.Volumes {
@@ -679,7 +679,7 @@ func (p *PeerDevice) getDanger() uint64 {
 		}
 	}
 
-	return score
+	p.Danger = score
 }
 
 func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {

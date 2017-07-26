@@ -291,9 +291,6 @@ func TestConnectionUpdate(t *testing.T) {
 	if conn.Congested != event.Fields[ConnKeys.Congested] {
 		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[ConnKeys.Congested], conn.Congested)
 	}
-	if conn.updateCount != 1 {
-		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
-	}
 
 	event, err = NewEvent("2017-02-15T14:43:26.688437+00:00 exists connection name:test0 conn-name:bob connection:Connected role:Primary congested:yes")
 	if err != nil {
@@ -319,9 +316,6 @@ func TestConnectionUpdate(t *testing.T) {
 	}
 	if conn.Congested != event.Fields[ConnKeys.Congested] {
 		t.Errorf("Expected status.Connections[%q].congested to be %q, got %q", name, event.Fields[ConnKeys.Congested], conn.Congested)
-	}
-	if conn.updateCount != 2 {
-		t.Errorf("Expected status.Connections[%q].updateCount to be %d, got %d", name, 1, conn.updateCount)
 	}
 }
 

@@ -365,8 +365,7 @@ type Resource struct {
 	Unconfigured  bool
 
 	// Calulated Values
-	updateCount int
-	Danger      uint64
+	Danger uint64
 }
 
 // Update the values of Resource with a new Event.
@@ -391,8 +390,6 @@ func (r *Resource) Update(e Event) {
 	} else {
 		r.Danger = i
 	}
-
-	r.updateCount++
 }
 
 // Connection represents the connection from the local resource to a remote resource.
@@ -409,8 +406,7 @@ type Connection struct {
 	Congested      string
 
 	// Calculated Values
-	Danger      uint64
-	updateCount int
+	Danger uint64
 }
 
 // Update the Connection with a new Event.
@@ -427,7 +423,6 @@ func (c *Connection) Update(e Event) {
 	c.updateTimes(e.TimeStamp)
 	c.Danger = c.getDanger()
 	c.connStatusExplination()
-	c.updateCount++
 }
 
 func (c *Connection) getDanger() uint64 {

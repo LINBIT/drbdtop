@@ -216,18 +216,27 @@ func (o *overView) SetIdx(c changeIdx) {
 
 	switch c {
 	case down:
-		o.selidx++
-		o.selidx %= len(db.keys)
+		keysLen := len(db.keys)
+		if keysLen >= 1 {
+			o.selidx++
+			o.selidx %= keysLen
+		}
 	case up:
+		keysLen := len(db.keys)
 		if o.selidx == 0 {
-			o.selidx = len(db.keys) - 1
+			if keysLen >= 1 {
+				o.selidx = keysLen - 1
+			}
 		} else {
 			o.selidx--
 		}
 	case home:
 		o.selidx = 0
 	case end:
-		o.selidx = len(db.keys) - 1
+		keysLen := len(db.keys)
+		if keysLen >= 1 {
+			o.selidx = keysLen - 1
+		}
 	case previous:
 		newidx := o.selidx - (o.tbl.Height - 3)
 		if newidx >= 0 {

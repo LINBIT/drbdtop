@@ -112,7 +112,10 @@ func (o *overView) useCache(from, to int) bool {
 	return false
 }
 
-func dangerToString(danger uint64) string {
+func dangerToString(danger uint64, ucfg bool) string {
+	if ucfg {
+		return setUnknown()
+	}
 	if danger == 0 {
 		return setOK()
 	}
@@ -149,8 +152,13 @@ func (o *overView) UpdateTable() {
 					role = "[" + role + "](fg-green)"
 				}
 
+				ucfg := res.Unconfigured
+
 				tblrows[idx+1] = []string{res.Name, role,
-					dangerToString(devdanger), dangerToString(pddanger), dangerToString(conndanger), dangerToString(r.Danger)}
+					dangerToString(devdanger, ucfg),
+					dangerToString(pddanger, ucfg),
+					dangerToString(conndanger, ucfg),
+					dangerToString(r.Danger, false)}
 			}
 			o.tbl.SetRows(tblrows)
 			for i := 1; i < len(o.tbl.Rows); i++ { // skip header

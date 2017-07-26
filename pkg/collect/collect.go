@@ -56,6 +56,7 @@ func (c FileCollector) Collect(events chan<- resource.Event, errors chan<- error
 		} else {
 			events <- evt
 		}
+		events <- resource.NewDisplayEvent()
 	}
 	events <- resource.NewEOF()
 }

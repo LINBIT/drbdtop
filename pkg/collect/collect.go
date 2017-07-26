@@ -94,6 +94,7 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 		for res := range remainingResources {
 			events <- resource.NewUnconfiguredRes(res)
 		}
+		events <- resource.NewDisplayEvent()
 		<-ticker.C
 	}
 }

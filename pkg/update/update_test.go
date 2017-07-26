@@ -91,6 +91,7 @@ func TestResourceCollection(t *testing.T) {
 
 	rc := NewResourceCollection(0) // Turn off pruning with zero.
 	rc.Update(evt)
+	rc.UpdateList()
 
 	if _, ok := rc.Map["test10"]; !ok {
 		t.Error("TestResourceCollection: Expected test10 to exist")
@@ -102,6 +103,7 @@ func TestResourceCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 	rc.Update(evt)
+	rc.UpdateList()
 
 	if rc.List[1].Res.Name != "test100" {
 		t.Errorf("TestResourceCollection: Expected test100 to be sorted last. Got %s", rc.List[1].Res.Name)

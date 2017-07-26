@@ -30,6 +30,9 @@ import (
 // EOF is the End Of File sentinel to signal no further Events are expected.
 const EOF = "EOF"
 
+// DisplayEvent is the sentinel to signal a display update
+const DisplayEvent = "DisplayEvent"
+
 type resKeys struct {
 	Name          string
 	Role          string
@@ -325,6 +328,11 @@ func NewEvent(e string) (Event, error) {
 // NewEOF returns a special Event signaling that no further input should be expected.
 func NewEOF() Event {
 	return Event{Target: EOF}
+}
+
+// NewDisplayEvent returns a special Event signaling that the display should be updated
+func NewDisplayEvent() Event {
+	return Event{Target: DisplayEvent}
 }
 
 // NewUnconfiguredRes returns a special Event signaling that this resource is down(unconfigured).

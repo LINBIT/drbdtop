@@ -20,9 +20,7 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"runtime/pprof"
 	"time"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
@@ -54,13 +52,6 @@ func main() {
 	app.HelpFlag.Short('h')
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
-
-	f, err := os.Create("profile")
-	if err != nil {
-		log.Fatal(err)
-	}
-	pprof.StartCPUProfile(f)
-	defer pprof.StopCPUProfile()
 
 	errors := make(chan error, 100)
 

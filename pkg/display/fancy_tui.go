@@ -682,6 +682,10 @@ func setOK() string {
 	return colGreen("✓ ", false)
 }
 
+func setUnknown() string {
+	return colDefault("-", false)
+}
+
 func setColor(s, name string, bold bool) string {
 	c := "(fg-" + name
 	if bold {

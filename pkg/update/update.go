@@ -164,6 +164,11 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 		}
 		rc.Map[resName].Update(e)
 	}
+}
+
+func (rc *ResourceCollection) UpdateList() {
+	rc.Lock()
+	defer rc.Unlock()
 
 	// Rebuild list from map values.
 	rc.List = []*ByRes{}

@@ -56,6 +56,7 @@ func (c FileCollector) Collect(events chan<- resource.Event, errors chan<- error
 		} else {
 			events <- evt
 		}
+		events <- resource.NewDisplayEvent()
 	}
 	events <- resource.NewEOF()
 }
@@ -94,6 +95,7 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 		for res := range remainingResources {
 			events <- resource.NewUnconfiguredRes(res)
 		}
+		events <- resource.NewDisplayEvent()
 		<-ticker.C
 	}
 }

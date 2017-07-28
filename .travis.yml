@@ -1,0 +1,7 @@
+language: go
+go:
+- tip
+install:
+   - go get github.com/linbit/drbdtop/pkg/collect
+   - go get github.com/linbit/drbdtop/pkg/display
+   - go get github.com/linbit/drbdtop/pkg/resource

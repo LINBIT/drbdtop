@@ -8,7 +8,7 @@ BUILD_CMD = build $(LDFLAGS)
 TEST_CMD = test "./pkg/..."
 
 
-all: test build
+all: build
 
 test:
 	$(GO) $(TEST_CMD)

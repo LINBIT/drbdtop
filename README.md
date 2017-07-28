@@ -26,24 +26,14 @@ drbdtop is written in Go. If you haven't built a Go program before, please refer
 to this [helpful guide](https://golang.org/doc/install).
 
 ```bash
-mkdir -p $GOPATH/src/github.com/linbit/
-
-cd $GOPATH/src/github.com/linbit/
-
-git clone git@github.com:LINBIT/drbdtop.git
-
-cd drbdtop
-
-go get ./...
-
-make
-
-make install
+go github.com/linbit/drbdtop
 ```
 
 ## Contributing
 We welcome anyone to contribute, but we'd like you to please file an issue
-to get the conversation started before making a pull request.
+to get the conversation started before making a pull request. Development
+happens on the `develop` branch, which can be rebased every time. The `master`
+branch is reserved for releases.
 
 ## License
 GPL2

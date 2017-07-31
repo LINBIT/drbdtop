@@ -400,7 +400,7 @@ type Connection struct {
 	PeerNodeID       string
 	ConnectionName   string
 	ConnectionStatus string
-	// Long form explination of ConnectionStatus.
+	// Long form explanation of ConnectionStatus.
 	ConnectionHint string
 	Role           string
 	Congested      string
@@ -422,7 +422,7 @@ func (c *Connection) Update(e Event) {
 	c.Congested = e.Fields[ConnKeys.Congested]
 	c.updateTimes(e.TimeStamp)
 	c.setDanger()
-	c.connStatusExplination()
+	c.connStatusExplanation()
 }
 
 func (c *Connection) setDanger() {
@@ -449,7 +449,7 @@ func (c *Connection) setDanger() {
 	c.Danger = score
 }
 
-func (c *Connection) connStatusExplination() {
+func (c *Connection) connStatusExplanation() {
 	switch c.ConnectionStatus {
 	case "StandAlone":
 		c.ConnectionHint = fmt.Sprintf("dropped connection or disconnected manually. try running drbdadm connect %s", c.Resource)
@@ -512,7 +512,7 @@ func (d *Device) Update(e Event) {
 	vol.uptimer.updateTimes(e.TimeStamp)
 	vol.Minor = e.Fields[DevKeys.Minor]
 	vol.DiskState = e.Fields[DevKeys.Disk]
-	vol.DiskHint = diskStateExplination(vol.DiskState)
+	vol.DiskHint = diskStateExplanation(vol.DiskState)
 	vol.Client = e.Fields[DevKeys.Client]
 	vol.ActivityLogSuspended = e.Fields[DevKeys.ALSuspended]
 	vol.Blocked = e.Fields[DevKeys.Blocked]
@@ -553,7 +553,7 @@ type DevVolume struct {
 	uptimer
 	Minor     string
 	DiskState string
-	// Long from explination of DiskState.
+	// Long from explanation of DiskState.
 	DiskHint             string
 	Client               string
 	Size                 uint64
@@ -583,7 +583,7 @@ func NewDevVolume(maxLen int) *DevVolume {
 	}
 }
 
-func diskStateExplination(dState string) string {
+func diskStateExplanation(dState string) string {
 	switch dState {
 	case "Diskless":
 		return "detached from backing disk"
@@ -647,9 +647,9 @@ func (p *PeerDevice) Update(e Event) {
 	vol.updateTimes(e.TimeStamp)
 
 	vol.ReplicationStatus = e.Fields[PeerDevKeys.Replication]
-	vol.ReplicationHint = p.replicationExplination(vol)
+	vol.ReplicationHint = p.replicationExplanation(vol)
 	vol.DiskState = e.Fields[PeerDevKeys.PeerDisk]
-	vol.DiskHint = diskStateExplination(vol.DiskState)
+	vol.DiskHint = diskStateExplanation(vol.DiskState)
 	vol.ResyncSuspended = e.Fields[PeerDevKeys.ResyncSuspended]
 
 	vol.OutOfSyncKiB.calculate(e.Fields[PeerDevKeys.OutOfSync])
@@ -682,7 +682,7 @@ func (p *PeerDevice) setDanger() {
 	p.Danger = score
 }
 
-func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
+func (p *PeerDevice) replicationExplanation(v *PeerDevVol) string {
 	switch v.ReplicationStatus {
 	case "Off":
 		return fmt.Sprintf("not replicating to %s", p.ConnectionName)
@@ -723,7 +723,7 @@ func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
 type PeerDevVol struct {
 	uptimer
 	ReplicationStatus string
-	// Long form explination of Replication Status.
+	// Long form explanation of Replication Status.
 	ReplicationHint string
 	DiskState       string
 	DiskHint        string

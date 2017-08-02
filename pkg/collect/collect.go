@@ -47,6 +47,7 @@ func (c FileCollector) Collect(events chan<- resource.Event, errors chan<- error
 	}
 	defer f.Close()
 
+	displayEvent := resource.NewDisplayEvent()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		e := scanner.Text()
@@ -56,7 +57,7 @@ func (c FileCollector) Collect(events chan<- resource.Event, errors chan<- error
 		} else {
 			events <- evt
 		}
-		events <- resource.NewDisplayEvent()
+		events <- displayEvent
 	}
 	events <- resource.NewEOF()
 }
@@ -69,6 +70,7 @@ type Events2Poll struct {
 
 func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) {
 	ticker := time.NewTicker(c.Interval)
+	displayEvent := resource.NewDisplayEvent()
 	for {
 		remainingResources, err := allResources()
 		if err != nil {
@@ -95,7 +97,7 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 		for res := range remainingResources {
 			events <- resource.NewUnconfiguredRes(res)
 		}
-		events <- resource.NewDisplayEvent()
+		events <- displayEvent
 		<-ticker.C
 	}
 }

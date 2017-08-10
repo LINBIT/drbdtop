@@ -1,0 +1,23 @@
+Source: drbdtop
+Section: admin
+Priority: optional
+Maintainer: Roland Kammerer <roland.kammerer@linbit.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://linbit.github.io/drbdtop
+#Vcs-Git: https://anonscm.debian.org/collab-maint/drbdtop.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/drbdtop.git
+
+Package: drbdtop
+Architecture: any
+Depends: drbd-utils (>= 9.0.0), ${shlibs:Depends}, ${misc:Depends}
+Description: like top, but for drbd
+ drbdtop simplifies monitoring and administrating for DRBD resources.
+ Previously available tools and techniques that provide status information on
+ DRBD do not allow you to change the status of DRBD resources, and tools that
+ allow you to change the status of DRBD resources, do not provide information
+ on their status.
+ .
+ In addition to allowing the user control and monitor the general state of
+ resources from the same utility, detailed status information is also provided
+ to help the user gain insight to performance-related factors.

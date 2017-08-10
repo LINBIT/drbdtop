@@ -1,7 +1,7 @@
 %define name drbdtop
 %define release 1
 %define version 0.1
-%define buildroot %{_topdir}/BUILD/%{name}-%{version}
+#%define buildroot %{_topdir}/BUILD/%{name}-%{version}
 
 BuildRoot: %{buildroot}
 Requires: drbd-utils >= 9.0.0

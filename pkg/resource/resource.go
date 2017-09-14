@@ -83,6 +83,7 @@ type peerDevKeys struct {
 	Volume          string
 	Replication     string
 	PeerDisk        string
+	PeerClient      string
 	ResyncSuspended string
 	Received        string
 	Sent            string
@@ -92,7 +93,7 @@ type peerDevKeys struct {
 }
 
 // PeerDevKeys is a data container for the field keys of device Events.
-var PeerDevKeys = peerDevKeys{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
+var PeerDevKeys = peerDevKeys{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "peer-client", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
 
 var connDangerScores = map[string]uint64{
 	"Connected":  0,
@@ -650,6 +651,7 @@ func (p *PeerDevice) Update(e Event) {
 	vol.ReplicationHint = p.replicationExplanation(vol)
 	vol.DiskState = e.Fields[PeerDevKeys.PeerDisk]
 	vol.DiskHint = diskStateExplanation(vol.DiskState)
+	vol.Client = e.Fields[PeerDevKeys.PeerClient]
 	vol.ResyncSuspended = e.Fields[PeerDevKeys.ResyncSuspended]
 
 	vol.OutOfSyncKiB.calculate(e.Fields[PeerDevKeys.OutOfSync])
@@ -669,7 +671,7 @@ func (p *PeerDevice) setDanger() {
 		i, ok := diskDangerScores[v.DiskState]
 		if !ok {
 			score += diskDangerScores["default"]
-		} else {
+		} else if !(v.DiskState == "Diskless" && v.Client == "yes") {
 			score += i
 		}
 
@@ -727,6 +729,7 @@ type PeerDevVol struct {
 	ReplicationHint string
 	DiskState       string
 	DiskHint        string
+	Client          string
 	ResyncSuspended string
 
 	// Calulated Values

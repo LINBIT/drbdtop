@@ -503,12 +503,11 @@ func (d *Device) Update(e Event) {
 	d.Resource = e.Fields[DevKeys.Name]
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := d.Volumes[e.Fields[DevKeys.Volume]]
+	vol, ok := d.Volumes[e.Fields[DevKeys.Volume]]
 	if !ok {
-		d.Volumes[e.Fields[DevKeys.Volume]] = NewDevVolume(200)
+		vol = NewDevVolume(200)
+		d.Volumes[e.Fields[DevKeys.Volume]] = vol
 	}
-
-	vol := d.Volumes[e.Fields[DevKeys.Volume]]
 
 	vol.uptimer.updateTimes(e.TimeStamp)
 	vol.Minor = e.Fields[DevKeys.Minor]
@@ -638,12 +637,11 @@ func (p *PeerDevice) Update(e Event) {
 	p.updateTimes(e.TimeStamp)
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := p.Volumes[e.Fields[PeerDevKeys.Volume]]
+	vol, ok := p.Volumes[e.Fields[PeerDevKeys.Volume]]
 	if !ok {
-		p.Volumes[e.Fields[PeerDevKeys.Volume]] = NewPeerDevVol(200)
+		vol = NewPeerDevVol(200)
+		p.Volumes[e.Fields[PeerDevKeys.Volume]] = vol
 	}
-
-	vol := p.Volumes[e.Fields[PeerDevKeys.Volume]]
 
 	vol.updateTimes(e.TimeStamp)
 

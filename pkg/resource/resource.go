@@ -71,10 +71,11 @@ type devKeys struct {
 	LowerPending string
 	ALSuspended  string
 	Blocked      string
+	Quorum       string
 }
 
 // DevKeys is a data container for the field keys of device Events.
-var DevKeys = devKeys{"name", "volume", "minor", "disk", "client", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
+var DevKeys = devKeys{"name", "volume", "minor", "disk", "client", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked", "quorum"}
 
 type peerDevKeys struct {
 	Name            string
@@ -122,6 +123,15 @@ var roleDangerScores = map[string]uint64{
 
 	"default": 1,
 }
+
+var quorumDangerScores = map[string]uint64 {
+	"yes":       0,
+	"no":        30,
+
+	"default":   0,
+}
+
+var quorumLostKeyword = "no"
 
 type uptimer struct {
 	StartTime   time.Time
@@ -514,8 +524,15 @@ func (d *Device) Update(e Event) {
 	vol.DiskState = e.Fields[DevKeys.Disk]
 	vol.DiskHint = diskStateExplanation(vol.DiskState)
 	vol.Client = e.Fields[DevKeys.Client]
+	vol.Quorum = e.Fields[DevKeys.Quorum]
 	vol.ActivityLogSuspended = e.Fields[DevKeys.ALSuspended]
 	vol.Blocked = e.Fields[DevKeys.Blocked]
+
+	if vol.Quorum == quorumLostKeyword {
+		vol.QuorumAlert = true
+	} else {
+		vol.QuorumAlert = false
+	}
 
 	// Only update size if we can parse the field correctly.
 	if size, err := strconv.ParseUint(e.Fields[DevKeys.Size], 10, 64); err == nil {
@@ -543,6 +560,10 @@ func (d *Device) setDanger() {
 		} else if !(v.DiskState == "Diskless" && v.Client == "yes") {
 			score += i
 		}
+		i, ok = quorumDangerScores[v.Quorum]
+		if ok {
+			score += i
+		}
 	}
 
 	d.Danger = score
@@ -556,9 +577,11 @@ type DevVolume struct {
 	// Long from explanation of DiskState.
 	DiskHint             string
 	Client               string
+	Quorum               string
 	Size                 uint64
 	ActivityLogSuspended string
 	Blocked              string
+	QuorumAlert          bool
 
 	// Calculated Values
 	ReadKiB            *rate

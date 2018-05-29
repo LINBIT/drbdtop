@@ -154,10 +154,8 @@ func (o *overView) UpdateTable() {
 
 				ucfg := res.Unconfigured
 
-				var quorumLabel string
-				if ucfg {
-					quorumLabel = "-"
-				} else {
+				quorumLabel := "-"
+				if !ucfg {
 					quorumAlert := false
 					for _, vol := range r.Device.Volumes {
 						if vol.QuorumAlert {

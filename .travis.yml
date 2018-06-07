@@ -2,9 +2,9 @@ language: go
 go:
 - tip
 install:
-- go get github.com/linbit/drbdtop/pkg/collect
-- go get github.com/linbit/drbdtop/pkg/display
-- go get github.com/linbit/drbdtop/pkg/resource
+- go get github.com/LINBIT/drbdtop/pkg/collect
+- go get github.com/LINBIT/drbdtop/pkg/display
+- go get github.com/LINBIT/drbdtop/pkg/resource
 before_deploy: "make release"
 deploy:
   provider: releases

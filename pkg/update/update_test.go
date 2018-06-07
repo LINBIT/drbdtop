@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/linbit/drbdtop/pkg/resource"
+	"github.com/LINBIT/drbdtop/pkg/resource"
 )
 
 /*

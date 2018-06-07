@@ -26,8 +26,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/linbit/drbdtop/pkg/resource"
-	"github.com/linbit/godrbdutils"
+	"github.com/LINBIT/drbdtop/pkg/resource"
+	"github.com/LINBIT/godrbdutils"
 )
 
 // Collector sends raw event strings into a channel.

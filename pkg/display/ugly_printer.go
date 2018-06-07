@@ -26,10 +26,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LINBIT/drbdtop/pkg/convert"
+	"github.com/LINBIT/drbdtop/pkg/resource"
+	"github.com/LINBIT/drbdtop/pkg/update"
 	"github.com/fatih/color"
-	"github.com/linbit/drbdtop/pkg/convert"
-	"github.com/linbit/drbdtop/pkg/resource"
-	"github.com/linbit/drbdtop/pkg/update"
 )
 
 // UglyPrinter is the bare minimum screen printer.

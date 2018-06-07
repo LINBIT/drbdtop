@@ -18,7 +18,7 @@
 
 package display
 
-import "github.com/linbit/termui"
+import "github.com/LINBIT/termui"
 
 var lockedHelp string = "q: QUIT | /: find | t: tag | s: state | r: role | a: adjust | d: disk | c: conn | m: meta | <tab>: Update"
 var unlockedHelp string = "q: QUIT | j/k: down/up | f: Toggle dangerous filter | <tab>: Toggle updates"

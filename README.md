@@ -28,7 +28,7 @@ drbdtop is written in Go. If you haven't built a Go program before, please refer
 to this [helpful guide](https://golang.org/doc/install).
 
 ```bash
-go get github.com/linbit/drbdtop
+go get github.com/LINBIT/drbdtop
 ```
 
 ## Contributing

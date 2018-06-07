@@ -31,11 +31,11 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/linbit/godrbdutils"
+  name = "github.com/LINBIT/godrbdutils"
 
 [[constraint]]
   branch = "master"
-  name = "github.com/linbit/termui"
+  name = "github.com/LINBIT/termui"
 
 [[constraint]]
   name = "gopkg.in/alecthomas/kingpin.v2"

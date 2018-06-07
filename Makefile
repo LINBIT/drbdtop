@@ -2,7 +2,8 @@ PROJECT_NAME = drbdtop
 MAIN = drbdtop.go
 LATESTTAG=$(shell git describe --abbrev=0 --tags | tr -d 'v')
 VERSION=`git describe --tags --always --dirty`
-OS=linux
+GOOS=linux
+GOARCH=amd64 arm64
 
 GO = go
 LDFLAGS = -ldflags "-X main.Version=${VERSION}"
@@ -22,8 +23,10 @@ install:
 	$(GO) install
 
 release:
-	for os in ${OS}; do \
-		GOOS=$$os GOARCH=amd64 go build ${LDFLAGS} -o ${PROJECT_NAME}-$$os-amd64; \
+	for os in ${GOOS}; do \
+		for arch in ${GOARCH}; do \
+			GOOS=$$os GOARCH=$$arch go build ${LDFLAGS} -o ${PROJECT_NAME}-$$os-$$arch; \
+		done; \
 	done
 
 # packaging, you need the packaging branch for these

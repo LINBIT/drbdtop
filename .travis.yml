@@ -10,7 +10,9 @@ deploy:
   provider: releases
   api_key:
     secure: nuWnrw6oE0B5ExPe2U9wMXltqVIJIAM6G56j4B11w+dBcC7JK4aZwthZ35ID4OijKbEMw12bnagXj81sk1E72r7JdBAIt7uZbKfLsevK/kdiAMckt1GSyi5Gbr70bRv0b54xq9BlBvg7TeGoFGGZiNO/Vronvamfj/y+V1WVTQTvdpTDhPxXHTvlObReClFRCskyIpA4lB9DuWNHiFwksFZhcwZRNI2+qvljGQOdU0I/L14eKETpt4XRozyKT8g8Y2OtA+JX0+8agB0foRdrbxjw0fSYvYgPA3ySaBAH+hOKZCWseN9cZrvyeR9ZufsVZXoFyFHoeTQEnrlo2Ov5MEwtlRrDPolk6xKwAI5NCKVapZUeDdsxcy3IpRVhay75NW0Txtx4RHWn9lJcHkWsFAaA5bE5HFCA9ajzKuZXSiE61m/l5LWf++m9m6duAFyvXHJed9ftw0aCsO46Pmq2LMYto2BlMbozqKMdc8ebiiv6HQZkXzUWNzMmWeZTAbX4hvZc0MCsMJjEay1AuPzrv45KPfSeXqHehP66DzUEYbs7wQH4HpvzML+sy6SyyyFQH+yelMmeLC9R3d81W5wsB8GYCVLVw8EheHABPOSKuk7weasg5DBu/+ksZ2IGaW/6svSPNIqtYyk9RITbBl/PmcqJ1B4DHAWe58aORrgbzOA=
-  file: drbdtop-linux-amd64
+  file:
+     - drbdtop-linux-amd64
+     - drbdtop-linux-arm64
   skip_cleanup: true
   on:
     repo: LINBIT/drbdtop

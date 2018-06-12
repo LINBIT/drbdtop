@@ -24,11 +24,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/linbit/drbdtop/pkg/convert"
-	"github.com/linbit/drbdtop/pkg/resource"
-	"github.com/linbit/drbdtop/pkg/update"
+	"github.com/LINBIT/drbdtop/pkg/convert"
+	"github.com/LINBIT/drbdtop/pkg/resource"
+	"github.com/LINBIT/drbdtop/pkg/update"
 
-	"github.com/linbit/termui"
+	"github.com/LINBIT/termui"
 )
 
 type win int

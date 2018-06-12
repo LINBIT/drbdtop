@@ -27,13 +27,13 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/linbit/godrbdutils"
+  name = "github.com/LINBIT/godrbdutils"
   packages = ["."]
   revision = "76bfda2b35d2ebdaf746a4578285721eb2e86ac3"
 
 [[projects]]
   branch = "master"
-  name = "github.com/linbit/termui"
+  name = "github.com/LINBIT/termui"
   packages = ["."]
   revision = "8b646353167856a2223834251dcc5e876208ed40"
 

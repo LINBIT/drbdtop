@@ -18,7 +18,7 @@
 
 package display
 
-import "github.com/linbit/drbdtop/pkg/resource"
+import "github.com/LINBIT/drbdtop/pkg/resource"
 
 // Displayer provides information to the user via the screen, printing to a file,
 // writing to the network, ect.

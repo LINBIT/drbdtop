@@ -23,8 +23,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/LINBIT/drbdtop/pkg/resource"
 	"github.com/facette/natsort"
-	"github.com/linbit/drbdtop/pkg/resource"
 )
 
 // ByRes organizes events related to a particular resource.

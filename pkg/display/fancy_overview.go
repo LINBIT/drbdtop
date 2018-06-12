@@ -18,7 +18,7 @@
 
 package display
 
-import "github.com/linbit/termui"
+import "github.com/LINBIT/termui"
 
 var lockedHelp string = "q: QUIT | /: find | t: tag | s: state | r: role | a: adjust | d: disk | c: conn | m: meta | <tab>: Update"
 var unlockedHelp string = "q: QUIT | j/k: down/up | f: Toggle dangerous filter | <tab>: Toggle updates"
@@ -131,7 +131,7 @@ func (o *overView) UpdateTable() {
 		o.from, o.to = from, to
 		if len(db.keys[from:to]) > 0 {
 			tblrows := make([][]string, len(db.keys[from:to])+1)
-			tblrows[0] = []string{"Name", "Role", "Disks", "Peer Disks", "Connections", "Overall"}
+			tblrows[0] = []string{"Name", "Role", "Disks", "Peer Disks", "Connections", "Overall", "Quorum"}
 			for idx, rname := range db.keys[from:to] {
 				r := db.buf[rname]
 				res := db.buf[rname].Res
@@ -154,11 +154,28 @@ func (o *overView) UpdateTable() {
 
 				ucfg := res.Unconfigured
 
+				quorumLabel := "-"
+				if !ucfg {
+					quorumAlert := false
+					for _, vol := range r.Device.Volumes {
+						if vol.QuorumAlert {
+							quorumAlert = true
+							break
+						}
+					}
+					if quorumAlert {
+						quorumLabel = colRed("✗", false)
+					} else {
+						quorumLabel = colGreen("✓", false)
+					}
+				}
+
 				tblrows[idx+1] = []string{res.Name, role,
 					dangerToString(devdanger, ucfg),
 					dangerToString(pddanger, ucfg),
 					dangerToString(conndanger, ucfg),
-					dangerToString(r.Danger, false)}
+					dangerToString(r.Danger, false),
+					quorumLabel}
 			}
 			o.tbl.SetRows(tblrows)
 			for i := 1; i < len(o.tbl.Rows); i++ { // skip header

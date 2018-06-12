@@ -25,9 +25,9 @@ import (
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/linbit/drbdtop/pkg/collect"
-	"github.com/linbit/drbdtop/pkg/display"
-	"github.com/linbit/drbdtop/pkg/resource"
+	"github.com/LINBIT/drbdtop/pkg/collect"
+	"github.com/LINBIT/drbdtop/pkg/display"
+	"github.com/LINBIT/drbdtop/pkg/resource"
 )
 
 // Version defines the version of the program and gets set via ldflags

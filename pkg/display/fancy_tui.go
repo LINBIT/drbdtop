@@ -26,10 +26,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/linbit/drbdtop/pkg/resource"
-	"github.com/linbit/drbdtop/pkg/update"
-	drbdutils "github.com/linbit/godrbdutils"
-	"github.com/linbit/termui"
+	"github.com/LINBIT/drbdtop/pkg/resource"
+	"github.com/LINBIT/drbdtop/pkg/update"
+	drbdutils "github.com/LINBIT/godrbdutils"
+	"github.com/LINBIT/termui"
 )
 
 var drbdtopversion string

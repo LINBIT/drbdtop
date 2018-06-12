@@ -71,10 +71,11 @@ type devKeys struct {
 	LowerPending string
 	ALSuspended  string
 	Blocked      string
+	Quorum       string
 }
 
 // DevKeys is a data container for the field keys of device Events.
-var DevKeys = devKeys{"name", "volume", "minor", "disk", "client", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked"}
+var DevKeys = devKeys{"name", "volume", "minor", "disk", "client", "size", "read", "written", "al-writes", "bm-writes", "upper-pending", "lower-pending", "al-suspended", "blocked", "quorum"}
 
 type peerDevKeys struct {
 	Name            string
@@ -83,6 +84,7 @@ type peerDevKeys struct {
 	Volume          string
 	Replication     string
 	PeerDisk        string
+	PeerClient      string
 	ResyncSuspended string
 	Received        string
 	Sent            string
@@ -92,7 +94,7 @@ type peerDevKeys struct {
 }
 
 // PeerDevKeys is a data container for the field keys of device Events.
-var PeerDevKeys = peerDevKeys{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
+var PeerDevKeys = peerDevKeys{"name", "peer-node-id", "conn-name", "volume", "replication", "peer-disk", "peer-client", "resync-suspended", "received", "sent", "out-of-sync", "pending", "unacked"}
 
 var connDangerScores = map[string]uint64{
 	"Connected":  0,
@@ -121,6 +123,15 @@ var roleDangerScores = map[string]uint64{
 
 	"default": 1,
 }
+
+var quorumDangerScores = map[string]uint64 {
+	"yes":       0,
+	"no":        30,
+
+	"default":   0,
+}
+
+var quorumLostKeyword = "no"
 
 type uptimer struct {
 	StartTime   time.Time
@@ -400,7 +411,7 @@ type Connection struct {
 	PeerNodeID       string
 	ConnectionName   string
 	ConnectionStatus string
-	// Long form explination of ConnectionStatus.
+	// Long form explanation of ConnectionStatus.
 	ConnectionHint string
 	Role           string
 	Congested      string
@@ -422,7 +433,7 @@ func (c *Connection) Update(e Event) {
 	c.Congested = e.Fields[ConnKeys.Congested]
 	c.updateTimes(e.TimeStamp)
 	c.setDanger()
-	c.connStatusExplination()
+	c.connStatusExplanation()
 }
 
 func (c *Connection) setDanger() {
@@ -449,7 +460,7 @@ func (c *Connection) setDanger() {
 	c.Danger = score
 }
 
-func (c *Connection) connStatusExplination() {
+func (c *Connection) connStatusExplanation() {
 	switch c.ConnectionStatus {
 	case "StandAlone":
 		c.ConnectionHint = fmt.Sprintf("dropped connection or disconnected manually. try running drbdadm connect %s", c.Resource)
@@ -502,20 +513,26 @@ func (d *Device) Update(e Event) {
 	d.Resource = e.Fields[DevKeys.Name]
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := d.Volumes[e.Fields[DevKeys.Volume]]
+	vol, ok := d.Volumes[e.Fields[DevKeys.Volume]]
 	if !ok {
-		d.Volumes[e.Fields[DevKeys.Volume]] = NewDevVolume(200)
+		vol = NewDevVolume(200)
+		d.Volumes[e.Fields[DevKeys.Volume]] = vol
 	}
-
-	vol := d.Volumes[e.Fields[DevKeys.Volume]]
 
 	vol.uptimer.updateTimes(e.TimeStamp)
 	vol.Minor = e.Fields[DevKeys.Minor]
 	vol.DiskState = e.Fields[DevKeys.Disk]
-	vol.DiskHint = diskStateExplination(vol.DiskState)
+	vol.DiskHint = diskStateExplanation(vol.DiskState)
 	vol.Client = e.Fields[DevKeys.Client]
+	vol.Quorum = e.Fields[DevKeys.Quorum]
 	vol.ActivityLogSuspended = e.Fields[DevKeys.ALSuspended]
 	vol.Blocked = e.Fields[DevKeys.Blocked]
+
+	if vol.Quorum == quorumLostKeyword {
+		vol.QuorumAlert = true
+	} else {
+		vol.QuorumAlert = false
+	}
 
 	// Only update size if we can parse the field correctly.
 	if size, err := strconv.ParseUint(e.Fields[DevKeys.Size], 10, 64); err == nil {
@@ -543,6 +560,10 @@ func (d *Device) setDanger() {
 		} else if !(v.DiskState == "Diskless" && v.Client == "yes") {
 			score += i
 		}
+		i, ok = quorumDangerScores[v.Quorum]
+		if ok {
+			score += i
+		}
 	}
 
 	d.Danger = score
@@ -553,12 +574,14 @@ type DevVolume struct {
 	uptimer
 	Minor     string
 	DiskState string
-	// Long from explination of DiskState.
+	// Long from explanation of DiskState.
 	DiskHint             string
 	Client               string
+	Quorum               string
 	Size                 uint64
 	ActivityLogSuspended string
 	Blocked              string
+	QuorumAlert          bool
 
 	// Calculated Values
 	ReadKiB            *rate
@@ -583,7 +606,7 @@ func NewDevVolume(maxLen int) *DevVolume {
 	}
 }
 
-func diskStateExplination(dState string) string {
+func diskStateExplanation(dState string) string {
 	switch dState {
 	case "Diskless":
 		return "detached from backing disk"
@@ -637,19 +660,19 @@ func (p *PeerDevice) Update(e Event) {
 	p.updateTimes(e.TimeStamp)
 
 	// If this volume doesn't exist, create a fresh one.
-	_, ok := p.Volumes[e.Fields[PeerDevKeys.Volume]]
+	vol, ok := p.Volumes[e.Fields[PeerDevKeys.Volume]]
 	if !ok {
-		p.Volumes[e.Fields[PeerDevKeys.Volume]] = NewPeerDevVol(200)
+		vol = NewPeerDevVol(200)
+		p.Volumes[e.Fields[PeerDevKeys.Volume]] = vol
 	}
-
-	vol := p.Volumes[e.Fields[PeerDevKeys.Volume]]
 
 	vol.updateTimes(e.TimeStamp)
 
 	vol.ReplicationStatus = e.Fields[PeerDevKeys.Replication]
-	vol.ReplicationHint = p.replicationExplination(vol)
+	vol.ReplicationHint = p.replicationExplanation(vol)
 	vol.DiskState = e.Fields[PeerDevKeys.PeerDisk]
-	vol.DiskHint = diskStateExplination(vol.DiskState)
+	vol.DiskHint = diskStateExplanation(vol.DiskState)
+	vol.Client = e.Fields[PeerDevKeys.PeerClient]
 	vol.ResyncSuspended = e.Fields[PeerDevKeys.ResyncSuspended]
 
 	vol.OutOfSyncKiB.calculate(e.Fields[PeerDevKeys.OutOfSync])
@@ -669,7 +692,7 @@ func (p *PeerDevice) setDanger() {
 		i, ok := diskDangerScores[v.DiskState]
 		if !ok {
 			score += diskDangerScores["default"]
-		} else {
+		} else if !(v.DiskState == "Diskless" && v.Client == "yes") {
 			score += i
 		}
 
@@ -682,7 +705,7 @@ func (p *PeerDevice) setDanger() {
 	p.Danger = score
 }
 
-func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
+func (p *PeerDevice) replicationExplanation(v *PeerDevVol) string {
 	switch v.ReplicationStatus {
 	case "Off":
 		return fmt.Sprintf("not replicating to %s", p.ConnectionName)
@@ -723,10 +746,11 @@ func (p *PeerDevice) replicationExplination(v *PeerDevVol) string {
 type PeerDevVol struct {
 	uptimer
 	ReplicationStatus string
-	// Long form explination of Replication Status.
+	// Long form explanation of Replication Status.
 	ReplicationHint string
 	DiskState       string
 	DiskHint        string
+	Client          string
 	ResyncSuspended string
 
 	// Calulated Values

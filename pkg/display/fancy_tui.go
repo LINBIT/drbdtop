@@ -201,7 +201,7 @@ func (f *FancyTUI) Display(event <-chan resource.Event, err <-chan error) {
 	f.overview.UpdateGUI()
 
 	go f.UpdateResources(event, err)
-	f.resources.OrderBy(update.Danger, update.Size, update.Name)
+	f.resources.OrderBy(update.DangerReverse, update.SizeReverse, update.Name)
 	go f.UpdateDisp()
 
 	termui.Loop()

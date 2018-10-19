@@ -82,7 +82,12 @@ func getVersionInfo() string {
 		}
 	}
 
-	return fmt.Sprintf("(kernel: %s/utils: %s)", kernel, utils)
+	hostname := "unknown"
+	if h, err := os.Hostname(); err == nil {
+		hostname = h
+	}
+
+	return fmt.Sprintf("(kernel: %s; utils: %s; host: %s)", kernel, utils, hostname)
 }
 
 func dmesg(res string) ([]string, error) {

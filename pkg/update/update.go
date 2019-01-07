@@ -159,10 +159,12 @@ func (rc *ResourceCollection) Update(e resource.Event) {
 
 	resName := e.Fields[resource.ResKeys.Name]
 	if resName != "" {
-		if _, ok := rc.Map[resName]; !ok {
-			rc.Map[resName] = NewByRes()
+		resource, ok := rc.Map[resName]
+		if !ok {
+			resource = NewByRes()
+			rc.Map[resName] = resource
 		}
-		rc.Map[resName].Update(e)
+		resource.Update(e)
 	}
 }
 

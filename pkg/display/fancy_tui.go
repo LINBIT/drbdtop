@@ -126,8 +126,11 @@ func (f *FancyTUI) UpdateResources(event <-chan resource.Event, err <-chan error
 			if evt.Target == resource.DisplayEvent {
 				f.resources.UpdateList()
 				f.updateDisp <- struct{}{}
+			} else if evt.Target == resource.PruneEvent {
+				f.resources.Prune(evt)
+			} else {
+				f.resources.Update(evt)
 			}
-			f.resources.Update(evt)
 		case err := <-err:
 			if len(f.lastErr) >= 5 {
 				f.lastErr = append(f.lastErr[1:], err)

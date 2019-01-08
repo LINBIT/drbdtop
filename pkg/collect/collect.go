@@ -71,16 +71,22 @@ type Events2Poll struct {
 func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) {
 	ticker := time.NewTicker(c.Interval)
 	displayEvent := resource.NewDisplayEvent()
+	// History of the last 3 poll cycle timestamps
+	var timeBacklog []time.Time
 	for {
 		remainingResources, err := allResources()
 		if err != nil {
 			errors <- err
 		}
+		// Use an internal time reference if no events are received from drbdsetup
+		pollTime := time.Now()
+		havePollTime := false
 		out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
 		if err != nil {
 			errors <- err
 			events <- resource.NewEOF()
 		} else {
+			// Apply all events from the current poll cycle
 			s := string(out)
 			for _, e := range strings.Split(s, "\n") {
 				if e != "" {
@@ -88,6 +94,12 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 					if err != nil {
 						errors <- err
 					} else {
+						// Set the poll time reference to the earliest event time in
+						// the current poll cycle
+						if evt.TimeStamp.Before(pollTime) || !havePollTime {
+							pollTime = evt.TimeStamp
+							havePollTime = true
+						}
 						delete(remainingResources, evt.Fields[resource.ResKeys.Name])
 						events <- evt
 					}
@@ -96,6 +108,16 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 		}
 		for res := range remainingResources {
 			events <- resource.NewUnconfiguredRes(res)
+		}
+		if len(timeBacklog) >= 3 {
+			// PruneEvent instances are generated when needed to avoid reusing and modifying
+			// an existing event that may be queued in a channel
+			pruneEvent := resource.NewPruneEvent()
+			pruneEvent.TimeStamp = timeBacklog[0]
+			events <- pruneEvent
+			timeBacklog = append(timeBacklog[1:], pollTime)
+		} else {
+			timeBacklog = append(timeBacklog, pollTime)
 		}
 		events <- displayEvent
 		<-ticker.C

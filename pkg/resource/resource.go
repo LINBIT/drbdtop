@@ -33,6 +33,9 @@ const EOF = "EOF"
 // DisplayEvent is the sentinel to signal a display update
 const DisplayEvent = "DisplayEvent"
 
+// PruneEvent is the sentinel to signal a prune operation
+const PruneEvent = "PruneEvent"
+
 type resKeys struct {
 	Name          string
 	Role          string
@@ -344,6 +347,11 @@ func NewEOF() Event {
 // NewDisplayEvent returns a special Event signaling that the display should be updated
 func NewDisplayEvent() Event {
 	return Event{Target: DisplayEvent}
+}
+
+// NewPruneEvent returns a special Event signaling that the display should prune outdated data
+func NewPruneEvent() Event {
+	return Event{Target: PruneEvent}
 }
 
 // NewUnconfiguredRes returns a special Event signaling that this resource is down(unconfigured).

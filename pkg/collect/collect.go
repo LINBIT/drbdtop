@@ -76,11 +76,18 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 		if err != nil {
 			errors <- err
 		}
+		// A new prune event is generated once per poll cycle, because its timestamp
+		// is used to determine which entries can be pruned
+		pruneEvent := resource.NewPruneEvent()
+		// Use an internal time reference if no events are received from drbdsetup
+		pruneEvent.TimeStamp = time.Now()
+		havePruneTime := false
 		out, err := exec.Command("drbdsetup", "events2", "--timestamps", "--statistics", "--now").CombinedOutput()
 		if err != nil {
 			errors <- err
 			events <- resource.NewEOF()
 		} else {
+			// Apply all events from the current poll cycle
 			s := string(out)
 			for _, e := range strings.Split(s, "\n") {
 				if e != "" {
@@ -88,6 +95,12 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 					if err != nil {
 						errors <- err
 					} else {
+						// Set the prune time reference to the earliest event time in
+						// the current poll cycle
+						if evt.TimeStamp.Before(pruneEvent.TimeStamp) || !havePruneTime {
+							pruneEvent.TimeStamp = evt.TimeStamp
+							havePruneTime = true
+						}
 						delete(remainingResources, evt.Fields[resource.ResKeys.Name])
 						events <- evt
 					}
@@ -97,6 +110,8 @@ func (c Events2Poll) Collect(events chan<- resource.Event, errors chan<- error) 
 		for res := range remainingResources {
 			events <- resource.NewUnconfiguredRes(res)
 		}
+		// Prune entries that have not been updated somewhat recently
+		events <- pruneEvent
 		events <- displayEvent
 		<-ticker.C
 	}

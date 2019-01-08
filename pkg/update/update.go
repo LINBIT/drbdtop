@@ -147,15 +147,20 @@ func NewResourceCollection(d time.Duration) *ResourceCollection {
 	}
 }
 
-// Update a collection of ByRes from an Event.
-func (rc *ResourceCollection) Update(e resource.Event) {
+func (rc *ResourceCollection) Prune(e resource.Event) {
 	rc.Lock()
 	defer rc.Unlock()
 
 	// Clean up old data.
 	if rc.updateInterval != 0 {
-		rc.prune(e.TimeStamp.Add(-3 * rc.updateInterval))
+		rc.pruneImpl(e.TimeStamp.Add(-3 * rc.updateInterval))
 	}
+}
+
+// Update a collection of ByRes from an Event.
+func (rc *ResourceCollection) Update(e resource.Event) {
+	rc.Lock()
+	defer rc.Unlock()
 
 	resName := e.Fields[resource.ResKeys.Name]
 	if resName != "" {
@@ -180,7 +185,7 @@ func (rc *ResourceCollection) UpdateList() {
 }
 
 // Remove old fields that haven't been updated since time.
-func (rc *ResourceCollection) prune(t time.Time) {
+func (rc *ResourceCollection) pruneImpl(t time.Time) {
 	for k, v := range rc.Map {
 		if v.Res.CurrentTime.Before(t) {
 			delete(rc.Map, k)

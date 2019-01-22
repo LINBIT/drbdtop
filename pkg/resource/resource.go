@@ -301,10 +301,8 @@ func NewEvent(e string) (Event, error) {
 		return Event{Fields: fields}, fmt.Errorf("Couldn't parse event fields from %q", original)
 	}
 
-	// Loop until we can't find the next kvPair.
-	for end != -1 {
-		kvPair := e[:end]
-
+	kvPair := e[:end]
+	for {
 		// Splitting strings is expensive and this loop runs a lot, so we use the
 		// index of ":" to break up the key value pairs.
 		i := strings.Index(kvPair, ":")
@@ -313,20 +311,21 @@ func NewEvent(e string) (Event, error) {
 		}
 		fields[kvPair[:i]] = kvPair[i+1:]
 
-		// Chop off the kvPair we just added to the fields and the following space
-		// from the start of the string and use the rest of it.
-		e = e[end+1:]
+		if end != -1 {
+			// Chop off the kvPair we just added to the fields and the following space
+			// from the start of the string and use the rest of it.
+			e = e[end+1:]
 
-		end = strings.Index(e, " ")
+			end = strings.Index(e, " ")
+			if end != -1 {
+				kvPair = e[:end]
+			} else {
+				kvPair = e
+			}
+		} else {
+			break
+		}
 	}
-
-	// Parse the last kvPair.
-	kvPair := e
-	i := strings.Index(kvPair, ":")
-	if i < 0 {
-		return Event{Fields: fields}, fmt.Errorf("Couldn't parse key/value pair from %q", kvPair)
-	}
-	fields[kvPair[:i]] = kvPair[i+1:]
 
 	return Event{
 		TimeStamp: timeStamp,

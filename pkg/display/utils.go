@@ -127,6 +127,18 @@ func getVersionInfo() string {
 	return fmt.Sprintf("(kernel: %s; utils: %s; host: %s)", kernel, utils, hostname)
 }
 
+// IsBlacklistedVersion returns an error if the detected versions are bad (e.g., kernel so old it dies not support events2).
+func IsBlacklistedVersion() error {
+	if kv, err := getKernelModVersion(); err != nil {
+		return err
+	} else if kv.major == 8 && ((kv.minor < 4) || (kv.minor == 4 && kv.patch < 6)) { // events2
+		return fmt.Errorf("DRBD kernel module (%d.%d.%d) too old, please use at least DRBD 8.4.6",
+			kv.major, kv.minor, kv.patch)
+	}
+
+	return nil
+}
+
 func dmesg(res string) ([]string, error) {
 	dmesgCmd := exec.Command("dmesg")
 	grepCmd := exec.Command("grep", res)

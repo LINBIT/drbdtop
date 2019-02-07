@@ -20,6 +20,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -34,6 +35,10 @@ import (
 var Version string
 
 func main() {
+	if err := display.IsBlacklistedVersion(); err != nil {
+		log.Fatal(err)
+	}
+
 	app := kingpin.New("drbdtop", "Statistics for DRBD")
 	file := app.Flag(
 		"file", "Path to a file containing output gathered from polling 'drbdsetup events2 --timestamps --statistics --now'.").PlaceHolder("/path/to/file").Short('f').String()

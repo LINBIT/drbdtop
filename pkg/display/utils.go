@@ -20,66 +20,103 @@ package display
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
-func getVersionInfo() string {
-	utils := "unknown"
-	kernel := "unknown"
+type version struct {
+	major, minor, patch int
+}
 
-	DRBD_KERNEL_VERSION := "DRBD_KERNEL_VERSION="
-	DRBD_UTILS_VERSION := "DRBDADM_VERSION="
+func getVersion(field string) (version, error) {
+	field += "="
+
+	var ver version
 
 	cmd := exec.Command("drbdadm", "--version")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return ""
+		return ver, err
 	}
 	if err := cmd.Start(); err != nil {
-		return ""
+		return ver, err
 	}
 
-	reader := bufio.NewReader(stdout)
-	scanner := bufio.NewScanner(reader)
+	scanner := bufio.NewScanner(bufio.NewReader(stdout))
 
 	scanner.Split(bufio.ScanLines)
 
-	var u, k bool
 	for scanner.Scan() {
 		txt := strings.TrimSpace(scanner.Text())
-		if !k && strings.HasPrefix(txt, DRBD_KERNEL_VERSION) {
-			kernel = "v" + strings.TrimPrefix(txt, DRBD_KERNEL_VERSION)
-			k = true
+		if strings.HasPrefix(txt, field) {
+			code64, err := strconv.ParseInt(strings.TrimPrefix(txt, field), 0, 32)
+			code := int(code64)
+			if err != nil {
+				return ver, err
+			}
+			ver.major = ((code >> 16) & 0xff)
+			ver.minor = ((code >> 8) & 0xff)
+			ver.patch = (code & 0xff)
+			return ver, nil
 		}
-		if !u && strings.HasPrefix(txt, DRBD_UTILS_VERSION) {
-			utils = "v" + strings.TrimPrefix(txt, DRBD_UTILS_VERSION)
-			u = true
-		}
-		if k && u {
-			break
+	}
+	return ver, fmt.Errorf("Could not find field '%s'", field)
+}
+
+func getUtilsVersion() (version, error) { return getVersion("DRBDADM_VERSION_CODE") }
+
+func getKernelModVersion() (version, error) {
+	if kver, err := getVersion("DRBD_KERNEL_VERSION_CODE"); err == nil {
+		return kver, err
+	}
+
+	// fall back to /proc/drbd
+	var kver version
+	file, err := os.Open("/proc/drbd")
+	if err != nil {
+		return kver, err
+	}
+
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		txt := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(txt, "version:") {
+			fields := strings.Split(txt, " ")
+			if len(fields) >= 2 {
+				// version: 9.0.16-0rc2 (api:...)
+				kv := strings.SplitN(fields[1], "-", 2)
+				kv = strings.Split(kv[0], ".")
+				var err error
+				if kver.major, err = strconv.Atoi(kv[0]); err != nil {
+					return kver, err
+				}
+				if kver.minor, err = strconv.Atoi(kv[1]); err != nil {
+					return kver, err
+				}
+				kver.patch, err = strconv.Atoi(kv[2])
+				return kver, err
+			}
+			break // we tried once, give up
 		}
 	}
 
-	if !k { // fall back to /proc/drbd
-		file, err := os.Open("/proc/drbd")
-		if err == nil {
-			defer file.Close()
-			scanner = bufio.NewScanner(file)
-			for scanner.Scan() {
-				txt := strings.TrimSpace(scanner.Text())
-				if strings.HasPrefix(txt, "version:") {
-					fields := strings.Split(txt, " ")
-					if len(fields) >= 2 {
-						kernel = fields[1]
-					}
-				}
-				break
-			}
+	return kver, errors.New("Could not determine kernel version")
+}
 
-		}
+func getVersionInfo() string {
+	utils := "unknown"
+	if utv, err := getUtilsVersion(); err == nil {
+		utils = fmt.Sprintf("%d.%d.%d", utv.major, utv.minor, utv.patch)
+	}
+
+	kernel := "unknown"
+	if kv, err := getKernelModVersion(); err == nil {
+		kernel = fmt.Sprintf("%d.%d.%d", kv.major, kv.minor, kv.patch)
 	}
 
 	hostname := "unknown"

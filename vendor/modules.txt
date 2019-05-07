@@ -1,0 +1,29 @@
+# github.com/LINBIT/godrbdutils v0.0.0-20170719082427-76bfda2b35d2
+github.com/LINBIT/godrbdutils
+# github.com/LINBIT/termui v0.0.0-20170328115949-8b6463531678
+github.com/LINBIT/termui
+# github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
+github.com/alecthomas/template
+github.com/alecthomas/template/parse
+# github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
+github.com/alecthomas/units
+# github.com/facette/natsort v0.0.0-20160904201600-3769c5fd3100
+github.com/facette/natsort
+# github.com/fatih/color v1.5.0
+github.com/fatih/color
+# github.com/maruel/panicparse v0.0.0-20170227222818-25bcac0d793c
+github.com/maruel/panicparse/stack
+# github.com/mattn/go-colorable v0.0.0-20170210172801-5411d3eea597
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.0-20170307163044-57fdcb988a5c
+github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.0-20170201023540-14207d285c6c
+github.com/mattn/go-runewidth
+# github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7
+github.com/mitchellh/go-wordwrap
+# github.com/nsf/termbox-go v0.0.0-20170301014343-91bae1bb5fa9
+github.com/nsf/termbox-go
+# golang.org/x/sys v0.0.0-20170213225739-e24f485414ae
+golang.org/x/sys/unix
+# gopkg.in/alecthomas/kingpin.v2 v2.2.4
+gopkg.in/alecthomas/kingpin.v2

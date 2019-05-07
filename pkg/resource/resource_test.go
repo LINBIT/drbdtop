@@ -550,3 +550,50 @@ func TestFastTimeParse(t *testing.T) {
 		}
 	}
 }
+
+// Needed so that the compiler doesn't optimise the benchmarks by not running the
+// benchmarks: https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go
+var eventBenchResult Event
+
+func benchmarkNewEvent(s string, b *testing.B) {
+	var e Event
+	for n := 0; n < b.N; n++ {
+		// always record the result to prevent
+		// the compiler eliminating the function call.
+		e, _ = NewEvent(s)
+	}
+	// always store the result to a package level variable
+	// so the compiler cannot eliminate the Benchmark itself.
+	eventBenchResult = e
+
+}
+
+func BenchmarkNewEventResource(b *testing.B) {
+	benchmarkNewEvent(
+		"2019-05-07T13:50:23.973595-07:00 exists resource name:pvc-0a2826c9-7108-11e9-8f74-0026b954ca4c role:Secondary suspended:no write-ordering:flush",
+		b)
+}
+
+func BenchmarkNewEventConnection(b *testing.B) {
+	benchmarkNewEvent(
+		"2019-05-07T13:50:23.973595-07:00 exists connection name:pvc-0a2826c9-7108-11e9-8f74-0026b954ca4c peer-node-id:2 conn-name:kubelet-b connection:Connected role:Secondary congested:no ap-in-flight:0 rs-in-flight:0",
+		b)
+}
+
+func BenchmarkNewEventDevice(b *testing.B) {
+	benchmarkNewEvent(
+		"2019-05-07T13:50:23.973595-07:00 exists device name:pvc-0a2826c9-7108-11e9-8f74-0026b954ca4c volume:0 minor:1016 disk:UpToDate client:no quorum:yes size:515948 read:2104 written:0 al-writes:0 bm-writes:0 upper-pending:0 lower-pending:0 al-suspended:no blocked:no",
+		b)
+}
+
+func BenchmarkNewEventPeerDevice(b *testing.B) {
+	benchmarkNewEvent(
+		"2019-05-07T13:50:23.973595-07:00 exists peer-device name:pvc-0a2826c9-7108-11e9-8f74-0026b954ca4c peer-node-id:2 conn-name:kubelet-b volume:0 replication:Established peer-disk:UpToDate peer-client:no resync-suspended:no received:0 sent:0 out-of-sync:0 pending:0 unacked:0",
+		b)
+}
+
+func BenchmarkNewEventExists(b *testing.B) {
+	benchmarkNewEvent(
+		"2019-05-07T13:50:23.974032-07:00 exists -",
+		b)
+}
